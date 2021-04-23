@@ -1,5 +1,5 @@
-const { userAuthenticated } = require('./../../middlewares/userAuthenticated')
-const { optionallyHasUser } = require('./../../middlewares/optionallyHasUser')
+const { userAuthenticated } = require('../../middlewares/userAuthenticated')
+const { optionallyHasUser } = require('../../middlewares/optionallyHasUser')
 
 const MarketplaceRouter = require('express').Router()
 const loadUserTradesHandler = require('./loadUserTrades.js')

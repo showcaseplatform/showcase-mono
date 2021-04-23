@@ -1,11 +1,9 @@
 /* eslint-disable promise/no-nesting */
 const axios = require('axios')
 const functions = require('firebase-functions')
-const admin = require('firebase-admin')
-const db = admin.firestore()
-const { blockchainServer, stripe: stripeConfig } = require('../../config')
-const stripe = require('stripe')(stripeConfig)
-const FieldValue = admin.firestore.FieldValue
+const { firestore: db, FieldValue } = require('../../services/firestore')
+const { blockchainServer } = require('../../config')
+const stripe = require('../../services/stripe')
 
 module.exports = async (req, res) => {
   const { itemId, currencyRate, displayedPrice } = req.body

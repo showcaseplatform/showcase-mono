@@ -1,5 +1,7 @@
-const db = require('firebase-admin').firestore()
-var validator = require('validator')
+const { firestore: db } = require('../../services/firestore')
+const validator = require('validator')
+
+const currencies = ['USD', 'EUR', 'GBP']
 
 module.exports = (req, res) => {
   let user = req.user.data()

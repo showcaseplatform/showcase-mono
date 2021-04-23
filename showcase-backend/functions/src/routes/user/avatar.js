@@ -1,4 +1,4 @@
-const db = require('firebase-admin').firestore()
+const { firestore: db } = require('../../services/firestore')
 
 module.exports = async (req, res) => {
   let getUser = await db.collection('users').doc(req.params.id).get()

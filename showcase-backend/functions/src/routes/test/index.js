@@ -1,6 +1,6 @@
 /* eslint-disable promise/no-nesting */
 const TestRouter = require('express').Router()
-const db = require('firebase-admin').firestore()
+const { firestore: db } = require('../../services/firestore')
 const axios = require('axios')
 
 const sendNotification = (user, title, body, token, data, type, noPush) => {

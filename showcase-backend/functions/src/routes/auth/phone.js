@@ -1,8 +1,7 @@
 /* eslint-disable promise/no-nesting */
 const admin = require('firebase-admin')
 var validator = require('validator')
-const db = admin.firestore()
-let FieldValue = admin.firestore.FieldValue
+const { firestore: db, FieldValue } = require('../../services/firestore')
 const { twilio: twilioConfig } = require('../../config')
 const twilio = require('twilio')(twilioConfig.account, twilioConfig.token)
 
@@ -129,7 +128,7 @@ module.exports = (req, res) => {
                 .create({
                   body: `Your Showcase signup code is ${code}`,
                   to: '+' + areaCode + phone,
-                  from: twilioConfig.from, 
+                  from: twilioConfig.from,
                 })
                 .then((message) => {
                   let verificationRef = db

@@ -1,9 +1,7 @@
 /* eslint-disable promise/no-nesting */
 const { transferWise } = require('../../config')
 const axios = require('axios')
-const admin = require('firebase-admin')
-const db = admin.firestore()
-let FieldValue = admin.firestore.FieldValue
+const { firestore: db, FieldValue } = require('../../services/firestore')
 
 const moment = require('moment')
 const { v4: uuidv4 } = require('uuid')

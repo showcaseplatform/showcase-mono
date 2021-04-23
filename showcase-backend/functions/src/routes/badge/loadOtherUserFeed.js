@@ -1,4 +1,4 @@
-const db = require('firebase-admin').firestore()
+const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
   if (req.body.userid) {

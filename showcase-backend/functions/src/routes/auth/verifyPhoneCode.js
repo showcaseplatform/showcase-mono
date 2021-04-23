@@ -1,7 +1,6 @@
 /* eslint-disable promise/no-nesting */
 const admin = require('firebase-admin')
-const db = admin.firestore()
-let FieldValue = admin.firestore.FieldValue
+const { firestore: db, FieldValue } = require('../../services/firestore')
 const { v5: uuidv5 } = require('uuid')
 const uuidNamespace = 'b01abb38-c109-4b71-9136-a2aa73ddde27' // todo: maybe outsource to config
 

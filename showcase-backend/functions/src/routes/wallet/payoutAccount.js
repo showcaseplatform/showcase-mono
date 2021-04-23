@@ -1,6 +1,6 @@
 const { transferWise } = require('../../config')
 const axios = require('axios')
-const db = require('firebase-admin').firestore()
+const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
   let user = req.user.data()

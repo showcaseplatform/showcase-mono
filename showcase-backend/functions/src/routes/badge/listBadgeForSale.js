@@ -1,6 +1,6 @@
 /* eslint-disable promise/no-nesting */
 const axios = require('axios')
-const db = require('firebase-admin').firestore()
+const { firestore: db } = require('../../services/firestore')
 const { blockchainServer } = require('../../config')
 const functions = require('firebase-functions')
 

@@ -1,7 +1,5 @@
 /* eslint-disable promise/no-nesting */
-const admin = require('firebase-admin')
-const db = admin.firestore()
-const FieldValue = admin.firestore.FieldValue
+const { firestore: db, FieldValue } = require('../../services/firestore')
 
 module.exports = async (req, res) => {
   let user = req.user.data()

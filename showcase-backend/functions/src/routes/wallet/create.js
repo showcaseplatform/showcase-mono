@@ -1,4 +1,4 @@
-const db = require('firebase-admin').firestore()
+const { firestore: db } = require('../../services/firestore')
 const bip39 = require('bip39')
 const hdkey = require('ethereumjs-wallet/hdkey')
 const crypto = require('crypto')

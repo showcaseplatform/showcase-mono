@@ -1,40 +1,16 @@
 var convict = require('convict')
 
+// Add new format
 // convict.addFormat(require('convict-format-with-validator').ipaddress)
 
 // Define a schema
 var config = convict({
-  // env: {
-  //   doc: 'The application environment.',
-  //   format: ['production', 'development', 'test'],
-  //   default: 'development',
-  //   env: 'NODE_ENV'
-  // },
-  // ip: {
-  //   doc: 'The IP address to bind.',
-  //   format: 'ipaddress',
-  //   default: '127.0.0.1',
-  //   env: 'IP_ADDRESS',
-  // },
-  // port: {
-  //   doc: 'The port to bind.',
-  //   format: 'port',
-  //   default: 8080,
-  //   env: 'PORT',
-  //   arg: 'port'
-  // },
-  // db: {
-  //   host: {
-  //     doc: 'Database host name/IP',
-  //     format: '*',
-  //     default: 'server1.dev.test'
-  //   },
-  //   name: {
-  //     doc: 'Database name',
-  //     format: String,
-  //     default: 'users'
-  //   }
-  // },
+  env: {
+    doc: 'The application environment.',
+    format: ['production', 'development', 'test'],
+    default: 'development',
+    env: 'NODE_ENV',
+  },
   transferWise: {
     profile: {
       doc: 'Profile id for transferwise account',
@@ -66,12 +42,12 @@ var config = convict({
     },
     token: {
       doc: 'Twillio authentication token',
-      format: String, 
+      format: String,
       default: '76e74f82f8c94a0c67ddd94862d74629',
     },
     from: {
       doc: 'Twillio messages are sent from this phone number',
-      format: String, 
+      format: String,
       default: '+12056274546',
     },
   },
@@ -83,21 +59,19 @@ var config = convict({
     },
     adminKey: {
       doc: 'Algolia admin key',
-      format: String, 
+      format: String,
       default: '97fb4b7b4da91fac807ad880217272d0',
     },
     searchKey: {
       doc: 'Algolia search key',
-      format: String, 
-      default: '680b059e826b1dc3b6b6d3428bbd09b5',   // currently not used anywhere
+      format: String,
+      default: '680b059e826b1dc3b6b6d3428bbd09b5', // todo: currently not used anywhere
     },
-  }
+  },
 })
-
 
 // Load environment dependent configuration
 // var env = config.get('env');
 // config.loadFile('./config/' + env + '.json');
 
 module.exports = { ...config.getProperties() }
-// module.exports = config;

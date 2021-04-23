@@ -1,6 +1,5 @@
-const db = require('firebase-admin').firestore()
-const { stripe: stripeConfig } = require('../../config')
-const stripe = require('stripe')(stripeConfig)
+const { firestore: db } = require('../../services/firestore')
+const stripe = require('../../services/stripe')
 
 module.exports = (req, res) => {
   let user = req.user.data()

@@ -1,7 +1,5 @@
 /* eslint-disable promise/no-nesting */
-const admin = require('firebase-admin')
-const db = admin.firestore()
-let FieldValue = admin.firestore.FieldValue
+const { firestore: db, FieldValue } = require('../../services/firestore')
 const axios = require('axios')
 
 // todo: needs to be outsourced from here when global concept is ready

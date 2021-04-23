@@ -8,4 +8,4 @@ ChatRouter.use(userAuthenticated)
 ChatRouter.route('/readMessageThread').post(readMessageThread)
 ChatRouter.route('/sendMessage').post(sendMessage)
 
-module.exports = ChatRouter
+module.exports = { ChatRouter }

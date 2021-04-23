@@ -5,7 +5,7 @@ const create = require('./create.js')
 const unlock = require('./unlock.js')
 const backup = require('./backup.js')
 const payoutAccount = require('./payoutAccount.js')
-const payoutSend= require('./payoutSend')
+const payoutSend = require('./payoutSend')
 
 WalletRouter.use(userAuthenticated)
 WalletRouter.route('/create').post(create)
@@ -14,4 +14,4 @@ WalletRouter.route('/backup').post(backup)
 WalletRouter.route('/payoutAccount').post(payoutAccount)
 WalletRouter.route('/payoutSend').post(payoutSend)
 
-module.exports = WalletRouter
+module.exports = { WalletRouter }

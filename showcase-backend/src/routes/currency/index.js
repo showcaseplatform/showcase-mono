@@ -6,4 +6,4 @@ const rates = require('./rates.js')
 CurrencyRouter.use(userAuthenticated)
 CurrencyRouter.route('/rates').get(rates)
 
-module.exports = CurrencyRouter
+module.exports = { CurrencyRouter }

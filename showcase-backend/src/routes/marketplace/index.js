@@ -15,10 +15,12 @@ MarketplaceRouter.route('/loadBadgesForSale').get(optionallyHasUser, loadBadgesF
 // Protected by authentication
 MarketplaceRouter.route('/loadUserTrades').get(userAuthenticated, loadUserTradesHandler)
 MarketplaceRouter.route('/loadUserMarketplace').get(userAuthenticated, loadUserMarketplaceHandler)
-MarketplaceRouter.route('/loadOtherUserMarketplace').get(userAuthenticated, loadOtherUserMarketplaceHandler)
+MarketplaceRouter.route('/loadOtherUserMarketplace').get(
+  userAuthenticated,
+  loadOtherUserMarketplaceHandler
+)
 
 MarketplaceRouter.route('/purchaseBadge').post(userAuthenticated, purchaseBadgeHandler)
 MarketplaceRouter.route('/publishBadge').post(userAuthenticated, publishBadgeHandler)
 
-
-module.exports = MarketplaceRouter
+module.exports = { MarketplaceRouter }

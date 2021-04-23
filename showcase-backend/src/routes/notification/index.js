@@ -8,4 +8,4 @@ NotificationRouter.use(userAuthenticated)
 NotificationRouter.route('/addToken').post(addToken)
 NotificationRouter.route('/removeToken').post(removeToken)
 
-module.exports = NotificationRouter
+module.exports = { NotificationRouter }

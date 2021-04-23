@@ -20,4 +20,4 @@ BadgeRouter.route('/listBadgeForSale').post(listBadgeForSaleHandler)
 BadgeRouter.route('/loadUserFeed').get(loadUserFeedHandler)
 BadgeRouter.route('/loadOtherUserFeed').get(loadOtherUserFeedHandler)
 
-module.exports = BadgeRouter
+module.exports = { BadgeRouter }

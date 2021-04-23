@@ -6,4 +6,4 @@ const loadUserWithdrawalsHandler = require('./loadUserWithdrawals.js')
 WithdrawalsRouter.use(userAuthenticated)
 WithdrawalsRouter.route('/loadUserWithdrawals').get(loadUserWithdrawalsHandler)
 
-module.exports = WithdrawalsRouter
+module.exports = { WithdrawalsRouter }

@@ -8,7 +8,10 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "start-emulators": "firebase emulators:start",
+    "export-firestore": "firebase emulators:export seed",
+    "import-firestore": "firebase emulators:import seed"
   },
   "engines": {
     "node": "14"

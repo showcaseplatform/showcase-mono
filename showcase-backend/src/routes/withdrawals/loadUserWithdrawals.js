@@ -2,13 +2,14 @@ const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
   let user = req.user.data()
+  const lastDocumentDate = req.query.lastdate
 
   let feedQuery = db.collection('withdrawals')
   feedQuery = feedQuery.where('user', '==', user.uid.toLowerCase())
   feedQuery = feedQuery.where('success', '==', true)
 
-  if (req.body.lastdate) {
-    feedQuery = feedQuery.where('created', '<', new Date(req.body.lastdate))
+  if (lastDocumentDate) {
+    feedQuery = feedQuery.where('created', '<', new Date(lastDocumentDate))
   }
 
   feedQuery = feedQuery.orderBy('created', 'desc').limit(15)

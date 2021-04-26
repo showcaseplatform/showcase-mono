@@ -1,14 +1,17 @@
 const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
-  if (req.body.userid) {
+  const requestUserId = req.query.userid.toLowerCase()
+  const lastDocumentDate = req.query.lastdate
+
+  if (requestUserId) {
     let feedQuery = db.collection('badges')
-    feedQuery = feedQuery.where('ownerId', '==', req.body.userid.toLowerCase())
+    feedQuery = feedQuery.where('ownerId', '==', requestUserId)
 
     feedQuery = feedQuery.where('removedFromShowcase', '==', false)
 
-    if (req.body.lastdate) {
-      feedQuery = feedQuery.where('createdDate', '<', new Date(req.body.lastdate))
+    if (lastDocumentDate) {
+      feedQuery = feedQuery.where('createdDate', '<', new Date(lastDocumentDate))
     }
 
     feedQuery = feedQuery.orderBy('createdDate', 'desc').limit(15)

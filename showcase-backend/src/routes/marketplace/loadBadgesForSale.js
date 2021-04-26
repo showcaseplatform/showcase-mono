@@ -3,16 +3,19 @@ const { firestore: db } = require('../../services/firestore')
 module.exports = (req, res) => {
   //if (req.user){
   //}
+  const lastDocumentDate = req.query.lastdate
+  const requestedCategory = req.query.category.toLowerCase()
+
   let feedQuery = db.collection('badgesales')
 
   feedQuery = feedQuery.where('soldout', '==', false)
 
-  if (req.body.lastdate) {
-    feedQuery = feedQuery.where('createdDate', '<', new Date(req.body.lastdate))
+  if (lastDocumentDate) {
+    feedQuery = feedQuery.where('createdDate', '<', new Date(lastDocumentDate))
   }
 
-  if (req.body.category) {
-    feedQuery = feedQuery.where('category', '==', req.body.category.toLowerCase())
+  if (requestedCategory) {
+    feedQuery = feedQuery.where('category', '==', requestedCategory)
   }
 
   feedQuery = feedQuery.orderBy('createdDate', 'desc').limit(15)

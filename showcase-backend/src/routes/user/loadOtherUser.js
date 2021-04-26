@@ -2,15 +2,16 @@ const { firestore: db } = require('../../services/firestore')
 
 module.exports = async (req, res) => {
   let user = req.user.data()
-  if (req.body.userid) {
+  const requestedUserId = req.query.userid
+  if (requestedUserId) {
     let fields = ['uid', 'bio', 'creator', 'displayName', 'username', 'avatar']
     try {
-      let otherUser = await db.collection('users').doc(req.body.userid).get()
+      let otherUser = await db.collection('users').doc(requestedUserId).get()
       let otherUserFollowing = await db
         .collection('users')
         .doc(user.uid)
         .collection('following')
-        .doc(req.body.userid)
+        .doc(requestedUserId)
         .get()
       console.log('FOLLOWING?', otherUserFollowing)
       return res.json({

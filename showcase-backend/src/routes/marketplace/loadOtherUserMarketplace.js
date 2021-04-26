@@ -1,7 +1,7 @@
 const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
-  const requestedUserId =  req.query.userid.toLowerCase()
+  const requestedUserId =   req.query.userid && req.query.userid.toLowerCase()
   const lastDocumentDate = req.query.lastdate
 
   if (requestedUserId) {

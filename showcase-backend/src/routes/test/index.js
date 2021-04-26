@@ -1,4 +1,5 @@
 /* eslint-disable promise/no-nesting */
+const { expo: expoServerUrl } = require('../../config')
 const TestRouter = require('express').Router()
 const { firestore: db } = require('../../services/firestore')
 const axios = require('axios')
@@ -19,7 +20,7 @@ const sendNotification = (user, title, body, token, data, type, noPush) => {
           _displayInForeground: true,
         }
         axios({
-          url: 'https://exp.host/--/api/v2/push/send',
+          url: expoServerUrl,
           method: 'post',
           headers: {
             Accept: 'application/json',

@@ -1,4 +1,5 @@
 var convict = require('convict')
+require('dotenv').config();
 
 // Add new format
 // convict.addFormat(require('convict-format-with-validator').ipaddress)
@@ -15,63 +16,82 @@ var config = convict({
     profile: {
       doc: 'Profile id for transferwise account',
       format: String,
-      default: '14510070',
+      default: '',
+      env: "TRANSFERWISE_PROFILE",
     },
     token: {
       doc: 'Authorization token for tranferwise account',
       format: String,
-      default: 'd0f25271-e191-4205-bdd1-d5187e220a78',
+      default: '',
+      env: 'TRANSFERWISE_TOKEN'
     },
   },
   stripe: {
     doc: 'Key to initialize stripe package',
     format: String,
     default:
-      'sk_test_51FzSlvIUYoR902HWvmyEomOVnWNR7GD1wm3foYNP79Yg0UAbRJkKiGfzKZgL8nYZ8ixVTbftmTzQ1CnZs7SEcrRv000Vmq7Ply',
+      '',
+    env: 'STRIPE_KEY'
   },
   blockchainServer: {
     doc: 'Url of the blockchain server',
     format: String, // todo: 'url' caused error
-    default: 'https://us-central1-showcase-1cc97.cloudfunctions.net/app',
+    default: '',
+    env: 'BLOCKCHAIN_SERVER'
   },
   twilio: {
     account: {
       doc: 'Twillio account id',
       format: String,
-      default: 'ACfbccd24814d0194118dc5459db768da7',
+      default: '',
+      env: 'TWILIO_ACCOUNT'
     },
     token: {
       doc: 'Twillio authentication token',
       format: String,
-      default: '76e74f82f8c94a0c67ddd94862d74629',
+      default: '',
+      env: 'TWILIO_TOKEN'
     },
     from: {
       doc: 'Twillio messages are sent from this phone number',
       format: String,
-      default: '+12056274546',
+      default: '',
+      env: 'TWILIO_FROM'
     },
   },
   algolia: {
     id: {
       doc: 'Algolia ID',
       format: String,
-      default: 'JY2ZHM7KLL',
+      default: '',
+      env: 'ALGOLIA_ID'
     },
     adminKey: {
       doc: 'Algolia admin key',
       format: String,
-      default: '97fb4b7b4da91fac807ad880217272d0',
+      default: '',
+      env: 'ALGOLIA_ADMIN_KEY'
     },
+    // todo: currently searchKey not used anywhere
     searchKey: {
       doc: 'Algolia search key',
       format: String,
-      default: '680b059e826b1dc3b6b6d3428bbd09b5', // todo: currently not used anywhere
+      default: '', 
+      env: 'ALGOLIA_SEARCH_KEY'
     },
   },
+  expo: {
+    doc: 'Url used to send push notifications',
+    format: String,
+    default: 'https://exp.host/--/api/v2/push/send'
+  }
 })
 
 // Load environment dependent configuration
-// var env = config.get('env');
+// const env = config.get('env');
 // config.loadFile('./config/' + env + '.json');
+
+// throws error if config does not conform to schema
+config.validate({ allowed: 'strict' });
 
 module.exports = { ...config.getProperties() }

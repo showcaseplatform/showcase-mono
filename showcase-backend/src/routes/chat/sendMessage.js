@@ -1,4 +1,5 @@
 /* eslint-disable promise/no-nesting */
+const { expo: expoServerUrl } = require('../../config')
 const { firestore: db, FieldValue } = require('../../services/firestore')
 const axios = require('axios')
 
@@ -20,7 +21,7 @@ const sendPushNotification = (user, title, body, data) => {
           _displayInForeground: true,
         }
         axios({
-          url: 'https://exp.host/--/api/v2/push/send',
+          url: expoServerUrl,
           method: 'post',
           headers: {
             Accept: 'application/json',

@@ -33,11 +33,19 @@ var config = convict({
       '',
     env: 'STRIPE_KEY'
   },
-  blockchainServer: {
-    doc: 'Url of the blockchain server',
-    format: String, // todo: 'url' caused error
-    default: '',
-    env: 'BLOCKCHAIN_SERVER'
+  blockchain: {
+    server: {
+      doc: 'Url of the blockchain server',
+      format: String, // todo: 'url' caused error
+      default: '',
+      env: 'BLOCKCHAIN_SERVER'
+    },
+    authToken: {
+      doc: 'Authtentication token for blockchain server',
+      format: String,
+      default: '',
+      env: 'BLOCKCHAIN_AUTH_TOKEN'
+    }
   },
   twilio: {
     account: {

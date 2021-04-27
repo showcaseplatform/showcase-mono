@@ -1,6 +1,6 @@
 /* eslint-disable promise/no-nesting */
 const { firestore: db, FieldValue } = require('../../services/firestore')
-const { blockchainServer } = require('../../config')
+const { blockchain } = require('../../config')
 const axios = require('axios')
 const functions = require('firebase-functions')
 
@@ -11,12 +11,12 @@ module.exports = (req, res) => {
     const data = {
       badgeid,
       badgeowner,
-      token: functions.config().blockchainauth.token,
+      token: blockchain.authToken,
     }
     console.log('BAGDE VERIFICATION DATA', data)
 
     // todo: why is this commented out
-    /*axios.post(blockchainServer+'/getMetadataOfBadge', {badgetype:"57896044618658097711785492504343953941267134110420635948653900123522597912576", token: functions.config().blockchainauth.token})
+    /*axios.post(blockchain.server+'/getMetadataOfBadge', {badgetype:"57896044618658097711785492504343953941267134110420635948653900123522597912576", token:  blockchain.authToken})
           .then(async (response) => {
               console.log("METADATA", response.data);
               return true;
@@ -25,7 +25,7 @@ module.exports = (req, res) => {
               return true;
           })
   
-          axios.post(blockchainServer+'/getOwnershipOfBadge', {badgeid, token: functions.config().blockchainauth.token})
+          axios.post(blockchain.server+'/getOwnershipOfBadge', {badgeid, token:  blockchain.authToken})
           .then(async (response) => {
               console.log("current owner is:", response.data);
               return true;
@@ -35,7 +35,7 @@ module.exports = (req, res) => {
           })
   
   
-          axios.post(blockchainServer+'/verifyBadgeInEscrow', {badgeid, token: functions.config().blockchainauth.token})
+          axios.post(blockchain.server+'/verifyBadgeInEscrow', {badgeid, token:  blockchain.authToken})
           .then(async (response) => {
               console.log("escrow is:", response.data);
               return true;
@@ -45,7 +45,7 @@ module.exports = (req, res) => {
           })
   */
     return axios
-      .post(blockchainServer + '/verifyOwnershipOfBadge', data)
+      .post(blockchain.server + '/verifyOwnershipOfBadge', data)
       .then(async (response) => {
         console.log(response.data)
         if (response.data.isOwner) {

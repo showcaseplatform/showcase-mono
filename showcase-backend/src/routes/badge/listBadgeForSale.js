@@ -1,7 +1,7 @@
 /* eslint-disable promise/no-nesting */
 const axios = require('axios')
 const { firestore: db } = require('../../services/firestore')
-const { blockchainServer } = require('../../config')
+const { blockchain } = require('../../config')
 const functions = require('firebase-functions')
 
 module.exports = async (req, res) => {
@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     message,
     badgeid,
     badgeowner: user.crypto.address,
-    token: functions.config().blockchainauth.token,
+    token:  blockchain.authToken,
   }
 
   if (price < 0 || price > 200 || isNaN(price) || typeof price !== 'number') {
@@ -28,7 +28,7 @@ module.exports = async (req, res) => {
           let badgeRecord = snapshot.docs[0].data()
           if (badgeRecord.ownerId === user.uid) {
             return axios
-              .post(blockchainServer + '/addNonFungibleToEscrowWithSignatureRelay', postData)
+              .post(blockchain.server + '/addNonFungibleToEscrowWithSignatureRelay', postData)
               .then(async (response) => {
                 if (response && response.data && response.data.success) {
                   // do we make a new badge sale here? probably. then we will delete the badge from user profile on purchase

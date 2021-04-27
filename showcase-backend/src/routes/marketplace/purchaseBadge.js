@@ -1,8 +1,7 @@
 /* eslint-disable promise/no-nesting */
 const axios = require('axios')
-const functions = require('firebase-functions')
 const { firestore: db, FieldValue } = require('../../services/firestore')
-const { blockchainServer } = require('../../config')
+const { blockchain } = require('../../config')
 const stripe = require('../../services/stripe')
 
 module.exports = async (req, res) => {
@@ -112,11 +111,11 @@ module.exports = async (req, res) => {
                           const data = {
                             to: [user.crypto.address],
                             type: newBadgeTokenId,
-                            token: functions.config().blockchainauth.token,
+                            token: blockchain.authToken,
                           }
 
                           return axios
-                            .post(blockchainServer + '/mintBadge', data)
+                            .post(blockchain.server + '/mintBadge', data)
                             .then(async (response) => {
                               console.log('transfer badge response', response.data)
                               if (response.data.success) {

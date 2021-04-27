@@ -4,7 +4,7 @@ module.exports = (req, res) => {
   //if (req.user){
   //}
   const lastDocumentDate = req.query.lastdate
-  const requestedCategory = req.query.category.toLowerCase()
+  const requestedCategory =  req.query.category && req.query.category.toLowerCase()
 
   let feedQuery = db.collection('badgesales')
 

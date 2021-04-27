@@ -1,7 +1,7 @@
 /* eslint-disable promise/no-nesting */
 const axios = require('axios')
 const { firestore: db } = require('../../services/firestore')
-const { blockchainServer } = require('../../config')
+const { blockchain } = require('../../config')
 
 module.exports = async (req, res) => {
   let user = req.user.data()
@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
         let badgeRecord = snapshot.docs[0].data()
         if (badgeRecord.ownerId === user.uid) {
           return axios
-            .post(blockchainServer + '/removeBadgeFromEscrow', { badgeid })
+            .post(blockchain.server + '/removeBadgeFromEscrow', { badgeid })
             .then(async  (response) => {
               if (response && response.data && response.data.success) {
                 // now we need to delete the badge sale for this listing

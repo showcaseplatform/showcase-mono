@@ -5,13 +5,15 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
+    "start-dev": "ts-node-dev --respawn -- src/index.js",
+    "start-emulators": "npm run build & firebase emulators:start",
+    
     "serve": "firebase serve --only functions",
     "lint": "eslint .",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "start-emulators": "firebase emulators:start",
     "export-firestore": "firebase emulators:export seed",
     "import-firestore": "firebase emulators:import seed"
   },
@@ -48,6 +50,7 @@
     "eslint-plugin-promise": "^4.0.1",
     "firebase-functions-test": "^0.1.6",
     "prettier": "^2.2.1",
+    "ts-node-dev": "^1.1.6",
     "typescript": "^4.2.4"
   },
   "private": true

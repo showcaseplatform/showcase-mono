@@ -1,0 +1,14 @@
+const { client: algoliaClient } = require('../services/algolia')
+const { functions } = require('../services/firestore')
+
+const onUserIndexDeletionHandler = (client, snap, context) => {
+  const index = client.initIndex('users')
+  const objectID = context.params.uid
+  return index.deleteObject(objectID)
+}
+
+exports.userDeletionTrigger = functions.firestore
+  .document(`users/{uid}`)
+  .onDelete((snap, context) => {
+    return onUserIndexDeletionHandler(algoliaClient, snap, context)
+  })

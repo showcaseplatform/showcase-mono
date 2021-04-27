@@ -1,17 +1,20 @@
-const functions = require('firebase-functions')
-const { firestore: db } = require('./services/firestore')
+// import services
+const { functions } = require('./services/firestore')
 
-const axios = require('axios')
-const { client: algoliaClient } = require('./services/algolia')
+// Import triggers
+const { badgeSaleWriteTrigger } = require('./triggers/badgeSaleWrite')
+const { userDeletionTrigger } = require('./triggers/userDeletion')
+const { onUserWriteTrigger } = require('./triggers/userWrite')
+const { badgeSaleDeletionTrigger } = require('./triggers/badgeSaleIndexDeletion')
+const { followerCreateTrigger } = require('./triggers/followerCreate')
 
-const { onBadgeSaleWriteHandler } = require('./handlers/badgeSaleWrite')
-const { onUserIndexDeletionHandler } = require('./handlers/userIndexDeletion')
-const { onUserWriteHandler } = require('./handlers/userWrite')
-const { badgeSaleIndexDeletionHandler } = require('./handlers/badgeSaleIndexDeletion')
-const { scheduledFunctionHandler } = require('./handlers/scheduledFunction')
+// Import jobs
+const { updateExchangeRatesJob } = require('./jobs/updateExchangeRates')
 
+// Import middlewares
 const { globalErrorHandler } = require('./middlewares/globalErrorHandler')
 
+// Set up api server
 const express = require('express')
 const cookieParser = require('cookie-parser')()
 const cors = require('cors')({ origin: true })
@@ -19,36 +22,21 @@ const app = express()
 app.use(cors)
 app.use(cookieParser)
 
-// setup routes
+// Setup routes
 require('./routes')(app)
 
-// add error handling
+// Add error handling
 app.use(globalErrorHandler)
 
+// Api
 exports.app = functions.runWith({ timeoutSeconds: 540 }).https.onRequest(app)
 
-exports.scheduledFunction = functions.pubsub.schedule('30 16 * * *').onRun((context) => {
-  return scheduledFunctionHandler(axios, db, context)
-})
+// Jobs
+exports.updateExchangeRates = updateExchangeRatesJob
 
-exports.onUserWrite = functions.firestore.document('users/{uid}').onWrite((data, context) => {
-  return onUserWriteHandler(algoliaClient, data, context)
-})
-
-exports.userIndexDeletion = functions.firestore
-  .document(`users/{uid}`)
-  .onDelete((snap, context) => {
-    return onUserIndexDeletionHandler(algoliaClient, snap, context)
-  })
-
-exports.onBadgeSaleWrite = functions.firestore
-  .document('badgesales/{badgeId}')
-  .onWrite((data, context) => {
-    return onBadgeSaleWriteHandler(algoliaClient, data, context)
-  })
-
-exports.badgeSaleIndexDeletion = functions.firestore
-  .document(`badgesales/{badgeId}`)
-  .onDelete((snap, context) => {
-    return badgeSaleIndexDeletionHandler(algoliaClient, snap, context)
-  })
+// Triggers
+exports.onUserWrite = onUserWriteTrigger
+exports.onUserDeletion = userDeletionTrigger
+exports.onBadgeSaleWrite = badgeSaleWriteTrigger
+exports.onBadgeSaleDeletion = badgeSaleDeletionTrigger
+exports.onFollowerCreate = followerCreateTrigger

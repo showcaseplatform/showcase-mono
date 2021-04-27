@@ -1,5 +1,8 @@
+const { functions } = require('../services/firestore')
+const { client: algoliaClient } = require('../services/algolia')
+
 // Update the search index every time a blog post is written.
-exports.onUserWriteHandler = (client, data, context) => {
+const onUserWriteHandler = (client, data, context) => {
   // Get the note document
   const fullUser = data.after.data()
 
@@ -19,3 +22,9 @@ exports.onUserWriteHandler = (client, data, context) => {
   const index = client.initIndex('users')
   return index.saveObject(user)
 }
+
+exports.onUserWriteTrigger = functions.firestore
+  .document('users/{uid}')
+  .onWrite((data, context) => {
+    return onUserWriteHandler(algoliaClient, data, context)
+  })

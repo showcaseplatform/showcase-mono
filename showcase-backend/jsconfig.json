@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "paths": {
+            "@config/*": ["config/*"],
+            "@handlers/*": ["handlers/*"],
+            "@middlewares/*": ["middlewares/*"]
+        }
+    }
+}

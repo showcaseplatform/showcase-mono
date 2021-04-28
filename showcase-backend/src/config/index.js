@@ -1,5 +1,5 @@
 var convict = require('convict')
-require('dotenv').config();
+require('dotenv').config()
 
 // Add new format
 // convict.addFormat(require('convict-format-with-validator').ipaddress)
@@ -17,54 +17,53 @@ var config = convict({
       doc: 'Profile id for transferwise account',
       format: String,
       default: '',
-      env: "TRANSFERWISE_PROFILE",
+      env: 'TRANSFERWISE_PROFILE',
     },
     token: {
       doc: 'Authorization token for tranferwise account',
       format: String,
       default: '',
-      env: 'TRANSFERWISE_TOKEN'
+      env: 'TRANSFERWISE_TOKEN',
     },
   },
   stripe: {
     doc: 'Key to initialize stripe package',
     format: String,
-    default:
-      '',
-    env: 'STRIPE_KEY'
+    default: '',
+    env: 'STRIPE_KEY',
   },
   blockchain: {
     server: {
       doc: 'Url of the blockchain server',
       format: String, // todo: 'url' caused error
       default: '',
-      env: 'BLOCKCHAIN_SERVER'
+      env: 'BLOCKCHAIN_SERVER',
     },
     authToken: {
       doc: 'Authtentication token for blockchain server',
       format: String,
       default: '',
-      env: 'BLOCKCHAIN_AUTH_TOKEN'
-    }
+      env: 'BLOCKCHAIN_AUTH_TOKEN',
+    },
   },
   twilio: {
     account: {
       doc: 'Twillio account id',
       format: String,
       default: '',
-      env: 'TWILIO_ACCOUNT'
+      env: 'TWILIO_ACCOUNT',
     },
     token: {
       doc: 'Twillio authentication token',
       format: String,
       default: '',
-      env: 'TWILIO_TOKEN'
+      env: 'TWILIO_TOKEN',
     },
     from: {
       doc: 'Twillio messages are sent from this phone number',
       format: String,
       default: '',
-      env: 'TWILIO_FROM'
+      env: 'TWILIO_FROM',
     },
   },
   algolia: {
@@ -72,27 +71,35 @@ var config = convict({
       doc: 'Algolia ID',
       format: String,
       default: '',
-      env: 'ALGOLIA_ID'
+      env: 'ALGOLIA_ID',
     },
     adminKey: {
       doc: 'Algolia admin key',
       format: String,
       default: '',
-      env: 'ALGOLIA_ADMIN_KEY'
+      env: 'ALGOLIA_ADMIN_KEY',
     },
     // todo: currently searchKey not used anywhere
     searchKey: {
       doc: 'Algolia search key',
       format: String,
-      default: '', 
-      env: 'ALGOLIA_SEARCH_KEY'
+      default: '',
+      env: 'ALGOLIA_SEARCH_KEY',
     },
   },
   expo: {
-    doc: 'Url used to send push notifications',
-    format: String,
-    default: 'https://exp.host/--/api/v2/push/send'
-  }
+    server: {
+      doc: 'Url used to send push notifications',
+      format: String,
+      default: 'https://exp.host/--/api/v2/push/send',
+    },
+    token: {
+      doc: 'Access token if you have enabled push security',
+      format: String,
+      default: '',
+      env: 'EXPO_ACCESS_TOKEN'
+    }
+  },
 })
 
 // Load environment dependent configuration
@@ -100,6 +107,6 @@ var config = convict({
 // config.loadFile('./config/' + env + '.json');
 
 // throws error if config does not conform to schema
-config.validate({ allowed: 'strict' });
+config.validate({ allowed: 'strict' })
 
 module.exports = { ...config.getProperties() }

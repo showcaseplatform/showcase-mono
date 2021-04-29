@@ -1,10 +1,9 @@
-const admin = require('firebase-admin')
-const db = admin.firestore()
+import { firestore as db, auth } from '../services/firestore'
 
-exports.userAuthenticated = async (req, res, next) => {
+export const userAuthenticated = async (req, res, next) => {
   if (req.body.token) {
     try {
-      const decodedIdToken = await admin.auth().verifyIdToken(req.body.token)
+      const decodedIdToken = await auth().verifyIdToken(req.body.token)
       console.log('ID Token correctly decoded', decodedIdToken)
       let uid = decodedIdToken.uid
       req.user = await db.collection('users').doc(uid).get()

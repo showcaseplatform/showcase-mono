@@ -1,8 +1,7 @@
-/* eslint-disable promise/no-nesting */
 import { Response } from 'express'
 import { sendNotificationToFollowedUser } from '../../notifications/newFollower'
 import { firestore as db, FieldValue } from '../../services/firestore'
-import { IUser, Uid } from '../../types/user'
+import { User, Uid } from '../../types/user'
 
 const addNewFollowing = async (uid: Uid, followingUid: Uid) => {
   await db
@@ -35,7 +34,7 @@ const updateFollowersCount = async (followingUid: Uid) => {
 }
 
 export const addFriend = async (req: any, res: Response) => {
-  const { uid } = req.user.data() as IUser
+  const { uid } = req.user.data() as User
   const { userid: followingUid } = req.body.userid
   if (followingUid && uid) {
     try {

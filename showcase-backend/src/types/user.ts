@@ -1,19 +1,16 @@
-export interface IChat {
-  id: {
-    archived: boolean
-    chatId: string
-    lastMessage: string
-    lastMessageDate: Date
-    unreadMessageCount: number
-    username: string
-  }
-}
+import { Chat } from './chat'
 
 export type Currency = 'USD' | 'GBP' | 'USD'
 
 export type Uid = string
 
-export interface IUser {
+export type NotificationToken = string
+
+export interface Follower {
+  uid: Uid,
+  createdDate: Date
+}
+export interface User {
   areaCode: number
   avatar: string
   badgesCount: number
@@ -26,13 +23,13 @@ export interface IUser {
   birthDay: number
   birthMonth: number
   birthYear: number
-  chats: IChat[]
+  chats: Chat[]
   currency: Currency
   displayName: string
   followersCount: number
   followingCount: number
   liked: any[]
-  notificationToken?: string
+  notificationToken?: NotificationToken
   phoneLocal: string
   phoneNumber: string
   recentWithdrawalAmount: number
@@ -47,4 +44,5 @@ export interface IUser {
   transferwiseIdUSD: number
   uid: string
   username: string
+  banned?: boolean | string
 }

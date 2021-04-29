@@ -6,7 +6,7 @@ if (admin.apps.length === 0) {
   admin.initializeApp()
 }
 
-const auth = admin.auth()
+const auth = admin.auth
 const firestore = admin.firestore()
 const FieldValue = admin.firestore.FieldValue
 

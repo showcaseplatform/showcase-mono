@@ -1,4 +1,7 @@
+// Import packages
 import express from 'express'
+import cors from 'cors'
+import cookieParser from 'cookie-parser'
 
 // Import services
 import { functions } from './services/firestore'
@@ -19,11 +22,9 @@ import { globalErrorHandler } from './middlewares/globalErrorHandler'
 import { MainRouter } from './routes'
 
 // Set up api server
-const cookieParser = require('cookie-parser')()
-const cors = require('cors')({ origin: true })
 const app = express()
-app.use(cors)
-app.use(cookieParser)
+app.use(cors({ origin: true }))
+app.use(cookieParser())
 
 // Setup routes
 MainRouter(app)

@@ -7,7 +7,7 @@ const onUserIndexDeletionHandler = (client, snap, context) => {
   return index.deleteObject(objectID)
 }
 
-exports.userDeletionTrigger = functions.firestore
+export const userDeletionTrigger = functions.firestore
   .document(`users/{uid}`)
   .onDelete((snap, context) => {
     return onUserIndexDeletionHandler(algoliaClient, snap, context)

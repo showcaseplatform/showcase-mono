@@ -7,7 +7,7 @@ const badgeSaleDeletionHandler = (client, snap, context) => {
   return index.deleteObject(objectID)
 }
 
-exports.badgeSaleDeletionTrigger = functions.firestore
+export const badgeSaleDeletionTrigger = functions.firestore
   .document(`badgesales/{badgeId}`)
   .onDelete((snap, context) => {
     return badgeSaleDeletionHandler(algoliaClient, snap, context)

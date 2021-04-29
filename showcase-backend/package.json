@@ -5,7 +5,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
-    "start-dev": "ts-node-dev --respawn -- src/index.js",
+    "start-dev": "ts-node-dev --respawn -- src/index.ts",
     "start-emulators": "npm run build & firebase emulators:start",
     "serve": "firebase serve --only functions",
     "lint": "eslint .",
@@ -17,7 +17,7 @@
     "import-firestore": "firebase emulators:import seed"
   },
   "engines": {
-    "node": "12"
+    "node": "14"
   },
   "dependencies": {
     "algoliasearch": "^4.3.0",

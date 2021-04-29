@@ -17,7 +17,7 @@ const badgeSaleWriteHandler = (client, data, context) => {
   }
 }
 
-exports.badgeSaleWriteTrigger = functions.firestore
+export const badgeSaleWriteTrigger = functions.firestore
   .document('badgesales/{badgeId}')
   .onWrite((data, context) => {
     return badgeSaleWriteHandler(algoliaClient, data, context)

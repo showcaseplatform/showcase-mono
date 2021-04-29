@@ -23,7 +23,7 @@ const onUserWriteHandler = (client, data, context) => {
   return index.saveObject(user)
 }
 
-exports.onUserWriteTrigger = functions.firestore
+export const onUserWriteTrigger = functions.firestore
   .document('users/{uid}')
   .onWrite((data, context) => {
     return onUserWriteHandler(algoliaClient, data, context)

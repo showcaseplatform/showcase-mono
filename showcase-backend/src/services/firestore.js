@@ -9,4 +9,4 @@ if (admin.apps.length === 0) {
 const firestore = admin.firestore()
 const FieldValue = admin.firestore.FieldValue
 
-module.exports = { firestore, FieldValue, functions }
+export { firestore, FieldValue, functions }

@@ -63,3 +63,9 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+# compiled build directory
+dist/
+
+# seed data for database export-imports
+seed/

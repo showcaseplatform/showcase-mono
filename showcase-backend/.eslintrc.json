@@ -1,8 +1,12 @@
 {
   "parserOptions": {
     // Required for certain syntax usages
-    "ecmaVersion": 2017,
+    "ecmaVersion": 2018,
     "sourceType": "module"
+  },
+  "env": {
+    "node": true,
+    "es6": true
   },
   "plugins": ["promise", "prettier"],
   "extends": ["prettier"],
@@ -23,7 +27,7 @@
     "no-mixed-spaces-and-tabs": "off",
 
     // Removed rule "disallow the use of undeclared variables unless mentioned in /*global */ comments" from recommended eslint rules
-    "no-undef": "off",
+    "no-undef": 2,
 
     // Warn against template literal placeholder syntax in regular strings
     "no-template-curly-in-string": 1,
@@ -118,5 +122,6 @@
 
     // Warn against nested then() or catch() statements
     "promise/no-nesting": 1
+
   }
 }

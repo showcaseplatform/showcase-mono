@@ -3,17 +3,18 @@ import {
   GetPhoneCodeRequestBody,
   VerifyPhoneRequestBody,
 } from '../../types/auth'
-import { getPhoneCodeHandler } from './getPhoneCode'
+import { sendPhoneCode } from './sendPhoneCode'
 import { verifyPhoneCode } from './verifyPhoneCode'
 
 const AuthRouter = express.Router()
 
 AuthRouter.route('/getPhoneCode').post(async (req: Request, res: Response) => {
   const { phone, areaCode } = req.body as GetPhoneCodeRequestBody
-  const { success, error } = await getPhoneCodeHandler({ phone, areaCode })
+  const { success, error } = await sendPhoneCode({ phone, areaCode })
   if (success && !error) {
     res.status(200).send({ success })
   } else {
+    // todo: throw error instead and catch with middleware
     res.status(422).send({ success, error })
   }
 })

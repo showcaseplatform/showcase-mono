@@ -22,7 +22,7 @@ const sendError = (error: string): GetPhoneCodeResponse => {
   return { success: false, error }
 }
 
-const generatePhoneNumber = ({ areaCode, phone }: GetPhoneCodeRequestBody): Promise<string> => {
+const validatePhoneNumber = ({ areaCode, phone }: GetPhoneCodeRequestBody): Promise<string> => {
   const phoneNumber = `+${areaCode + phone}`
   return new Promise((resolve, reject) => {
     if (phone && areaCode && validator.isMobilePhone(phoneNumber)) {
@@ -49,7 +49,7 @@ const generateExpirationTime = (): number => {
   return Date.now() + 1 * CODE_EXPIRATION_SEC
 }
 
-const handleFirstRequest = async ({
+const handleFirstAttempt = async ({
   isNewUser,
   phoneNumber,
 }: {
@@ -77,14 +77,14 @@ const handleFirstRequest = async ({
   return { success: true }
 }
 
-const handleFollowingRequests = async ({
-  existingDoc,
+const handleFollowingAttempts = async ({
+  existingAttemptDoc,
   phoneNumber,
 }: {
-  existingDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
+  existingAttemptDoc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>
   phoneNumber: string
 }) => {
-  const existingAttempt = existingDoc.data() as SmsVerification
+  const existingAttempt = existingAttemptDoc.data() as SmsVerification
   if (
     existingAttempt.codesSent > MAX_CODE_SEND ||
     existingAttempt.attemptsEnteredSinceValid > MAX_ENTER_ATTEMP
@@ -105,12 +105,12 @@ const handleFollowingRequests = async ({
       expiration: generateExpirationTime(),
       code,
     }
-    await existingDoc.ref.update(updatedSettings)
+    await existingAttemptDoc.ref.update(updatedSettings)
     return { success: true }
   }
 }
 
-const handleSmsAuthRequests = async ({
+const sendSmsWithCode = async ({
   isNewUser,
   phoneNumber,
 }: {
@@ -118,11 +118,11 @@ const handleSmsAuthRequests = async ({
   phoneNumber: string
 }) => {
   let existingAttemptRef = db.collection('unverifiedsmsverifications').doc(phoneNumber.substring(1))
-  const existingDoc = await existingAttemptRef.get()
-  if (!existingDoc.exists) {
-    return handleFirstRequest({ isNewUser, phoneNumber })
+  const existingAttemptDoc = await existingAttemptRef.get()
+  if (!existingAttemptDoc.exists) {
+    return handleFirstAttempt({ isNewUser, phoneNumber })
   } else {
-    return handleFollowingRequests({ existingDoc, phoneNumber })
+    return handleFollowingAttempts({ existingAttemptDoc, phoneNumber })
   }
 }
 
@@ -138,14 +138,14 @@ const checkIfNewUser = async (phoneNumber: string) => {
   }
 }
 
-export const getPhoneCodeHandler = async ({
+export const sendPhoneCode = async ({
   phone,
   areaCode,
 }: GetPhoneCodeRequestBody): Promise<GetPhoneCodeResponse> => {
   try {
-    const phoneNumber = await generatePhoneNumber({ areaCode, phone })
+    const phoneNumber = await validatePhoneNumber({ areaCode, phone })
     const { isNewUser } = await checkIfNewUser(phoneNumber)
-    const { success } = await handleSmsAuthRequests({ isNewUser, phoneNumber })
+    const { success } = await sendSmsWithCode({ isNewUser, phoneNumber })
     return { success }
   } catch (error) {
     return sendError(error)

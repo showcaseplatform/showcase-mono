@@ -5,7 +5,6 @@ import { v5 as uuidv5 } from 'uuid'
 import {
   PhoneNumber,
   SmsVerification,
-  TwilioSmsInput,
   VerifyPhoneCodeResponse,
   VerifyPhoneRequestBody,
 } from '../../types/auth'
@@ -67,8 +66,8 @@ const incrementVerificationCount = async (
   })
 }
 
-const validatePhoneCode = async ({ phoneNumber, code }: TwilioSmsInput) => {
-  const verificationRef = db.collection('unverifiedsmsverifications').doc(phoneNumber)
+const validatePhoneCode = async ({ areaCode, phone, code }: VerifyPhoneRequestBody) => {
+  const verificationRef = db.collection('unverifiedsmsverifications').doc(`${areaCode + phone}`)
   const verificationSnapshot = await verificationRef.get()
 
   if (!verificationSnapshot.exists) {
@@ -96,11 +95,10 @@ const validatePhoneCode = async ({ phoneNumber, code }: TwilioSmsInput) => {
 
 const createUser = async ({ phone, areaCode }: PhoneNumber) => {
   const customUserId = uuidv5(phone, uuidNamespace)
+  const phoneNumber = `+${areaCode + phone}`
 
-  const user = await auth().createUser({
-    phoneNumber: '+' + areaCode + '' + phone,
-    // phoneLocal: phone, // todo: this is not allowed
-    // areaCode: areaCode, // todo: this is not allowed
+  const { uid } = await auth().createUser({
+    phoneNumber,
     uid: customUserId,
   })
   let userCurrency = 'USD' //default USD
@@ -113,9 +111,9 @@ const createUser = async ({ phone, areaCode }: PhoneNumber) => {
 
   await db
     .collection('users')
-    .doc(user.uid)
+    .doc(uid)
     .set({
-      phoneNumber: '+' + areaCode + '' + phone,
+      phoneNumber,
       phoneLocal: phone,
       areaCode: areaCode,
       liked: {},
@@ -132,13 +130,12 @@ const createUser = async ({ phone, areaCode }: PhoneNumber) => {
       },
     })
 
-  return { uid: user.uid }
+  return { uid }
 }
 
 const getUserUid = async ({ phone, areaCode }: PhoneNumber) => {
-  const phoneNumber = areaCode + '' + phone
   try {
-    const { uid } = await auth().getUserByPhoneNumber('+' + phoneNumber)
+    const { uid } = await auth().getUserByPhoneNumber(`+${areaCode + phone}`)
     return { uid, newUser: false }
   } catch (error) {
     console.log('Get user error', { error })
@@ -156,8 +153,7 @@ export const verifyPhoneCode = async ({
   areaCode,
 }: VerifyPhoneRequestBody): Promise<VerifyPhoneCodeResponse> => {
   try {
-    const phoneNumber = areaCode + '' + phone
-    await validatePhoneCode({ phoneNumber, code })
+    await validatePhoneCode({ areaCode, phone, code })
     const { uid, newUser } = await getUserUid({ phone, areaCode })
     const token = await auth().createCustomToken(uid)
     return { token, newUser }

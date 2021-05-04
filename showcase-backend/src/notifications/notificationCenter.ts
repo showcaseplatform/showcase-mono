@@ -1,13 +1,13 @@
-import axios from 'axios'
-import { expo as expoConfig } from '../config'
-import { firestore as db } from '../services/firestore'
+import { FieldValue, firestore as db } from '../services/firestore'
 import {
   NotificationDocument,
-  NotificationMessageInput,
-  PushNotifcationData,
-  NotificationType,
+  NotificationName,
+  NotificationInput,
+  NotificationTrackerInput,
+  PushMessage,
+  NotificationTrackerDoc,
 } from '../types/notificaton'
-import { Uid } from '../types/user'
+import { Uid, User } from '../types/user'
 import {
   expo,
   Expo,
@@ -17,6 +17,14 @@ import {
   ExpoPushTicket,
 } from '../services/expo'
 
+// To track a notifcation, add it to this array
+const TRACKED_NOTIFICATIONS = [NotificationName.NEW_BADGE_PUBLISHED]
+
+// To limit number of push notication sent to a specific user, modify this
+const MAX_PUSH_SEND_NUMBER: NotificationTrackerDoc = {
+  [NotificationName.NEW_BADGE_PUBLISHED]: 2,
+}
+
 class NotificationCenter {
   expo: Expo
 
@@ -24,96 +32,140 @@ class NotificationCenter {
     this.expo = expo
   }
 
-  saveNotificationToDb = async (
-    title: string,
-    body: string,
-    user: Uid,
-    data: PushNotifcationData,
-    type: NotificationType
-  ) => {
+  sendPushNotificationBatch = async (inputMessages: NotificationInput[]) => {
     try {
-      const notificationDoc: NotificationDocument = {
-        title,
-        body,
-        user,
-        createdAt: new Date(),
-        data,
-        read: false,
-        type: type || 'normal',
-      }
-      await db.collection('notifications').add(notificationDoc)
-      console.log('Notification  saved to db', notificationDoc)
+      const pushMessages = await this.validateInputMessages(inputMessages)
+      await this.savePushMessages(pushMessages)
+      const filteredPushMessages = await this.filterPushMessages(pushMessages)
+      const tickets = await this.sendPushMessagesToExpo(filteredPushMessages)
+      await this.saveNotifcationTickets(tickets)
     } catch (error) {
-      console.error('Notification could not be saved to db', error)
+      console.error('sendPushNotificationBatch failed', error)
     }
   }
 
-  sendPushNotification = async (
-    to: string,
-    title: string,
-    body: string,
-    data?: PushNotifcationData
-  ) => {
-    const message = {
-      to,
-      sound: 'default',
-      title,
-      body,
-      data,
-      _displayInForeground: true, // todo: is this working?
-    }
-
+  changeUnreadCount = async ({ uid, change }: { uid: Uid; change: number }) => {
     try {
-      const response = await axios({
-        url: expoConfig.server,
-        method: 'post',
-        headers: {
-          Accept: 'application/json',
-          'Accept-encoding': 'gzip, deflate',
-          'Content-Type': 'application/json',
-        },
-        data: message,
-      })
-      console.log('SENT NOTIFICATION', response)
-      return true
+      await db
+        .collection('users')
+        .doc(uid)
+        .collection('notifications')
+        .doc('unRead')
+        .set({ count: FieldValue.increment(change) })
     } catch (error) {
-      console.log('ERR SENDING NOTIFICATION', error)
-      return true
+      console.error('incrementUnreadCount failed', error)
     }
   }
 
-  sendPushNotificationBatch = async (inputMessages: NotificationMessageInput[]) => {
-    let messages: ExpoPushMessage[] = []
-    for (let message of inputMessages) {
-      // Each push token looks like ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
-      // Check that all your push tokens appear to be valid Expo push tokens
-      if (!Expo.isExpoPushToken(message.to)) {
-        console.error(`Push token ${message.to} is not a valid Expo push token`)
-        continue
-      }
-      messages.push({...message, sound: 'default'})
-    }
+  private filterPushMessages = async (messages: PushMessage[]) => {
+    return messages.filter(async ({ uid, name }) => {
+      const trackerDoc = await db.collection('notificationTrackers').doc(uid).get()
+      const trackedValue = (trackerDoc.data() as NotificationTrackerDoc)[name]
+      const limit = MAX_PUSH_SEND_NUMBER[name]
 
-    // The Expo push notification service accepts batches of notifications so
-    // that you don't need to send 1000 requests to send 1000 notifications. We
-    // recommend you batch your notifications to reduce the number of requests
-    // and to compress them (notifications with similar content will get
-    // compressed).
-    let chunks = expo.chunkPushNotifications(messages)
-    let tickets: ExpoPushTicket[] = []
+      if (trackerDoc.exists && trackedValue && limit) {
+        return trackedValue < limit ? true : false
+      } else {
+        return true
+      }
+    })
+  }
+
+  private getUserToken = async (uid: Uid) => {
+    const userDoc = await db.collection('users').doc(uid).get()
+    const { notificationToken = null } = userDoc.data() as User
+    return { notificationToken }
+  }
+
+  private trackNotification = async ({ name, uid }: NotificationTrackerInput) => {
+    try {
+      await db
+        .collection('notificationTrackers')
+        .doc(uid)
+        .set({ [name]: FieldValue.increment(1) })
+    } catch (error) {
+      console.error('trackNotification failed: ', error)
+    }
+  }
+
+  private sendPushMessagesToExpo = async (messages: PushMessage[]) => {
+    const expoPushMessages: ExpoPushMessage[] = messages.map(({ to, data, body, title }) => {
+      return { to, data, body, title, sound: 'default', _displayInForeground: true }
+    })
+    const chunks = expo.chunkPushNotifications(expoPushMessages)
+    const tickets: ExpoPushTicket[] = []
 
     // Send the chunks to the Expo push notification service.
     await Promise.all(
       chunks.map(async (chunk) => {
         try {
-          let ticketChunk = await expo.sendPushNotificationsAsync(chunk)
+          const ticketChunk = await expo.sendPushNotificationsAsync(chunk)
           tickets.push(...ticketChunk)
         } catch (error) {
           console.error(error)
         }
       })
     )
-    await this.saveNotifcationTickets(tickets)
+
+    return tickets
+  }
+
+  private validateInputMessages = async (inputMessages: NotificationInput[]) => {
+    let pushMessages: PushMessage[] = []
+
+    for (let message of inputMessages) {
+      const { name, uid, title, body, data } = message
+      const { notificationToken } = await this.getUserToken(uid)
+      if (!Expo.isExpoPushToken(notificationToken)) {
+        console.error(`Push token ${notificationToken} is not a valid Expo push token`)
+        continue
+      }
+      pushMessages.push({ to: notificationToken, title, body, data, name, uid })
+    }
+
+    return pushMessages
+  }
+
+  private savePushMessages = async (messages: PushMessage[]) => {
+    try {
+      messages.forEach(async (message) => {
+        await this.saveNotificationData({ ...message, type: 'push' })
+      })
+    } catch (error) {
+      console.error('savePushMessages failed: ', error)
+    }
+  }
+
+  private saveNotificationData = async ({
+    name,
+    uid,
+    title,
+    body,
+    data,
+    type = 'normal',
+    read = false,
+  }: NotificationDocument) => {
+    try {
+      const notificationDoc: NotificationDocument = {
+        name,
+        title,
+        body,
+        uid,
+        data,
+        read,
+        type,
+      }
+      await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
+      if (!read) {
+        await this.changeUnreadCount({ uid, change: 1 })
+      }
+      if (TRACKED_NOTIFICATIONS.indexOf(name) > -1) {
+        await this.trackNotification({ name, uid })
+      }
+      console.log('Notification  saved to db', notificationDoc)
+    } catch (error) {
+      console.error('Notification could not be saved to db', error)
+    }
   }
 
   // todo: how to deal with error tickets?
@@ -148,6 +200,7 @@ class NotificationCenter {
                 // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
                 // You must handle the errors appropriately.
                 console.error(`The error code is ${details.error}`)
+                this.saveErrorReceipt({ status, message, details })
               }
             }
           }
@@ -161,23 +214,30 @@ class NotificationCenter {
   private saveNotifcationTickets = async (tickets: ExpoPushTicket[]) => {
     for (let ticket of tickets) {
       try {
-        await db.collection('expotickets').add(ticket)
+        await db.collection('expoTickets').add(ticket)
       } catch (error) {
         console.error('Expo push ticket coudnt be saved', error)
       }
     }
   }
 
+  private saveErrorReceipt = async (receipt: ExpoPushErrorReceipt) => {
+    try {
+      await db.collection('expoErrorReceipts').add(receipt)
+    } catch (error) {
+      console.error('Expo push error receipt coudnt be saved', error)
+    }
+  }
+
   private getNotifcationTickets = async (): Promise<ExpoPushTicket[]> => {
     try {
-      const snapshot = await db.collection('expotickets').get()
+      const snapshot = await db.collection('expoTickets').get()
       return snapshot.docs.map((doc) => doc.data() as ExpoPushTicket)
     } catch (error) {
       console.error('Expo push ticket coudnt be downloaded', error)
       return []
     }
   }
-
 }
 
 export const notificationCenter = new NotificationCenter()

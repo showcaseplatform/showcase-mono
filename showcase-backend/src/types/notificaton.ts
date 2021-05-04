@@ -1,32 +1,56 @@
 import { Uid } from './user'
 
-export interface NotificationMessageInput {
-  to: string
-  title?: string
-  body?: string
-  data?: PushNotifcationData
+// add new notification type here
+export enum NotificationName {
+  NEW_BADGE_PUBLISHED = 'NEW_BADGE_PUBLISHED',
+  NEW_FOLLOWER_ADDED = 'NEW_FOLLOWER_ADDED',
+  NEW_MESSAGE_RECEIVED = 'NEW_MESSAGE_RECEIVED',
+  SOLD_BADGES_SUMMARY = 'SOLD_BADGES_SUMMARY',
+  MOST_VIEWED_BADGE = 'MOST_VIEWED_BADGE'
 }
-export interface PushNotifcation extends NotificationMessageInput {
-  sound?: 'default' | null
-  badge?: number  // Number to display in the badge on the app icon. Specify zero to clear the badge
-}
+
+export type NotificationType = 'push' | 'normal'
+export type NotifcationToken = string
 export interface PushNotifcationData {
-  to?: string
+  to?: NotifcationToken
   sent?: Date
   read?: boolean
   message?: string
   from?: Uid
   users?: Uid[]
 }
+export interface NotifcationBase {
+  title?: string
+  body?: string
+  data?: PushNotifcationData
+}
 
-export type NotificationType = 'push' | 'normal'
+export interface NotificationInput extends NotifcationBase {
+  name: NotificationName
+  uid: Uid
+}
+
+export interface PushMessage extends NotificationInput {
+  to: NotifcationToken
+}
 
 export interface NotificationDocument {
-  title: string
-  body: string
-  user: Uid
-  createdAt: Date
-  data: PushNotifcationData
-  read: boolean
-  type: NotificationType
+  name: NotificationName
+  uid: Uid
+  title?: string
+  body?: string
+  data?: PushNotifcationData
+  read?: boolean
+  type?: NotificationType
 }
+
+export interface NotificationTrackerInput {
+  name: NotificationName
+  uid: Uid
+}
+
+type TrackerRecord<K extends keyof any, T> = {
+  [P in K]?: T;
+};
+
+export type NotificationTrackerDoc = TrackerRecord<NotificationName, number>

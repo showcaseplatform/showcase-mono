@@ -4,26 +4,24 @@ import { ApiRequest } from '../types/request'
 import { User } from '../types/user'
 
 export const userAuthenticated = async (req: ApiRequest, res: Response, next: any) => {
-  const { token } = req?.body
-  if (token) {
-    try {
-      const decodedIdToken = await auth().verifyIdToken(token)
-      console.log('ID Token correctly decoded', decodedIdToken)
-      const uid = decodedIdToken.uid
-      const userDoc = await db.collection('users').doc(uid).get()
-      const user = userDoc.data() as User
-      if (user.banned === true || user.banned === 'true') {
-        return res.status(403).send('Unauthorized')
-      } else {
-        req.user = user
-        return next()
-      }
-    } catch (error) {
-      console.error('Error while verifying Firebase ID token:', error)
-      return res.status(403).send('Unauthorized')
+  try {
+    const token = req.headers?.authorization
+    if (!token) throw 'Missing authentication token'
+
+    const { uid } = await auth().verifyIdToken(token.replace('Bearer ', ''))
+    const userDoc = await db.collection('users').doc(uid).get()
+
+    if (!userDoc.exists) throw 'User doesnt exists'
+
+    const user = userDoc.data() as User
+    if (user.banned === true || user.banned === 'true') {
+      return res.status(401).send('Unauthorized')
+    } else {
+      req.user = user
+      return next()
     }
-  } else {
-    console.error('Missing AUTHENTICATION token')
-    return res.status(403).send('Unauthorized')
+  } catch (error) {
+    console.error('Error while verifying Firebase ID token:', error)
+    return res.status(401).send('Unauthorized')
   }
 }

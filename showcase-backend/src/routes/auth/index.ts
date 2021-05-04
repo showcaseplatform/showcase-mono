@@ -8,7 +8,7 @@ import { verifyPhoneCode } from './verifyPhoneCode'
 
 const AuthRouter = express.Router()
 
-AuthRouter.route('/getPhoneCode').post(async (req: Request, res: Response) => {
+AuthRouter.route('/sendPhoneCode').post(async (req: Request, res: Response) => {
   const { phone, areaCode } = req.body as GetPhoneCodeRequestBody
   const { success, error } = await sendPhoneCode({ phone, areaCode })
   if (success && !error) {

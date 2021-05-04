@@ -1,6 +1,4 @@
-/* eslint-disable promise/no-nesting */
-import { auth } from 'firebase-admin'
-import { firestore as db, FieldValue } from '../../services/firestore'
+import { auth, firestore as db, FieldValue } from '../../services/firestore'
 import { v5 as uuidv5 } from 'uuid'
 import {
   PhoneNumber,

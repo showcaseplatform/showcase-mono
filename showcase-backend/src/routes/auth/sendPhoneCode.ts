@@ -1,7 +1,5 @@
-/* eslint-disable promise/no-nesting */
-import { auth } from 'firebase-admin'
 import validator from 'validator'
-import { firestore as db, FieldValue } from '../../services/firestore'
+import { auth, firestore as db, FieldValue } from '../../services/firestore'
 import { twilio as twilioConfig } from '../../config'
 import { twilio } from '../../services/twilio'
 import {
@@ -61,8 +59,8 @@ const handleFirstAttempt = async ({
     code,
     expiration: generateExpirationTime(),
     valid: true,
-    codesSent: 0,
-    codesSentSinceValid: 0,
+    codesSent: 1,
+    codesSentSinceValid: 1,
     attemptsEnteredSinceValid: 0,
     attemptsEntered: 0,
   }

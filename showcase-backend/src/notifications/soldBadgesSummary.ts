@@ -1,10 +1,11 @@
 import { firestore as db } from '../services/firestore'
 import moment from 'moment'
 import { IReceipt } from '../types/receipt'
-import { User, Uid } from '../types/user'
-import { NotificationMessageInput } from '../types/notificaton'
+import { Uid } from '../types/user'
 import { notificationCenter } from './notificationCenter'
+import { NotificationInput, NotificationName } from '../types/notificaton'
 
+// todo: currently this notification is not used
 interface IBadgesSoldRecordValue {
   USD: number
   GBP: number
@@ -25,7 +26,7 @@ const getAllReceiptsFromLastWeek = async (db: FirebaseFirestore.Firestore) => {
 
 const getSummaryOfSoldBadgesByCreators = (
   receipts: IReceipt[]
-): Record<string, IBadgesSoldRecordValue> => {
+): Record<Uid, IBadgesSoldRecordValue> => {
   return receipts.reduce((acc, curr) => {
     if (acc[curr.creator]) {
       if (acc[curr.creator][curr.saleCurrency]) {
@@ -42,38 +43,30 @@ const getSummaryOfSoldBadgesByCreators = (
   }, {} as any)
 }
 
-const getNotificationTokenForUser = async (uid: Uid) => {
-  const userDocument = await db.collection('receipts').doc(uid).get()
-  if (!userDocument.exists) return null
-  return ((userDocument.data() as unknown) as User).notificationToken
-}
-
-const getMessagesForCreators = async (dictionary: Record<string, IBadgesSoldRecordValue>) => {
-  let messages: NotificationMessageInput[] = []
-  for (const [key, value] of Object.entries(dictionary)) {
-    const to = await getNotificationTokenForUser(key)
+const getMessagesForCreators = async (dictionary: Record<Uid, IBadgesSoldRecordValue>) => {
+  let inputMessages: NotificationInput[] = []
+  for (const [uid, value] of Object.entries(dictionary)) {
     const title = `Weekly recap:`
     const body = `You sold ${value.count} badges this week for a total of ${
       value.USD ? '$' + value.USD + ' ' : ''
     }  ${value.EUR ? '€' + value.EUR + ' ' : ''} ${value.GBP ? '£' + value.GBP + ' ' : ''}`
 
-    if (to?.length) {
-      messages.push({
-        to,
-        title,
-        body,
-      })
-    }
+    inputMessages.push({
+      name: NotificationName.SOLD_BADGES_SUMMARY,
+      uid,
+      title,
+      body,
+    })
   }
-  return messages
+  return inputMessages
 }
 
 export const sendSoldBadgesSummary = async () => {
   try {
     const receipts = await getAllReceiptsFromLastWeek(db)
     const soldBagesSummary = getSummaryOfSoldBadgesByCreators(receipts)
-    const messages = await getMessagesForCreators(soldBagesSummary)
-    await notificationCenter.sendPushNotificationBatch(messages)
+    const inputMessages = await getMessagesForCreators(soldBagesSummary)
+    await notificationCenter.sendPushNotificationBatch(inputMessages)
   } catch (error) {
     console.error('Sending sold badges summary failed', error)
   }

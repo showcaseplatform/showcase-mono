@@ -86,7 +86,7 @@ class NotificationCenter {
       await db
         .collection('notificationTrackers')
         .doc(uid)
-        .set({ [name]: FieldValue.increment(1) })
+        .set({ [name]: FieldValue.increment(1) }, { merge: true })
     } catch (error) {
       console.error('trackNotification failed: ', error)
     }

@@ -20,6 +20,7 @@ import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
 // Import routing
 import { MainRouter } from './routes'
+import { periodEndJob } from './jobs/periodEnd'
 
 // Set up api server
 const app = express()
@@ -37,6 +38,7 @@ export const api = functions.runWith({ timeoutSeconds: 540 }).https.onRequest(ap
 
 // Jobs
 export const updateExchangeRates = updateExchangeRatesJob
+export const onPeriodEnd = periodEndJob 
 
 // Triggers
 export const onUserWrite = onUserWriteTrigger

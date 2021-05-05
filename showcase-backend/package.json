@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "shell": "firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
+    "deploy-dev": "firebase use dev & firebase deploy --only functions",
+    "deploy-prod": "firebase use prod & firebase deploy --only functions",
     "logs": "firebase functions:log",
     "export-firestore": "firebase emulators:export seed",
     "import-firestore": "firebase emulators:exec --import=seed"

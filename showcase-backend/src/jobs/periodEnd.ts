@@ -1,4 +1,4 @@
-import { sendMostViewedBadgeInPeriod } from '../notifications/mostViewBadge'
+import { sendMostViewedBadgeInPeriod } from '../notifications/mostViewedBadge'
 import { resetNotificationTrackers } from '../notifications/resetNotificationTrackers'
 import { functions } from '../services/firestore'
 

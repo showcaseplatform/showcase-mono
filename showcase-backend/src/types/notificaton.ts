@@ -18,6 +18,7 @@ export interface PushNotifcationData {
   message?: string
   from?: Uid
   users?: Uid[]
+  badgeId?: string
 }
 export interface NotifcationBase {
   title?: string

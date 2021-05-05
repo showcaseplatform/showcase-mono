@@ -1,6 +1,7 @@
-const { firestore: db } = require('../../services/firestore')
+/* eslint-disable promise/no-nesting */
+import { firestore as db } from '../../services/firestore'
 
-module.exports = (req, res) => {
+export const readMessageThread =  (req, res) => {
   let user = req.user.data()
   const { userId, chatId } = req.body
   console.log('BODY READ MSG', req.body)

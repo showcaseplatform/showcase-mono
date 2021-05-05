@@ -2,7 +2,6 @@
 const axios = require('axios')
 const { firestore: db } = require('../../services/firestore')
 const { blockchain } = require('../../config')
-const functions = require('firebase-functions')
 
 module.exports = async (req, res) => {
   let user = req.user.data()

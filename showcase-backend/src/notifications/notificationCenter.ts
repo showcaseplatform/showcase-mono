@@ -18,11 +18,15 @@ import {
 } from '../services/expo'
 
 // To track a notifcation, add it to this array
-const TRACKED_NOTIFICATIONS = [NotificationName.NEW_BADGE_PUBLISHED]
+const TRACKED_NOTIFICATIONS = [
+  NotificationName.NEW_BADGE_PUBLISHED,
+  NotificationName.NEW_FOLLOWER_ADDED,
+]
 
 // To limit number of push notication sent to a specific user, modify this
 const MAX_PUSH_SEND_NUMBER: NotificationTrackerDoc = {
   [NotificationName.NEW_BADGE_PUBLISHED]: 2,
+  [NotificationName.NEW_FOLLOWER_ADDED]: 100,
 }
 
 class NotificationCenter {

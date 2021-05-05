@@ -3,6 +3,7 @@ const axios = require('axios')
 const admin = require('firebase-admin')
 const db = admin.firestore()
 const { blockchain } = require('../../config')
+const { sendNotificationToFollowersAboutNewBadge } = require('../../notifications/newBadgePublished')
 
 module.exports = async (req, res) => {
   let user = req.user.data()
@@ -124,8 +125,9 @@ module.exports = async (req, res) => {
               .collection('badgesales')
               .doc(id)
               .set(badgeDoc)
-              .then((docRef) => {
+              .then(async (docRef) => {
                 console.log('Updated badge data')
+                await sendNotificationToFollowersAboutNewBadge(user.id)
                 return res.json({ badgeSaleId: docRef.id })
               })
               .catch((err) => {

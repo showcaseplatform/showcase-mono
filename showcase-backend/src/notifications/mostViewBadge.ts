@@ -27,14 +27,14 @@ const getAllViewedBadgeIds = async () => {
 }
 
 const deleteViewCountForBadges = async (badgeIds: string[]) => {
-  for (const id in badgeIds) {
+  for (const id of badgeIds) {
     await db.collection('badgeViewsInCurrentPeriod').doc(id).delete()
   }
 }
 
 const getMessagesForAll = ({ uids, badgeId }: { uids: Uid[]; badgeId: string }) => {
   let inputMessages: NotificationInput[] = []
-  for (const uid in uids) {
+  for (const uid of uids) {
     const title = `Check out the hottest badges on Showcase this week!`
     const body = ``
     const data = {

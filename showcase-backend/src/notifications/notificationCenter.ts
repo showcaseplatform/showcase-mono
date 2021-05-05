@@ -204,7 +204,7 @@ class NotificationCenter {
                 // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
                 // You must handle the errors appropriately.
                 console.error(`The error code is ${details.error}`)
-                this.saveErrorReceipt({ status, message, details })
+                await this.saveErrorReceipt({ status, message, details })
               }
             }
           }

@@ -1,7 +1,6 @@
 /* eslint-disable promise/no-nesting */
-const admin = require('firebase-admin')
+const { auth, firestore: db, FieldValue } = require('../../services/firestore')
 var validator = require('validator')
-const { firestore: db, FieldValue } = require('../../services/firestore')
 const { twilio: twilioConfig } = require('../../config')
 const twilio = require('twilio')(twilioConfig.account, twilioConfig.token)
 
@@ -17,8 +16,7 @@ module.exports = (req, res) => {
   if (!phone || !areaCode || !validator.isMobilePhone(phone))
     return res.status(422).send({ error: 'Invalid mobile phone number format' })
   console.log(1)
-  return admin
-    .auth()
+  return auth()
     .getUserByPhoneNumber('+' + areaCode + '' + phone)
     .then((user) => {
       let existingAttemptRef = db.collection('unverifiedsmsverifications').doc(areaCode + phone)

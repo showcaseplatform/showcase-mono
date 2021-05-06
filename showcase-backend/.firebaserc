@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "showcase-app-2b04e"
+    "default": "showcase-app-2b04e",
+    "dev": "showcase-dev-7507d"
   }
 }

@@ -1,14 +1,12 @@
 /* eslint-disable promise/no-nesting */
-const admin = require('firebase-admin')
-const { firestore: db, FieldValue } = require('../../services/firestore')
+const { firestore: db, FieldValue, auth } = require('../../services/firestore')
 const { v5: uuidv5 } = require('uuid')
 const uuidNamespace = 'b01abb38-c109-4b71-9136-a2aa73ddde27' // todo: maybe outsource to config
 
 module.exports = (req, res) => {
   const sendError = (error) => res.status(422).send(error)
   const { code, phone, areaCode } = req.body
-  return admin
-    .auth()
+  return auth()
     .getUserByPhoneNumber('+' + areaCode + '' + phone)
     .then((user) => {
       console.log('Has user', user)
@@ -52,7 +50,7 @@ module.exports = (req, res) => {
           return Promise.resolve(user.uid)
         })
         .then((uid) => {
-          return admin.auth().createCustomToken(uid)
+          return auth().createCustomToken(uid)
         })
         .then((token) => {
           return res.send({ token })
@@ -107,8 +105,7 @@ module.exports = (req, res) => {
               console.log('CREADTING NEW USER!!')
               let newId = uuidv5(phone, uuidNamespace)
 
-              return admin
-                .auth()
+              return auth()
                 .createUser({
                   phoneNumber: '+' + areaCode + '' + phone,
                   phoneLocal: phone,
@@ -175,7 +172,7 @@ module.exports = (req, res) => {
                       },
                     })
                     .then((userdoc) => {
-                      return admin.auth().createCustomToken(user.uid)
+                      return auth().createCustomToken(user.uid)
                     })
                     .then((token) => {
                       return res.send({ token, newUser: true })

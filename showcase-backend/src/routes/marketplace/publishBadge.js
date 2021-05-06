@@ -1,7 +1,6 @@
 /* eslint-disable promise/no-nesting */
 const axios = require('axios')
-const admin = require('firebase-admin')
-const db = admin.firestore()
+const { firestore: db } = require('../../services/firestore')
 const { blockchain } = require('../../config')
 
 module.exports = async (req, res) => {

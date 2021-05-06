@@ -5,14 +5,14 @@ const crypto = require('crypto')
 
 //creates crypto wallet for nft storage
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
 
   const { password, hint } = req.body
 
   // check auth
   // check for wallet existing
   // if not wallet continue
-  //console.log("CREATING WALLET", req.user.data());
+  //console.log("CREATING WALLET", req.user);
 
   const mnemonic = bip39.generateMnemonic()
   const seed = bip39.mnemonicToSeedSync(mnemonic)

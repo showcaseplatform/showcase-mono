@@ -1,5 +1,5 @@
 import { firestore as db } from '../services/firestore'
-import { NotificationInput, NotificationName } from '../types/notificaton'
+import { NotificationMessageInput, NotificationName } from '../types/notificaton'
 import { Follower, Uid, User } from '../types/user'
 import { notificationCenter } from './notificationCenter'
 
@@ -18,7 +18,7 @@ const getCreatorDetails = async (uid: Uid) => {
 }
 
 const getMessagesForFollowers = async (publisherName: string, followerUids: Uid[]) => {
-  let inputMessages: NotificationInput[] = []
+  let inputMessages: NotificationMessageInput[] = []
   for (const uid in followerUids) {
     const title = `${publisherName} just dropped a new badge! 👀`
 

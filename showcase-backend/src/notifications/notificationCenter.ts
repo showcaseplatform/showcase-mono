@@ -1,8 +1,8 @@
 import { FieldValue, firestore as db } from '../services/firestore'
 import {
-  NotificationDocument,
+  NotificationDocumentData,
   NotificationName,
-  NotificationInput,
+  NotificationMessageInput,
   NotificationTrackerInput,
   PushMessage,
   NotificationTrackerDoc,
@@ -36,7 +36,7 @@ class NotificationCenter {
     this.expo = expo
   }
 
-  sendPushNotificationBatch = async (inputMessages: NotificationInput[]) => {
+  sendPushNotificationBatch = async (inputMessages: NotificationMessageInput[]) => {
     try {
       const pushMessages = await this.validateInputMessages(inputMessages)
       await this.savePushMessages(pushMessages)
@@ -114,7 +114,7 @@ class NotificationCenter {
     return tickets
   }
 
-  private validateInputMessages = async (inputMessages: NotificationInput[]) => {
+  private validateInputMessages = async (inputMessages: NotificationMessageInput[]) => {
     let pushMessages: PushMessage[] = []
 
     for (let message of inputMessages) {
@@ -148,9 +148,9 @@ class NotificationCenter {
     data,
     type = 'normal',
     read = false,
-  }: NotificationDocument) => {
+  }: NotificationDocumentData) => {
     try {
-      const notificationDoc: NotificationDocument = {
+      const notificationDoc: NotificationDocumentData = {
         name,
         title,
         body,

@@ -1,5 +1,5 @@
 import { FieldValue, firestore as db } from '../services/firestore'
-import { NotificationInput, NotificationName } from '../types/notificaton'
+import { NotificationMessageInput, NotificationName } from '../types/notificaton'
 import { Uid, User } from '../types/user'
 import { notificationCenter } from './notificationCenter'
 
@@ -33,7 +33,7 @@ const deleteViewCountForBadges = async (badgeIds: string[]) => {
 }
 
 const getMessagesForAll = ({ uids, badgeId }: { uids: Uid[]; badgeId: string }) => {
-  let inputMessages: NotificationInput[] = []
+  let inputMessages: NotificationMessageInput[] = []
   for (const uid of uids) {
     const title = `Check out the hottest badges on Showcase this week!`
     const body = ``

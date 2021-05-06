@@ -3,7 +3,7 @@ import moment from 'moment'
 import { IReceipt } from '../types/receipt'
 import { Uid } from '../types/user'
 import { notificationCenter } from './notificationCenter'
-import { NotificationInput, NotificationName } from '../types/notificaton'
+import { NotificationMessageInput, NotificationName } from '../types/notificaton'
 
 // todo: currently this notification is not used
 interface IBadgesSoldRecordValue {
@@ -44,7 +44,7 @@ const getSummaryOfSoldBadgesByCreators = (
 }
 
 const getMessagesForCreators = async (dictionary: Record<Uid, IBadgesSoldRecordValue>) => {
-  let inputMessages: NotificationInput[] = []
+  let inputMessages: NotificationMessageInput[] = []
   for (const [uid, value] of Object.entries(dictionary)) {
     const title = `Weekly recap:`
     const body = `You sold ${value.count} badges this week for a total of ${

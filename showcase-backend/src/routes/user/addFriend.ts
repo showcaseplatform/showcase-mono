@@ -34,7 +34,7 @@ const updateFollowersCount = async (followingUid: Uid) => {
 }
 
 export const addFriend = async (req: any, res: Response) => {
-  const { uid } = req.user.data() as User
+  const { uid } = req.user as User
   const { userid: followingUid } = req.body.userid
   if (followingUid && uid) {
     try {

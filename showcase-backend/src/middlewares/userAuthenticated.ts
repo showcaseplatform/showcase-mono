@@ -7,7 +7,7 @@ export const userAuthenticated = async (req: ApiRequest, res: Response, next: an
   try {
     const token = req.headers?.authorization
     if (!token) throw 'Missing authentication token'
-
+    
     const { uid } = await auth().verifyIdToken(token.replace('Bearer ', ''))
     const userDoc = await db.collection('users').doc(uid).get()
 

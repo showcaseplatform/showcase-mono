@@ -4,7 +4,7 @@ const validator = require('validator')
 const currencies = ['USD', 'EUR', 'GBP']
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
 
   let updateData = {}
 

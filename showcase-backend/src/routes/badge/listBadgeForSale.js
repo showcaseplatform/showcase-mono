@@ -5,7 +5,7 @@ const { blockchain } = require('../../config')
 const functions = require('firebase-functions')
 
 module.exports = async (req, res) => {
-  let user = req.user.data()
+  const { user } = req
 
   let { sig, message, badgeid, currency, price } = req.body
 

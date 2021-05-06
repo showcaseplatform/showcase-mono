@@ -48,7 +48,7 @@ const sendPushNotification = (user, title, body, data) => {
 }
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   const { message, userId, username, chatId } = req.body
   console.log('BODY SEND MSG', req.body)
   if (!message || !userId) {

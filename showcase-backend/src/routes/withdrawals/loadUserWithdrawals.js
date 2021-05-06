@@ -1,7 +1,7 @@
 const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   const lastDocumentDate = req.query.lastdate
 
   let feedQuery = db.collection('withdrawals')

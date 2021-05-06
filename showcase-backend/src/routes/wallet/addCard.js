@@ -2,7 +2,7 @@ const { firestore: db } = require('../../services/firestore')
 const stripe = require('../../services/stripe')
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   const { stripetoken, lastfour } = req.body
   if (!lastfour) {
     return res.status(422).send({ error: 'Invalid Card' })

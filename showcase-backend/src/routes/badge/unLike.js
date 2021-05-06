@@ -3,7 +3,7 @@ const { firestore: db, FieldValue } = require('../../services/firestore')
 
 module.exports = (req, res) => {
   const { marketplace, badgeid } = req.body
-  let user = req.user.data()
+  const { user } = req
 
   if (!user.liked || !user.liked[badgeid]) {
     return res.status(422).send('Already unliked')

@@ -56,7 +56,7 @@ curl -X POST "https://api.sandbox.transferwise.tech/v1/transfer-requirements" \
 /*
 app.post("/updateCurrency", userAuthenticated, (req,res)=> {
 
-	let user = req.user.data();
+	let user = req.user;
 
 	let updateData = {};
 

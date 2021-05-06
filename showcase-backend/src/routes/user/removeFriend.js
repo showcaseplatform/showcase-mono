@@ -2,7 +2,7 @@
 const { firestore: db, FieldValue } = require('../../services/firestore')
 
 module.exports = async (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   if (req.body.userid) {
     db.collection('users')
       .doc(user.uid)

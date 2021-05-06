@@ -1,7 +1,7 @@
 const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   const { userId, chatId } = req.body
   console.log('BODY READ MSG', req.body)
   if (userId && chatId) {

@@ -4,7 +4,7 @@ const { firestore: db } = require('../../services/firestore')
 const { blockchain } = require('../../config')
 
 module.exports = async (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   if (!user.creator) {
     return res.status(422).send({ error: 'You are not a verified creator' })
   }

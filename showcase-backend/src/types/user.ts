@@ -1,3 +1,4 @@
+import { BadgeId } from './badge'
 import { Chat } from './chat'
 
 export type Currency = 'USD' | 'GBP' | 'USD'
@@ -28,7 +29,7 @@ export interface User {
   displayName: string
   followersCount: number
   followingCount: number
-  liked: any[]
+  liked: Record<BadgeId, boolean>
   notificationToken?: NotificationToken
   phoneLocal: string
   phoneNumber: string
@@ -45,4 +46,10 @@ export interface User {
   uid: string
   username: string
   banned?: boolean | string
+  crypto?: Crypto
+}
+
+
+export interface Crypto {
+  address: string
 }

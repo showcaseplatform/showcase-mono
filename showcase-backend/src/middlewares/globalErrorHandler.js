@@ -1,4 +1,4 @@
-exports.globalErrorHandler = (err, req, res, next) => {
+export const globalErrorHandler = (err, req, res, next) => {
   console.error('ERROR LOG', err, new Error(err).stack)
   if (req && req.path) {
     console.error('ERROR LOG CONT.', req.path)

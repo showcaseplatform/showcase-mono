@@ -1,3 +1,4 @@
+import { firestore } from 'firebase-admin';
 import { Uid } from './user'
 
 // add new notification type here
@@ -43,15 +44,11 @@ export interface NotificationDocument {
   data?: PushNotifcationData
   read?: boolean
   type?: NotificationType
+  createdAt?: firestore.FieldValue
 }
 
-export interface NotificationTrackerInput {
-  name: NotificationName
-  uid: Uid
-}
-
-type TrackerRecord<K extends keyof any, T> = {
+type LimitRecord<K extends keyof any, T> = {
   [P in K]?: T;
 };
 
-export type NotificationTrackerDoc = TrackerRecord<NotificationName, number>
+export type NotificationLimitDoc = LimitRecord<NotificationName, number>

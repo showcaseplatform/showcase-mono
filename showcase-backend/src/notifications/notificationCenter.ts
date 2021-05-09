@@ -1,11 +1,10 @@
-import { FieldValue, firestore as db } from '../services/firestore'
+import { FieldValue, firestore as db, FieldPath, Timestamp } from '../services/firestore'
 import {
   NotificationDocument,
   NotificationName,
   NotificationInput,
-  NotificationTrackerInput,
   PushMessage,
-  NotificationTrackerDoc,
+  NotificationLimitDoc,
 } from '../types/notificaton'
 import { Uid, User } from '../types/user'
 import {
@@ -16,18 +15,15 @@ import {
   ExpoPushSuccessTicket,
   ExpoPushTicket,
 } from '../services/expo'
+import moment from 'moment'
 
-// To track a notifcation, add it to this array
-const TRACKED_NOTIFICATIONS = [
-  NotificationName.NEW_BADGE_PUBLISHED,
-  NotificationName.NEW_FOLLOWER_ADDED,
-]
-
+// todo: store these is db so it can be modifed easier
 // To limit number of push notication sent to a specific user, modify this
-const MAX_PUSH_SEND_NUMBER: NotificationTrackerDoc = {
+const MAX_PUSH_SEND_NUMBER: NotificationLimitDoc = {
   [NotificationName.NEW_BADGE_PUBLISHED]: 2,
   [NotificationName.NEW_FOLLOWER_ADDED]: 100,
 }
+const MAX_PUSH_SEND_PERIOD_DAY = -1
 
 class NotificationCenter {
   expo: Expo
@@ -45,6 +41,7 @@ class NotificationCenter {
       await this.saveNotifcationTickets(tickets)
     } catch (error) {
       console.error('sendPushNotificationBatch failed', error)
+      throw error
     }
   }
 
@@ -58,17 +55,28 @@ class NotificationCenter {
         .set({ count: FieldValue.increment(change) })
     } catch (error) {
       console.error('incrementUnreadCount failed', error)
+      throw error
     }
   }
 
   private filterPushMessages = async (messages: PushMessage[]) => {
     return messages.filter(async ({ uid, name }) => {
-      const trackerDoc = await db.collection('notificationTrackers').doc(uid).get()
-      const trackedValue = (trackerDoc.data() as NotificationTrackerDoc)[name]
-      const limit = MAX_PUSH_SEND_NUMBER[name]
-
-      if (trackerDoc.exists && trackedValue && limit) {
-        return trackedValue < limit ? true : false
+      const sendLimit = MAX_PUSH_SEND_NUMBER[name]
+      if (!sendLimit) {
+        return true
+      }
+      const periodStartTimestamp = Timestamp.fromDate(moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()) 
+      // todo: create composite index for this
+      const notificationSnapshot = await db
+        .collection('users')
+        .doc(uid)
+        .collection('notifcations')
+        .where('createdAt', '>', periodStartTimestamp)
+        .where('name', '==', name)
+        .limit(sendLimit)
+        .get()
+      if (notificationSnapshot.size >= sendLimit) {
+        return false
       } else {
         return true
       }
@@ -79,17 +87,6 @@ class NotificationCenter {
     const userDoc = await db.collection('users').doc(uid).get()
     const { notificationToken = null } = userDoc.data() as User
     return { notificationToken }
-  }
-
-  private trackNotification = async ({ name, uid }: NotificationTrackerInput) => {
-    try {
-      await db
-        .collection('notificationTrackers')
-        .doc(uid)
-        .set({ [name]: FieldValue.increment(1) }, { merge: true })
-    } catch (error) {
-      console.error('trackNotification failed: ', error)
-    }
   }
 
   private sendPushMessagesToExpo = async (messages: PushMessage[]) => {
@@ -106,7 +103,8 @@ class NotificationCenter {
           const ticketChunk = await expo.sendPushNotificationsAsync(chunk)
           tickets.push(...ticketChunk)
         } catch (error) {
-          console.error(error)
+          console.error('sendPushMessagesToExpo failed: ', error)
+          throw error
         }
       })
     )
@@ -120,11 +118,11 @@ class NotificationCenter {
     for (let message of inputMessages) {
       const { name, uid, title, body, data } = message
       const { notificationToken } = await this.getUserToken(uid)
-      if (!Expo.isExpoPushToken(notificationToken)) {
+      if (Expo.isExpoPushToken(notificationToken)) {
+        pushMessages.push({ to: notificationToken, title, body, data, name, uid })
+      } else {
         console.error(`Push token ${notificationToken} is not a valid Expo push token`)
-        continue
       }
-      pushMessages.push({ to: notificationToken, title, body, data, name, uid })
     }
 
     return pushMessages
@@ -137,6 +135,7 @@ class NotificationCenter {
       })
     } catch (error) {
       console.error('savePushMessages failed: ', error)
+      throw error
     }
   }
 
@@ -148,6 +147,7 @@ class NotificationCenter {
     data,
     type = 'normal',
     read = false,
+    createdAt = FieldValue.serverTimestamp(),
   }: NotificationDocument) => {
     try {
       const notificationDoc: NotificationDocument = {
@@ -158,17 +158,16 @@ class NotificationCenter {
         data,
         read,
         type,
+        createdAt,
       }
       await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
       if (!read) {
         await this.changeUnreadCount({ uid, change: 1 })
       }
-      if (TRACKED_NOTIFICATIONS.indexOf(name) > -1) {
-        await this.trackNotification({ name, uid })
-      }
       console.log('Notification  saved to db', notificationDoc)
     } catch (error) {
       console.error('Notification could not be saved to db', error)
+      throw error
     }
   }
 
@@ -212,6 +211,7 @@ class NotificationCenter {
       )
     } catch (error) {
       console.error('Error happend while parsing expo tickets', error)
+      throw error
     }
   }
 
@@ -221,6 +221,7 @@ class NotificationCenter {
         await db.collection('expoTickets').add(ticket)
       } catch (error) {
         console.error('Expo push ticket coudnt be saved', error)
+        throw error
       }
     }
   }
@@ -230,16 +231,21 @@ class NotificationCenter {
       await db.collection('expoErrorReceipts').add(receipt)
     } catch (error) {
       console.error('Expo push error receipt coudnt be saved', error)
+      throw error
     }
   }
 
   private getNotifcationTickets = async (): Promise<ExpoPushTicket[]> => {
     try {
       const snapshot = await db.collection('expoTickets').get()
-      return snapshot.docs.map((doc) => doc.data() as ExpoPushTicket)
+      if (snapshot.empty) {
+        return []
+      } else {
+        return snapshot.docs.map((doc) => doc.data() as ExpoPushTicket)
+      }
     } catch (error) {
       console.error('Expo push ticket coudnt be downloaded', error)
-      return []
+      throw error
     }
   }
 }

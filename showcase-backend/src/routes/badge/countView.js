@@ -1,11 +1,11 @@
 /* eslint-disable promise/no-nesting */
-import { incrementPeriodBadgeViewCount } from '../../notifications/mostViewBadge'
+import { incrementBadgeViewCount } from '../../notifications/mostViewBadge'
 import { firestore as db, FieldValue } from '../../services/firestore'
 import { blockchain } from '../../config'
 import { post } from 'axios'
 
 // todo: refactor function to eliminate promise nesting
-export default (req, res) => {
+export const countViewHandler = (req, res) => {
   // marketplace: boolean
   const { marketplace, badgeid } = req.body
 
@@ -85,13 +85,9 @@ export default (req, res) => {
                 return checkBadge(userdoc.data().crypto.address, doc.data().tokenId, (success) => {
                   console.log('CHECKING BADGE 1', success)
                   if (success) {
-                    return db
-                      .collection('badges')
-                      .doc(badgeid)
-                      .update({ views: FieldValue.increment(1), lastViewed: new Date() })
-                      .then(async(snapshot) => {
+                    return incrementBadgeViewCount
+                      .then(async (snapshot) => {
                         console.log('CHECKING BADGE 2')
-                        await incrementPeriodBadgeViewCount(badgeid)
                         return res.send('OK')
                       })
                       .catch((e) => {
@@ -111,12 +107,8 @@ export default (req, res) => {
               return res.status(422).send({ error: err })
             })
         } else {
-          return db
-            .collection('badges')
-            .doc(badgeid)
-            .update({ views: FieldValue.increment(1), lastViewed: new Date() })
+          return incrementBadgeViewCount(badgeid)
             .then(async (snapshot) => {
-              await incrementPeriodBadgeViewCount(badgeid)
               return res.send('OK')
             })
             .catch((e) => {
@@ -130,11 +122,11 @@ export default (req, res) => {
         return res.status(422).send({ error: err })
       })
   } else {
+    // todo: why are views counted separetly for badgesales and badges
     db.collection('badgesales')
       .doc(badgeid)
       .update({ views: FieldValue.increment(1) })
       .then(async (snapshot) => {
-        await incrementPeriodBadgeViewCount(badgeid)
         return res.send('OK')
       })
       .catch((err) => {

@@ -38,5 +38,6 @@ export const sendNotificationToFollowersAboutNewBadge = async (creatorId: Uid) =
     await notificationCenter.sendPushNotificationBatch(messages)
   } catch (error) {
     console.error('Notification about new follower couldnt be sent', error)
+    throw error
   }
 }

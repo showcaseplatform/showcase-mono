@@ -36,6 +36,10 @@ export interface PushMessage extends NotificationInput {
   to: NotifcationToken
 }
 
+export interface BadgeMetaData {
+
+}
+
 export interface NotificationDocument {
   name: NotificationName
   uid: Uid

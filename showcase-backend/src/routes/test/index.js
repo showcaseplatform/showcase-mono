@@ -4,6 +4,35 @@ const TestRouter = require('express').Router()
 const { firestore: db } = require('../../services/firestore')
 const axios = require('axios')
 
+TestRouter.route('/getBearerToken').post(async (req, res) => {
+  try {
+    const { token } = req.body
+    console.log({token})
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${API_KEY}`;
+    const data = {
+        token,
+        returnSecureToken: true
+    };
+
+    const options = {
+        method: "post",
+        url,
+        data,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+    };
+
+    const response = await axios(options)
+    console.log(response.data)
+
+    res.status(200).send(response.data)
+  } catch (error) {
+    console.error({error})
+    res.status(400).send(error)
+  }
+})
+
 const sendNotification = (user, title, body, token, data, type, noPush) => {
   //'{    "data":"goes here" }'
   db.collection('users')
@@ -132,4 +161,4 @@ TestRouter.route('/testq').get(async (req, res) => {
   }
 })
 
-module.exports = TestRouter
+module.exports = { TestRouter }

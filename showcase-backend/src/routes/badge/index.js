@@ -1,7 +1,7 @@
 const { userAuthenticated } = require('../../middlewares/userAuthenticated')
 
 const BadgeRouter = require('express').Router()
-const countViewHandler = require('./countView.js')
+const { countViewHandler } = require('./countView.js')
 const countLikeHandler = require('./countLike.js')
 const unLikeHandler = require('./unLike.js')
 const loadUserFeedHandler = require('./loadUserFeed.js')

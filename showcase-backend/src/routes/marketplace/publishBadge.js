@@ -118,7 +118,7 @@ module.exports = async (req, res) => {
               donationCauseImage: foundDonationImage,
               donationCauseName: foundDonationName,
               donationCauseId: foundDonationId,
-              gif,
+              gif, // todo: what does this gif object contain, if not a ref to the actial gif than this shouldnt be uploaded to firestore imo
             }
             return db
               .collection('badgesales')

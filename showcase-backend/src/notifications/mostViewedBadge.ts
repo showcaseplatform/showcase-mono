@@ -1,3 +1,4 @@
+import { brotliCompress } from 'node:zlib'
 import { FieldValue, firestore as db } from '../services/firestore'
 import { NotificationMessageInput, NotificationName } from '../types/notificaton'
 import { Uid, User } from '../types/user'
@@ -15,7 +16,7 @@ const getAllUserUids = async () => {
   return userUids
 }
 const getAllViewedBadgeIds = async () => {
-  const badgeViewsRef = await db.collection('badgeViewsInCurrentPeriod').get()
+  const badgeViewsRef = await db.collection('badges').get()
   let badgeIds: string[] = []
   if (!badgeViewsRef.empty) {
     badgeViewsRef.docs.map((doc) => {
@@ -24,12 +25,6 @@ const getAllViewedBadgeIds = async () => {
     })
   }
   return badgeIds
-}
-
-const deleteViewCountForBadges = async (badgeIds: string[]) => {
-  for (const id of badgeIds) {
-    await db.collection('badgeViewsInCurrentPeriod').doc(id).delete()
-  }
 }
 
 const getMessagesForAll = ({ uids, badgeId }: { uids: Uid[]; badgeId: string }) => {
@@ -53,38 +48,49 @@ const getMessagesForAll = ({ uids, badgeId }: { uids: Uid[]; badgeId: string }) 
 }
 
 const getMostViewedBadgeId = async () => {
-  const querySnapshot = await db
-    .collection('badgeViewsInCurrentPeriod')
-    .orderBy('viewCount', 'desc')
-    .limit(1)
-    .get()
-  let mostViewedBadgeId = ''
-  if (!querySnapshot.empty) {
-    querySnapshot.docs.map((doc) => {
-      mostViewedBadgeId = doc.id
-    })
+  const querySnapshot = await db.collection('badges').orderBy('periodViews', 'desc').limit(1).get()
+  if (querySnapshot.empty) {
+    throw 'Most viewed badge wasnt found'
   }
-  return mostViewedBadgeId
+  return querySnapshot.docs[0].id
 }
 
-const resetMostViewBadgeCount = async () => {
+const resetMostViewedBadgeCount = async () => {
   try {
     const badgeIds = await getAllViewedBadgeIds()
-    await deleteViewCountForBadges(badgeIds)
+    await resetViewCountForBadges(badgeIds)
   } catch (error) {
     console.error('resetMostViewBadgeCount failed: ', error)
     throw error
   }
 }
 
-export const incrementPeriodBadgeViewCount = async (badgeId: string) => {
+const resetViewCountForBadges = async (badgeIds: string[]) => {
+  for (const id of badgeIds) {
+    await db
+      .collection('badges')
+      .doc(id)
+      .set({ meta: { periodViews: 0, periodStartDate: FieldValue.serverTimestamp() } }, { merge: true })
+  }
+}
+
+export const incrementBadgeViewCount = async (badgeId: string) => {
   try {
     await db
-      .collection('badgeViewsInCurrentPeriod')
+      .collection('badges')
       .doc(badgeId)
-      .set({ viewCount: FieldValue.increment(1) }, { merge: true })
+      .set(
+        {
+          views: FieldValue.increment(1),
+          lastViewed: FieldValue.serverTimestamp(),
+          meta: {
+            periodViews: FieldValue.increment(1),
+          },
+        },
+        { merge: true }
+      )
   } catch (error) {
-    console.error('trackNotification failed: ', error)
+    console.error('incrementBadgeViewCount failed: ', error)
     throw error
   }
 }
@@ -95,7 +101,7 @@ export const sendMostViewedBadgeInPeriod = async () => {
     const uids = await getAllUserUids()
     const messages = getMessagesForAll({ uids, badgeId })
     await notificationCenter.sendPushNotificationBatch(messages)
-    await resetMostViewBadgeCount()
+    await resetMostViewedBadgeCount()
   } catch (error) {
     console.error('sendMostViewedBadgeInPeriod failed: ', error)
     throw error

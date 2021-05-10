@@ -2,7 +2,7 @@
 import { firestore as db } from '../../services/firestore'
 
 export const readMessageThread =  (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   const { userId, chatId } = req.body
   console.log('BODY READ MSG', req.body)
   if (userId && chatId) {

@@ -3,7 +3,7 @@ const axios = require('axios')
 const { firestore: db } = require('../../services/firestore')
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
 
   if (req.body.currency === 'USD') {
     axios({

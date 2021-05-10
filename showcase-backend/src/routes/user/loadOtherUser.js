@@ -1,7 +1,7 @@
 const { firestore: db } = require('../../services/firestore')
 
 module.exports = async (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   const requestedUserId = req.query.userid
   if (requestedUserId) {
     let fields = ['uid', 'bio', 'creator', 'displayName', 'username', 'avatar']

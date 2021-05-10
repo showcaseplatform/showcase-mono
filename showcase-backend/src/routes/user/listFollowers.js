@@ -1,7 +1,7 @@
 const { firestore: db } = require('../../services/firestore')
 
 module.exports = async (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   let { lastdate } = req.body
   let myQuery = db.collection('users').doc(user.uid).collection('followers')
   if (lastdate) {

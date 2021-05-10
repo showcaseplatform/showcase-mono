@@ -49,6 +49,13 @@ export interface NotificationDocument extends NotificationDocumentData {
   id: string
 }
 
+export interface UnreadDocumentData {
+  count: number
+}
+export interface UnreadDocument extends UnreadDocumentData {
+  updateTime: firestore.FieldValue
+}
+
 type LimitRecord<K extends keyof any, T> = {
   [P in K]?: T;
 };

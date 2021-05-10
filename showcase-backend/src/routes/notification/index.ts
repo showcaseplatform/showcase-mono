@@ -7,6 +7,7 @@ import { getNotification } from './getNotification'
 import { getAllNotifications } from './getAllNotifications'
 import { ApiRequest } from '../../types/request'
 import { User } from '../../types/user'
+import { getUnreadCount } from './getUnreadCount'
 
 const NotificationRouter = express.Router()
 
@@ -23,6 +24,12 @@ NotificationRouter.route('/getAll').get(async (req: ApiRequest, res) => {
   const { uid } = req?.user as User
   const notifications = await getAllNotifications(uid)
   res.status(200).send(notifications)
+})
+
+NotificationRouter.route('/getUnreadCount').get(async (req: ApiRequest, res) => {
+  const { uid } = req?.user as User
+  const unreadInfo = await getUnreadCount(uid)
+  res.status(200).send(unreadInfo)
 })
 
 NotificationRouter.route('/addToken').post(async (req: ApiRequest, res) => {

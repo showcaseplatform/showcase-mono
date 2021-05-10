@@ -52,7 +52,7 @@ class NotificationCenter {
         .collection('users')
         .doc(uid)
         .collection('notifications')
-        .doc('unRead')
+        .doc('unread')
         .set({ count: FieldValue.increment(change) })
     } catch (error) {
       console.error('incrementUnreadCount failed', error)

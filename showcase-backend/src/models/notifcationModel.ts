@@ -44,8 +44,8 @@ export class NotificationResolver {
   }
 
   @Query(() => Notification)
-  async notification(@Arg("id") id: string): Promise<Notification> {
-    return await getNotification({uid: 'uid', notificationId: id})
+  async notification(@Arg("id") id: string, @Ctx() ctx: any): Promise<Notification> {
+    return await getNotification({uid: ctx.user.ui, notificationId: id})
   }
 
   @Mutation(() => Boolean)

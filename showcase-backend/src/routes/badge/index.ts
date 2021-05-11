@@ -26,14 +26,14 @@ BadgeRouter.route(ROUTE_PATHS.BADGE.COUNT_VIEW).post(async (req: ApiRequest, res
 
 BadgeRouter.route(ROUTE_PATHS.BADGE.COUNT_LIKE).post(async (req: ApiRequest, res: Response) => {
   const { marketplace, badgeid } = req.body
-  const { user = {} as User } = req
+  const user = req.user as User
   await countLikeHandler({ user, marketplace, badgeid })
   res.status(200).send()
 })
 
 BadgeRouter.route(ROUTE_PATHS.BADGE.UNLIKE).post(async (req: ApiRequest, res: Response) => {
   const { marketplace, badgeid } = req.body
-  const { user = {} as User } = req
+  const user = req.user as User
   await unlikeHandler({ marketplace, badgeid, user })
   res.status(200).send()
 })
@@ -41,7 +41,7 @@ BadgeRouter.route(ROUTE_PATHS.BADGE.UNLIKE).post(async (req: ApiRequest, res: Re
 BadgeRouter.route(ROUTE_PATHS.BADGE.LIST_BADGE_FOR_SALE).post(
   async (req: ApiRequest, res: Response) => {
     const { sig, message, badgeid, currency, price } = req.body
-    const { user = {} as User } = req
+    const user = req.user as User
     await listBadgeForSaleHandler({ sig, message, badgeid, currency, price, user })
     res.status(200).send()
   }
@@ -49,7 +49,7 @@ BadgeRouter.route(ROUTE_PATHS.BADGE.LIST_BADGE_FOR_SALE).post(
 
 BadgeRouter.route(ROUTE_PATHS.BADGE.UNLIST_BADGE_FOR_SALE).post(
   async (req: ApiRequest, res: Response) => {
-    const { user = {} as User } = req
+    const user = req.user as User
     const { badgeid } = req.body
     await unlistBadgeForSaleHandler({ user, badgeid })
     res.status(200).send()
@@ -57,7 +57,7 @@ BadgeRouter.route(ROUTE_PATHS.BADGE.UNLIST_BADGE_FOR_SALE).post(
 )
 
 BadgeRouter.route(ROUTE_PATHS.BADGE.LOAD_USER_FEED).get(async (req: ApiRequest, res: Response) => {
-  const { user = {} as User } = req
+  const user = req.user as User
   const lastDocumentDate = req.query.lastdate
   const { feed } = await loadUserFeedHandler({ user, lastDocumentDate })
   res.status(200).send({ feed })

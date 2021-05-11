@@ -1,11 +1,11 @@
 import { FieldValue, firestore as db, Timestamp } from '../services/firestore'
 import {
   NotificationDocumentData,
+  NotificationMessageInput,
   NotificationName,
   PushMessage,
   NotificationLimitDoc,
-  NotificationDocument,
-  NotificationMessageInput,
+  NotificationType,
 } from '../types/notificaton'
 import { Uid, User } from '../types/user'
 import {
@@ -33,31 +33,23 @@ class NotificationCenter {
     this.expo = expo
   }
 
+  // todo: create a func like: sendNotifcation = () => {}, which handles all notification send, also decides whether to call sendPushNoti...
+
   sendPushNotificationBatch = async (inputMessages: NotificationMessageInput[]) => {
-    try {
-      const pushMessages = await this.validateInputMessages(inputMessages)
-      await this.savePushMessages(pushMessages)
-      const filteredPushMessages = await this.filterPushMessages(pushMessages)
-      const tickets = await this.sendPushMessagesToExpo(filteredPushMessages)
-      await this.saveNotifcationTickets(tickets)
-    } catch (error) {
-      console.error('sendPushNotificationBatch failed', error)
-      throw error
-    }
+    await this.saveMessages(inputMessages, 'push')
+    const pushMessages = await this.validateInputMessages(inputMessages)
+    const filteredPushMessages = await this.filterPushMessages(pushMessages)
+    const tickets = await this.sendPushMessagesToExpo(filteredPushMessages)
+    await this.saveNotifcationTickets(tickets)
   }
 
   changeUnreadCount = async ({ uid, change }: { uid: Uid; change: number }) => {
-    try {
-      await db
-        .collection('users')
-        .doc(uid)
-        .collection('notifications')
-        .doc('unread')
-        .set({ count: FieldValue.increment(change) })
-    } catch (error) {
-      console.error('incrementUnreadCount failed', error)
-      throw error
-    }
+    await db
+      .collection('users')
+      .doc(uid)
+      .collection('notifications')
+      .doc('unRead')
+      .set({ count: FieldValue.increment(change) })
   }
 
   private filterPushMessages = async (messages: PushMessage[]) => {
@@ -66,7 +58,10 @@ class NotificationCenter {
       if (!sendLimit) {
         return true
       }
-      const periodStartTimestamp = Timestamp.fromDate(moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()) 
+      // todo: make it conditional, only when MAX_PUSH_SEND_PERIOD_DAY is set for notifcation
+      const periodStartTimestamp = Timestamp.fromDate(
+        moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()
+      )
       // todo: create composite index for this
       const notificationSnapshot = await db
         .collection('users')
@@ -97,16 +92,12 @@ class NotificationCenter {
     const chunks = expo.chunkPushNotifications(expoPushMessages)
     const tickets: ExpoPushTicket[] = []
 
+    // todo: bluebird.map lib instead nested await
     // Send the chunks to the Expo push notification service.
     await Promise.all(
       chunks.map(async (chunk) => {
-        try {
-          const ticketChunk = await expo.sendPushNotificationsAsync(chunk)
-          tickets.push(...ticketChunk)
-        } catch (error) {
-          console.error('sendPushMessagesToExpo failed: ', error)
-          throw error
-        }
+        const ticketChunk = await expo.sendPushNotificationsAsync(chunk)
+        tickets.push(...ticketChunk)
       })
     )
 
@@ -129,15 +120,10 @@ class NotificationCenter {
     return pushMessages
   }
 
-  private savePushMessages = async (messages: PushMessage[]) => {
-    try {
-      messages.forEach(async (message) => {
-        await this.saveNotificationData({ ...message, type: 'push' })
-      })
-    } catch (error) {
-      console.error('savePushMessages failed: ', error)
-      throw error
-    }
+  private saveMessages = async (messages: NotificationMessageInput[], type: NotificationType) => {
+    messages.forEach(async (message) => {
+      await this.saveNotificationData({ ...message, type })
+    })
   }
 
   private saveNotificationData = async ({
@@ -150,104 +136,76 @@ class NotificationCenter {
     read = false,
     createdAt = FieldValue.serverTimestamp(),
   }: NotificationDocumentData) => {
-    try {
-      const notificationDoc: NotificationDocumentData = {
-        name,
-        title,
-        body,
-        uid,
-        data,
-        read,
-        type,
-        createdAt,
-      }
-      await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
-      if (!read) {
-        await this.changeUnreadCount({ uid, change: 1 })
-      }
-      console.log('Notification  saved to db', notificationDoc)
-    } catch (error) {
-      console.error('Notification could not be saved to db', error)
-      throw error
+    const notificationDoc: NotificationDocumentData = {
+      name,
+      title,
+      body,
+      uid,
+      data,
+      read,
+      type,
+      createdAt,
     }
+    await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
+    if (!read) {
+      await this.changeUnreadCount({ uid, change: 1 })
+    }
+    console.log('Notification  saved to db', notificationDoc)
   }
 
   // todo: how to deal with error tickets?
   searchForErrorsInTickets = async () => {
-    try {
-      const tickets = await this.getNotifcationTickets()
-      if (tickets?.length === 0) throw 'There were no tickets found'
+    const tickets = await this.getNotifcationTickets()
+    if (tickets?.length === 0) throw 'There were no tickets found'
 
-      // The receipts may contain error codes to which you must respond. In
-      // particular, Apple or Google may block apps that continue to send
-      // notifications to devices that have blocked notifications or have uninstalled
-      // your app. Expo does not control this policy and sends back the feedback from
-      // Apple and Google so you can handle it appropriately.
-      let receiptIds = []
-      for (let ticket of tickets) {
-        // NOTE: Not all tickets have IDs; for example, tickets for notifications
-        // that could not be enqueued will have error information and no receipt ID.
-        if ((ticket as ExpoPushSuccessTicket).id) {
-          receiptIds.push((ticket as ExpoPushSuccessTicket).id)
-        }
+    // The receipts may contain error codes to which you must respond. In
+    // particular, Apple or Google may block apps that continue to send
+    // notifications to devices that have blocked notifications or have uninstalled
+    // your app. Expo does not control this policy and sends back the feedback from
+    // Apple and Google so you can handle it appropriately.
+    let receiptIds = []
+    for (let ticket of tickets) {
+      // NOTE: Not all tickets have IDs; for example, tickets for notifications
+      // that could not be enqueued will have error information and no receipt ID.
+      if ((ticket as ExpoPushSuccessTicket).id) {
+        receiptIds.push((ticket as ExpoPushSuccessTicket).id)
       }
-      let receiptIdChunks = expo.chunkPushNotificationReceiptIds(receiptIds)
-      await Promise.all(
-        receiptIdChunks.map(async (chunk) => {
-          let receipts = await expo.getPushNotificationReceiptsAsync(chunk)
-          for (let receiptId in receipts) {
-            let { status, message, details } = receipts[receiptId] as ExpoPushErrorReceipt
-            if (status === 'error') {
-              console.error(`There was an error sending a notification: ${message}`)
-              if (details && details.hasOwnProperty('error')) {
-                // The error codes are listed in the Expo documentation:
-                // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
-                // You must handle the errors appropriately.
-                console.error(`The error code is ${details.error}`)
-                await this.saveErrorReceipt({ status, message, details })
-              }
+    }
+    let receiptIdChunks = expo.chunkPushNotificationReceiptIds(receiptIds)
+    await Promise.all(
+      receiptIdChunks.map(async (chunk) => {
+        let receipts = await expo.getPushNotificationReceiptsAsync(chunk)
+        for (let receiptId in receipts) {
+          let { status, message, details } = receipts[receiptId] as ExpoPushErrorReceipt
+          if (status === 'error') {
+            console.error(`There was an error sending a notification: ${message}`)
+            if (details && details.hasOwnProperty('error')) {
+              // The error codes are listed in the Expo documentation:
+              // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
+              // You must handle the errors appropriately.
+              console.error(`The error code is ${details.error}`)
+              await this.saveErrorReceipt({ status, message, details })
             }
           }
-        })
-      )
-    } catch (error) {
-      console.error('Error happend while parsing expo tickets', error)
-      throw error
-    }
+        }
+      })
+    )
   }
 
   private saveNotifcationTickets = async (tickets: ExpoPushTicket[]) => {
-    for (let ticket of tickets) {
-      try {
-        await db.collection('expoTickets').add(ticket)
-      } catch (error) {
-        console.error('Expo push ticket coudnt be saved', error)
-        throw error
-      }
+    for (const ticket of tickets) {
+      await db.collection('expoTickets').add(ticket)
     }
   }
 
   private saveErrorReceipt = async (receipt: ExpoPushErrorReceipt) => {
-    try {
-      await db.collection('expoErrorReceipts').add(receipt)
-    } catch (error) {
-      console.error('Expo push error receipt coudnt be saved', error)
-      throw error
-    }
+    await db.collection('expoErrorReceipts').add(receipt)
   }
 
   private getNotifcationTickets = async (): Promise<ExpoPushTicket[]> => {
-    try {
-      const snapshot = await db.collection('expoTickets').get()
-      if (snapshot.empty) {
-        return []
-      } else {
-        return snapshot.docs.map((doc) => doc.data() as ExpoPushTicket)
-      }
-    } catch (error) {
-      console.error('Expo push ticket coudnt be downloaded', error)
-      throw error
-    }
+    const snapshot = await db.collection('expoTickets').get()
+    if (snapshot.empty) throw 'expoTickets collection is empty'
+    return snapshot.docs.map((doc) => doc.data() as ExpoPushTicket)
   }
 }
 

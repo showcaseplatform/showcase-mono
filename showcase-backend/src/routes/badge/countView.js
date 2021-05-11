@@ -1,5 +1,5 @@
 /* eslint-disable promise/no-nesting */
-import { incrementBadgeViewCount } from '../../notifications/mostViewBadge'
+import { incrementBadgeViewCount } from '../../notifications/mostViewedBadge'
 import { firestore as db, FieldValue } from '../../services/firestore'
 import { blockchain } from '../../config'
 import { post } from 'axios'

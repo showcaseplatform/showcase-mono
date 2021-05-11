@@ -9,13 +9,13 @@ interface NewMessageReceivedInput {
   data: PushNotifcationData
 }
 
-export const sendNewMessageReceivedNotifcation = ({
+export const sendNewMessageReceivedNotifcation = async ({
   uid,
   displayName,
   body,
   data,
 }: NewMessageReceivedInput) => {
-  notificationCenter.sendPushNotificationBatch([
+  await notificationCenter.sendPushNotificationBatch([
     {
       name: NotificationName.NEW_MESSAGE_RECEIVED,
       uid,

@@ -39,7 +39,6 @@ export const api = functions.runWith({ timeoutSeconds: 540 }).https.onRequest(ap
 
 // Jobs
 export const updateExchangeRates = updateExchangeRatesJob
-export const onPeriodEnd = periodEndJob 
 export const checkExpoReceipts = checkExpoReceiptsJob 
 
 // Triggers

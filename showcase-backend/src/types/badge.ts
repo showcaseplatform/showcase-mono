@@ -1,3 +1,5 @@
+import { firestore } from 'firebase-admin';
+
 export type BadgeId = string
 
 export interface CountViewRequestBody {
@@ -57,6 +59,10 @@ export interface BadgeDocumentData {
   tokenType: string // todo: id of the nft contract?
   uri: string
   views: number
+  meta: {
+    periodViews: firestore.FieldValue
+    periodStartDate: firestore.FieldValue
+  }
 }
 
 export interface BadgeDocument extends BadgeDocumentData{

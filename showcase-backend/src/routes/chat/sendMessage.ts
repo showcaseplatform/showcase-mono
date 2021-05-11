@@ -1,53 +1,8 @@
 /* eslint-disable promise/no-nesting */
-const { expo } = require('../../config')
-const { firestore: db, FieldValue } = require('../../services/firestore')
-const axios = require('axios')
+import { firestore as db, FieldValue } from '../../services/firestore'
+import { sendNewMessageReceivedNotifcation } from '../../notifications/newMessageReceived'
 
-// todo: needs to be outsourced from here when global concept is ready
-const sendPushNotification = (user, title, body, data) => {
-  //'{    "data":"goes here" }'
-
-  db.collection('users')
-    .doc(user)
-    .get()
-    .then((userdoc) => {
-      if (userdoc && userdoc.data() && userdoc.data().notificationToken) {
-        const message = {
-          to: userdoc.data().notificationToken,
-          sound: 'default',
-          title: title,
-          body: body,
-          data: { data: data || 'goes here' },
-          _displayInForeground: true,
-        }
-        axios({
-          url: expo.server,
-          method: 'post',
-          headers: {
-            Accept: 'application/json',
-            'Accept-encoding': 'gzip, deflate',
-            'Content-Type': 'application/json',
-          },
-          data: message,
-        })
-          .then((res) => {
-            console.log('SENT NOTIFICATION', res)
-            return true
-          })
-          .catch((err) => {
-            console.log('ERR SENDING NOTIFICATION', err)
-            return true
-          })
-      }
-      return true
-    })
-    .catch((err) => {
-      console.log('ERROR getting creator for notification send', err)
-      return true
-    })
-}
-
-module.exports = (req, res) => {
+export const sendMessage = (req: any, res: any) => {
   const { user } = req
   const { message, userId, username, chatId } = req.body
   console.log('BODY SEND MSG', req.body)
@@ -97,7 +52,7 @@ module.exports = (req, res) => {
 
         // now add chat ID to both user profiles.
 
-        let updateDataOtherUser = {}
+        let updateDataOtherUser: any = {}
 
         updateDataOtherUser['chats.' + user.uid + '.chatId'] = chatId
         updateDataOtherUser['chats.' + user.uid + '.lastMessageDate'] = new Date()
@@ -117,7 +72,7 @@ module.exports = (req, res) => {
             console.error('Error writing document: ', err)
             return true
           })
-        let updateData = {}
+        let updateData: any = {}
 
         updateData['chats.' + userId + '.chatId'] = chatId
         updateData['chats.' + userId + '.lastMessageDate'] = new Date()
@@ -138,12 +93,13 @@ module.exports = (req, res) => {
             return true
           })
 
-        sendPushNotification(
-          userId,
-          'New Message from ' + (user.displayName || 'Unknown'),
-          message,
-          newMessage
-        )
+        // todo: this is async, would be better to refactor
+        sendNewMessageReceivedNotifcation({
+          uid: userId,
+          displayName: user.displayName,
+          body: message,
+          data: newMessage,
+        })
 
         return res.json({ chatId })
       })
@@ -168,7 +124,7 @@ module.exports = (req, res) => {
         console.log('added new message')
 
         // here we jsut update the last message stuff like date
-        let updateDataOtherUser = {}
+        let updateDataOtherUser: any = {}
         updateDataOtherUser['chats.' + user.uid + '.lastMessageDate'] = new Date()
         updateDataOtherUser['chats.' + user.uid + '.unreadMessageCount'] = FieldValue.increment(1)
         updateDataOtherUser['chats.' + user.uid + '.lastMessage'] = message
@@ -186,7 +142,7 @@ module.exports = (req, res) => {
             return true
           })
 
-        let updateData = {}
+        let updateData: any = {}
         updateData['chats.' + userId + '.lastMessageDate'] = new Date()
         updateData['chats.' + userId + '.lastMessage'] = message
         updateData['chats.' + userId + '.username'] = username
@@ -209,23 +165,24 @@ module.exports = (req, res) => {
         }
 
         db.collection('chats')
-          .doc(chatId)
-          .update(chatUpdate, { merge: true })
-          .then((done) => {
-            console.log('Updated profile')
-            return true
-          })
-          .catch((err) => {
-            console.error('Error writing document: ', err)
-            return true
-          })
+        .doc(chatId)
+        .update(chatUpdate)
+        .then((done) => {
+          console.log('Updated profile')
+          return true
+        })
+        .catch((err) => {
+          console.error('Error writing document: ', err)
+          return true
+        })
 
-        sendPushNotification(
-          userId,
-          'New Message from ' + (user.displayName || 'Unknown'),
-          message,
-          newMessage
-        )
+        // todo: this is async, would be better to refactor
+        sendNewMessageReceivedNotifcation({
+          uid: userId,
+          displayName: user.displayName,
+          body: message,
+          data: newMessage,
+        })
 
         return res.send('OK')
       })

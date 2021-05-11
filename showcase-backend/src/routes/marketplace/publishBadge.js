@@ -2,6 +2,7 @@
 const axios = require('axios')
 const { firestore: db } = require('../../services/firestore')
 const { blockchain } = require('../../config')
+const { sendNotificationToFollowersAboutNewBadge } = require('../../notifications/newBadgePublished')
 
 module.exports = async (req, res) => {
   const { user } = req
@@ -117,14 +118,15 @@ module.exports = async (req, res) => {
               donationCauseImage: foundDonationImage,
               donationCauseName: foundDonationName,
               donationCauseId: foundDonationId,
-              gif,
+              gif, // todo: what does this gif object contain, if not a ref to the actial gif than this shouldnt be uploaded to firestore imo
             }
             return db
               .collection('badgesales')
               .doc(id)
               .set(badgeDoc)
-              .then((docRef) => {
+              .then(async (docRef) => {
                 console.log('Updated badge data')
+                await sendNotificationToFollowersAboutNewBadge(user.id)
                 return res.json({ badgeSaleId: docRef.id })
               })
               .catch((err) => {

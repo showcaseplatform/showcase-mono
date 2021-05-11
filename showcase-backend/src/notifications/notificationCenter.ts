@@ -134,7 +134,7 @@ class NotificationCenter {
     data,
     type = 'normal',
     read = false,
-    createdAt = FieldValue.serverTimestamp(),
+    createdDate = new Date(),
   }: NotificationDocumentData) => {
     const notificationDoc: NotificationDocumentData = {
       name,
@@ -144,7 +144,7 @@ class NotificationCenter {
       data,
       read,
       type,
-      createdAt,
+      createdDate,
     }
     await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
     if (!read) {

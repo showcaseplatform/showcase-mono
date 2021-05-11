@@ -22,7 +22,8 @@ NotificationRouter.route('/get/:id').get(async (req: ApiRequest, res) => {
 
 NotificationRouter.route('/getAll').get(async (req: ApiRequest, res) => {
   const { uid } = req?.user as User
-  const notifications = await getAllNotifications(uid)
+  const { lastdate } = req.query
+  const notifications = await getAllNotifications({uid, lastCreatedDate: lastdate})
   res.status(200).send(notifications)
 })
 

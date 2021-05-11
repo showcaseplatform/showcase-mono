@@ -8,11 +8,5 @@ export const addToken = async ({
   uid: Uid
   notificationToken: string
 }) => {
-  try {
-    await db.collection('users').doc(uid).update({ notificationToken })
-  } catch (error) {
-    console.error('addToken failed: ', error)
-    throw error
-  }
+  await db.collection('users').doc(uid).update({ notificationToken })
 }
-

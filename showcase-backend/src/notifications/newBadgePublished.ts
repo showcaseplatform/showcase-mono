@@ -3,7 +3,6 @@ import { NotificationInput, NotificationName } from '../types/notificaton'
 import { Follower, Uid, User } from '../types/user'
 import { notificationCenter } from './notificationCenter'
 
-
 const getCreatorDetails = async (uid: Uid) => {
   const userDoc = await db.collection('users').doc(uid).get()
   const { displayName } = userDoc.data() as User
@@ -32,12 +31,7 @@ const getMessagesForFollowers = async (publisherName: string, followerUids: Uid[
 }
 
 export const sendNotificationToFollowersAboutNewBadge = async (creatorId: Uid) => {
-  try {
-    const { displayName, followerUids } = await getCreatorDetails(creatorId)
-    const messages = await getMessagesForFollowers(displayName, followerUids)
-    await notificationCenter.sendPushNotificationBatch(messages)
-  } catch (error) {
-    console.error('Notification about new follower couldnt be sent', error)
-    throw error
-  }
+  const { displayName, followerUids } = await getCreatorDetails(creatorId)
+  const messages = await getMessagesForFollowers(displayName, followerUids)
+  await notificationCenter.sendPushNotificationBatch(messages)
 }

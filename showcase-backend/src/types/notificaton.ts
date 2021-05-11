@@ -1,6 +1,7 @@
 import { firestore } from 'firebase-admin';
 import { Uid } from './user'
 
+// todo: rename this to notifcation type
 // add new notification type here
 export enum NotificationName {
   NEW_BADGE_PUBLISHED = 'NEW_BADGE_PUBLISHED',
@@ -10,7 +11,9 @@ export enum NotificationName {
   MOST_VIEWED_BADGE = 'MOST_VIEWED_BADGE'
 }
 
+// todo: this should be calculated on the notfication type (see above)
 export type NotificationType = 'push' | 'normal'
+
 export type NotifcationToken = string
 export interface PushNotifcationData {
   to?: NotifcationToken

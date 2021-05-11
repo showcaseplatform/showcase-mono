@@ -32,6 +32,8 @@ class NotificationCenter {
     this.expo = expo
   }
 
+  // todo: sendNotifcation ()
+
   sendPushNotificationBatch = async (inputMessages: NotificationInput[]) => {
     try {
       const pushMessages = await this.validateInputMessages(inputMessages)
@@ -97,6 +99,7 @@ class NotificationCenter {
     const chunks = expo.chunkPushNotifications(expoPushMessages)
     const tickets: ExpoPushTicket[] = []
 
+    // todo: bluebird.map lib instead nested await
     // Send the chunks to the Expo push notification service.
     await Promise.all(
       chunks.map(async (chunk) => {

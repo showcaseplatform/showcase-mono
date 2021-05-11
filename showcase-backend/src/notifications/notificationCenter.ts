@@ -65,6 +65,7 @@ class NotificationCenter {
       if (!sendLimit) {
         return true
       }
+      // todo: make it conditional, only when MAX_PUSH_SEND_PERIOD_DAY is set for notifcation
       const periodStartTimestamp = Timestamp.fromDate(moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()) 
       // todo: create composite index for this
       const notificationSnapshot = await db

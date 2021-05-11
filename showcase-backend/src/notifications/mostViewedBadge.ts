@@ -1,8 +1,9 @@
-import { brotliCompress } from 'node:zlib'
 import { FieldValue, firestore as db } from '../services/firestore'
 import { NotificationInput, NotificationName } from '../types/notificaton'
 import { Uid, User } from '../types/user'
 import { notificationCenter } from './notificationCenter'
+
+// todo: currently this notification is not used
 
 const getAllUserUids = async () => {
   const usersRef = await db.collection('users').get()

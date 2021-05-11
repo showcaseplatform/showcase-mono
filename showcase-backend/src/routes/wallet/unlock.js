@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
 
   const { password } = req.body
 

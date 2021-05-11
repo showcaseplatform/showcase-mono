@@ -6,7 +6,7 @@ const stripe = require('../../services/stripe')
 
 module.exports = async (req, res) => {
   const { itemId, currencyRate, displayedPrice } = req.body
-  let user = req.user.data()
+  const { user } = req
   console.log('BOUGHT BADGE', user.crypto)
   if ((user.spent > 1000 && !user.kycVerified) || (user.kycVerified && user.spent > 10000)) {
     return res.status(422).send({

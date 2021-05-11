@@ -3,7 +3,7 @@ import { firestore as db, FieldValue } from '../../services/firestore'
 import { sendNewMessageReceivedNotifcation } from '../../notifications/newMessageReceived'
 
 export const sendMessage = (req: any, res: any) => {
-  let user = req.user.data()
+  const { user } = req
   const { message, userId, username, chatId } = req.body
   console.log('BODY SEND MSG', req.body)
   if (!message || !userId) {

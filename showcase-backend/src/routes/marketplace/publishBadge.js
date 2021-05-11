@@ -1,12 +1,11 @@
 /* eslint-disable promise/no-nesting */
 const axios = require('axios')
-const admin = require('firebase-admin')
-const db = admin.firestore()
+const { firestore: db } = require('../../services/firestore')
 const { blockchain } = require('../../config')
 const { sendNotificationToFollowersAboutNewBadge } = require('../../notifications/newBadgePublished')
 
 module.exports = async (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   if (!user.creator) {
     return res.status(422).send({ error: 'You are not a verified creator' })
   }

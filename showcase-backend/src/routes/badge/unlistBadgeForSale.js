@@ -4,7 +4,7 @@ const { firestore: db } = require('../../services/firestore')
 const { blockchain } = require('../../config')
 
 module.exports = async (req, res) => {
-  let user = req.user.data()
+  const { user } = req
 
   let { badgeid } = req.body
 

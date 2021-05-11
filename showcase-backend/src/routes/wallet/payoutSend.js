@@ -7,7 +7,7 @@ const moment = require('moment')
 const { v4: uuidv4 } = require('uuid')
 
 module.exports = (req, res) => {
-  let user = req.user.data()
+  const { user } = req
   const originalBalance = user.balances[req.body.currency.toLowerCase()]
   //minmum 20 usd/eur/gbp withdrawal
   if (

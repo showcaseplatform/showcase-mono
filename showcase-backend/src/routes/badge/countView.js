@@ -1,10 +1,12 @@
 /* eslint-disable promise/no-nesting */
-const { firestore: db, FieldValue } = require('../../services/firestore')
-const { blockchain } = require('../../config')
-const axios = require('axios')
-const functions = require('firebase-functions')
+import { incrementBadgeViewCount } from '../../notifications/mostViewedBadge'
+import { firestore as db, FieldValue } from '../../services/firestore'
+import { blockchain } from '../../config'
+import { post } from 'axios'
 
-module.exports = (req, res) => {
+// todo: refactor function to eliminate promise nesting
+export const countViewHandler = (req, res) => {
+  // marketplace: boolean
   const { marketplace, badgeid } = req.body
 
   let checkBadge = (badgeowner, badgeid, callback) => {
@@ -44,8 +46,7 @@ module.exports = (req, res) => {
               return true;
           })
   */
-    return axios
-      .post(blockchain.server + '/verifyOwnershipOfBadge', data)
+    return post(blockchain.server + '/verifyOwnershipOfBadge', data)
       .then(async (response) => {
         console.log(response.data)
         if (response.data.isOwner) {
@@ -84,11 +85,8 @@ module.exports = (req, res) => {
                 return checkBadge(userdoc.data().crypto.address, doc.data().tokenId, (success) => {
                   console.log('CHECKING BADGE 1', success)
                   if (success) {
-                    return db
-                      .collection('badges')
-                      .doc(badgeid)
-                      .update({ views: FieldValue.increment(1), lastViewed: new Date() })
-                      .then((snapshot) => {
+                    return incrementBadgeViewCount
+                      .then(async (snapshot) => {
                         console.log('CHECKING BADGE 2')
                         return res.send('OK')
                       })
@@ -109,11 +107,8 @@ module.exports = (req, res) => {
               return res.status(422).send({ error: err })
             })
         } else {
-          return db
-            .collection('badges')
-            .doc(badgeid)
-            .update({ views: FieldValue.increment(1), lastViewed: new Date() })
-            .then((snapshot) => {
+          return incrementBadgeViewCount(badgeid)
+            .then(async (snapshot) => {
               return res.send('OK')
             })
             .catch((e) => {
@@ -127,10 +122,11 @@ module.exports = (req, res) => {
         return res.status(422).send({ error: err })
       })
   } else {
+    // todo: why are views counted separetly for badgesales and badges
     db.collection('badgesales')
       .doc(badgeid)
       .update({ views: FieldValue.increment(1) })
-      .then((snapshot) => {
+      .then(async (snapshot) => {
         return res.send('OK')
       })
       .catch((err) => {

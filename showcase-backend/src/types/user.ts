@@ -42,7 +42,8 @@ export interface User {
   transferwiseIdEUR: number
   transferwiseIdGBP: number
   transferwiseIdUSD: number
-  uid: string
+  uid: Uid
   username: string
   banned?: boolean | string
+  creator?: boolean
 }

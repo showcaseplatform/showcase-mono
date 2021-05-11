@@ -62,12 +62,8 @@ const getMessagesForCreators = async (dictionary: Record<Uid, IBadgesSoldRecordV
 }
 
 export const sendSoldBadgesSummary = async () => {
-  try {
-    const receipts = await getAllReceiptsFromLastWeek(db)
-    const soldBagesSummary = getSummaryOfSoldBadgesByCreators(receipts)
-    const inputMessages = await getMessagesForCreators(soldBagesSummary)
-    await notificationCenter.sendPushNotificationBatch(inputMessages)
-  } catch (error) {
-    console.error('Sending sold badges summary failed', error)
-  }
+  const receipts = await getAllReceiptsFromLastWeek(db)
+  const soldBagesSummary = getSummaryOfSoldBadgesByCreators(receipts)
+  const inputMessages = await getMessagesForCreators(soldBagesSummary)
+  await notificationCenter.sendPushNotificationBatch(inputMessages)
 }

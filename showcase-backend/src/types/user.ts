@@ -12,38 +12,39 @@ export interface Follower {
 }
 export interface User {
   areaCode: number
-  avatar: string
+  avatar?: string
   badgesCount: number
   balances: {
     eur: number
     gbp: number
     usd: number
   }
-  birthDate: Date
-  birthDay: number
-  birthMonth: number
-  birthYear: number
-  chats: Chat[]
+  uid: Uid
+  username: string
   currency: Currency
   displayName: string
   followersCount: number
   followingCount: number
-  liked: any[]
-  notificationToken?: NotificationToken
   phoneLocal: string
   phoneNumber: string
-  recentWithdrawalAmount: number
-  recentWithdrawalDate: Date
-  spent: number
-  spripeId: string
-  transferwiseAccountNumberEUR: string
-  transferwiseAccountNumberGBP: string
-  transferwiseAccountNumberUSD: string
-  transferwiseIdEUR: number
-  transferwiseIdGBP: number
-  transferwiseIdUSD: number
-  uid: Uid
-  username: string
+
+  birthDate?: Date
+  birthDay?: number
+  birthMonth?: number
+  birthYear?: number
+  chats?: Chat[]
+  liked?: any[]
+  notificationToken?: NotificationToken
+  recentWithdrawalAmount?: number
+  recentWithdrawalDate?: Date
+  spent?: number
+  spripeId?: string
+  transferwiseAccountNumberEUR?: string
+  transferwiseAccountNumberGBP?: string
+  transferwiseAccountNumberUSD?: string
+  transferwiseIdEUR?: number
+  transferwiseIdGBP?: number
+  transferwiseIdUSD?: number
   banned?: boolean | string
   creator?: boolean
 }

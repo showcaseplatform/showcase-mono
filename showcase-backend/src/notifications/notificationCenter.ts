@@ -148,7 +148,7 @@ class NotificationCenter {
     data,
     type = 'normal',
     read = false,
-    createdAt = FieldValue.serverTimestamp(),
+    createdAt = new Date(),
   }: NotificationDocumentData) => {
     try {
       const notificationDoc: NotificationDocumentData = {

@@ -5,18 +5,18 @@ import { firestore as db } from '../../services/firestore'
 export const getAllNotifications = async (uid: string): Promise<NotificationDocument[]> => {
   try {
     const notificationsCollection = await db
-      .collection('users')
-      .doc(uid)
-      .collection('notifications')
-      .limit(50)
-      .get()
-
+    .collection('users')
+    .doc(uid)
+    .collection('notifications')
+    .limit(50)
+    .get()
+    
+    console.log({ notificationsCollection, uid })
     if (!notificationsCollection.empty) {
       return notificationsCollection.docs.map((doc) => {
         return {
           ...(doc.data() as NotificationDocumentData),
           id: doc.id,
-          createTime: doc.createTime,
         } as NotificationDocument
       })
     } else {

@@ -6,8 +6,9 @@ import { User } from '../types/user'
 export const userAuthenticated = async (req: ApiRequest, res: Response, next: any) => {
   try {
     const token = req.headers?.authorization
+    console.log({ token })
     if (!token) throw 'Missing authentication token'
-    
+
     const { uid } = await auth().verifyIdToken(token.replace('Bearer ', ''))
     const userDoc = await db.collection('users').doc(uid).get()
 

@@ -43,7 +43,7 @@ export interface NotificationDocumentData extends NotificationMessageInput {
   data?: PushNotifcationData
   read?: boolean
   type?: NotificationType
-  createdAt?: firestore.FieldValue
+  createdAt?: Date
 }
 export interface NotificationDocument extends NotificationDocumentData {
   id: string

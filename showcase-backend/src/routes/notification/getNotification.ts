@@ -21,7 +21,6 @@ export const getNotification = async ({
       return {
         ...(notificationDoc.data() as NotificationDocumentData),
         id: notificationDoc.id,
-        createTime: notificationDoc.createTime,
       } as NotificationDocument
     } else {
       throw 'Notification document doesnt exists'

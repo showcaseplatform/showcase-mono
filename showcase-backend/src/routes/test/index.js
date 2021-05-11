@@ -4,6 +4,8 @@ const TestRouter = require('express').Router()
 const { firestore: db } = require('../../services/firestore')
 const axios = require('axios')
 
+const API_KEY = 'AIzaSyCYBkt1m7Km3M7zQPzL_XlpSVPLG7uOVpo'
+
 TestRouter.route('/getBearerToken').post(async (req, res) => {
   try {
     const { token } = req.body

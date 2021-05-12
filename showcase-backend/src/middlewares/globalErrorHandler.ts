@@ -1,11 +1,11 @@
 import Boom from 'boom'
 
 const handleBoomError = (error: Boom, res: any) => {
+  console.log('handleBoomError')
   const { data } = error
   const { statusCode, error: boomError, message } = error.output.payload
-  console.log('handleBoomError')
   if (boomError === 'Not Found' || statusCode === 404) {
-    res.status(statusCode).send(data)
+    res.status(statusCode).send({data, message})
   } else {
     res.send(error)
   }

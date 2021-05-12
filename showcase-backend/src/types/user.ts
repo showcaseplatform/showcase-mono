@@ -54,3 +54,17 @@ export interface User {
 export interface Crypto {
   address: string
 }
+
+export interface Profile {
+  uid: Uid,
+  bio: string,
+  creator:boolean,
+  displayName: string,
+  username: string,
+  avatar: string,
+}
+
+export interface ListFollowersResponse {
+  profiles: Profile[]
+  lastdate: Date
+}

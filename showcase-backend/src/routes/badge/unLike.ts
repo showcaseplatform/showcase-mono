@@ -9,26 +9,21 @@ interface UnikeHandlerInput extends UnlikeRequestBody {
 }
 
 export const unlikeHandler = async ({ marketplace, badgeid, user }: UnikeHandlerInput) => {
-  try {
-    if (!user.liked || !user.liked[badgeid]) {
-      throw Boom.methodNotAllowed('Already unliked')
+  if (!user.liked || !user.liked[badgeid]) {
+    throw Boom.methodNotAllowed('Already unliked')
+  } else {
+    delete user.liked[badgeid]
+    await db.collection('users').doc(user.uid).update({ liked: user.liked })
+    if (marketplace) {
+      await db
+        .collection('badgesales')
+        .doc(badgeid)
+        .update({ likes: FieldValue.increment(-1) })
     } else {
-      delete user.liked[badgeid]
-      await db.collection('users').doc(user.uid).update({ liked: user.liked })
-      if (marketplace) {
-        await db
-          .collection('badgesales')
-          .doc(badgeid)
-          .update({ likes: FieldValue.increment(-1) })
-      } else {
-        await db
-          .collection('badges')
-          .doc(badgeid)
-          .update({ likes: FieldValue.increment(-1) })
-      }
+      await db
+        .collection('badges')
+        .doc(badgeid)
+        .update({ likes: FieldValue.increment(-1) })
     }
-  } catch (error) {
-    console.error('unlikeHandler failed', error)
-    throw error
   }
 }

@@ -9,9 +9,11 @@ import { WithdrawalsRouter } from './withdrawals'
 import { MarketplaceRouter } from './marketplace'
 import { Application } from 'express'
 import { UserRouter } from './user'
+import { TestRouter } from './test'
+import { ROUTE_PATHS } from '../consts/routePaths'
 
 export const MainRouter = (app: Application) => {
-  app.use('/auth', AuthRouter)
+  app.use(ROUTE_PATHS.AUTH.MAIN, AuthRouter)
   app.use('/user', UserRouter)
   app.use('/wallet', WalletRouter)
   app.use('/notification', NotificationRouter)
@@ -21,6 +23,7 @@ export const MainRouter = (app: Application) => {
   app.use('/causes', CausesRouter)
   app.use('/withdrawals', WithdrawalsRouter)
   app.use('/marketplace', MarketplaceRouter)
+  app.use('/test', TestRouter)
 
   // add more routes here
 }

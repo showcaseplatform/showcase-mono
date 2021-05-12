@@ -11,7 +11,7 @@ const getFollowerProfiles = async (followers: Follower[]) => {
 
   for (var i = 0; i < followers.length; i++) {
     const otherUser = await db.collection('users').doc(followers[i].uid).get()
-    const profileData = otherUser.data()
+    const profileData = otherUser.data() as User
     allProfiles.push({
       uid: profileData.uid,
       bio: profileData.bio,
@@ -25,11 +25,11 @@ const getFollowerProfiles = async (followers: Follower[]) => {
   return allProfiles
 }
 
-export const listFollowers = async ({
+const listFollowCollection = async ({
   user,
   lastdate,
-}: ListFollowersInput): Promise<ListFollowersResponse> => {
-  const myQuery = db.collection('users').doc(user.uid).collection('followers')
+}: ListFollowersInput, collection: 'followers' | 'followings'): Promise<ListFollowersResponse> => {
+  const myQuery = db.collection('users').doc(user.uid).collection(collection)
 
   // todo: revise pagination
   if (lastdate) {
@@ -49,5 +49,19 @@ export const listFollowers = async ({
 
   const allProfiles = await getFollowerProfiles(followers)
 
-  return { profiles: allProfiles, lastdate: newlastdate?.toDate() || null }
+  return { profiles: allProfiles, lastdate: newlastdate }
+}
+
+export const listFollowers = async({
+  user,
+  lastdate,
+}: ListFollowersInput) => {
+  return await listFollowCollection({user, lastdate}, 'followers')
+}
+
+export const listFollowings = async({
+  user,
+  lastdate,
+}: ListFollowersInput) => {
+  return await listFollowCollection({user, lastdate}, 'followings')
 }

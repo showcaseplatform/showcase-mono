@@ -48,6 +48,7 @@ export interface User {
   banned?: boolean | string
   crypto?: Crypto
   creator?: boolean
+  bio?: string
 }
 
 
@@ -57,14 +58,14 @@ export interface Crypto {
 
 export interface Profile {
   uid: Uid,
-  bio: string,
-  creator:boolean,
+  bio?: string,
+  creator?:boolean,
   displayName: string,
   username: string,
-  avatar: string,
+  avatar?: string,
 }
 
 export interface ListFollowersResponse {
   profiles: Profile[]
-  lastdate: Date
+  lastdate: any
 }

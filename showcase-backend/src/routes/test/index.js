@@ -6,7 +6,7 @@ const axios = require('axios')
 
 const API_KEY = 'AIzaSyCYBkt1m7Km3M7zQPzL_XlpSVPLG7uOVpo'
 
-TestRouter.route('/getBearerToken').post(async (req, res) => {
+TestRouter.route('/loginWithUid').post(async (req, res) => {
   try {
 
     const { uid } = req.body

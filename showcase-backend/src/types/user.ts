@@ -1,7 +1,7 @@
 import { BadgeId } from './badge'
 import { Chat } from './chat'
 
-export type Currency = 'USD' | 'GBP' | 'USD'
+export type Currency = 'USD' | 'GBP' | 'EUR'
 
 export type Uid = string
 
@@ -49,6 +49,7 @@ export interface User {
   crypto?: Crypto
   creator?: boolean
   bio?: string
+  email? : string
 }
 
 
@@ -56,7 +57,7 @@ export interface Crypto {
   address: string
 }
 
-export interface Profile {
+export interface PublicProfile {
   uid: Uid,
   bio?: string,
   creator?:boolean,
@@ -64,8 +65,17 @@ export interface Profile {
   username: string,
   avatar?: string,
 }
+export interface UpdateProfileRequest {
+  bio?: string,
+  displayName?: string,
+  username?: string,
+  avatar?: string,
+  email?: string,
+  birthDate?: string | Date
+  currency: Currency
+}
 
 export interface ListFollowersResponse {
-  profiles: Profile[]
+  profiles: PublicProfile[]
   lastdate: any
 }

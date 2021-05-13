@@ -1,5 +1,5 @@
 import { firestore as db } from '../../services/firestore'
-import { Follower, ListFollowersResponse, Profile, User } from '../../types/user'
+import { Follower, ListFollowersResponse, PublicProfile, User } from '../../types/user'
 
 export interface ListFollowersInput {
   user: User
@@ -7,7 +7,7 @@ export interface ListFollowersInput {
 }
 
 const getFollowerProfiles = async (followers: Follower[]) => {
-  const allProfiles: Profile[] = []
+  const allProfiles: PublicProfile[] = []
 
   for (var i = 0; i < followers.length; i++) {
     const otherUser = await db.collection('users').doc(followers[i].uid).get()

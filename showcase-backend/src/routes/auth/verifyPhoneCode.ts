@@ -53,7 +53,7 @@ const validatePhoneCode = async ({ areaCode, phone, code }: VerifyPhoneRequestBo
   }
   if (error) {
     await incrementVerificationCount(verificationRef)
-    throw error
+    throw Boom.notAcceptable(error, { areaCode, phone, code })
   } else {
     await resetVerification(verificationRef)
   }

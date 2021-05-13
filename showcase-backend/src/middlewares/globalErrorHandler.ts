@@ -18,12 +18,14 @@ export const globalErrorHandler = (error: any, req: any, res: any, next: any) =>
   // if (req) {
   //   console.error('ERROR LOG CONT.', req)
   // }
+
   if (error.status === 502 || error.status === 504) {
     res.status(500)
     return res.send('Error Connecting to server. Please try again.')
   } else if (error.isBoom) {
     handleBoomError(error, res)
   } else {
+    console.error({ error })
     res.status(error.status || 500)
     return res.send(error.stack) // for now, in development
   }

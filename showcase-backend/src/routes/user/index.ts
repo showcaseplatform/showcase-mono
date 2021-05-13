@@ -3,10 +3,10 @@ import Router from 'express-promise-router'
 
 const UserRouter = Router()
 
-import { updateProfile } from './updateProfile.js'
-import getOtherUserHandler from './loadOtherUser.js'
+import { updateProfile } from './updateProfile'
+import getOtherUserHandler from './loadOtherUser'
 import { listFollowers, listFollowings } from './listFollowers'
-import loadUserHandler from './loadUser.js'
+import loadUserHandler from './loadUser'
 import { toggleFollow } from './toggleFollow'
 import { ApiRequest } from '../../types/request'
 import { UpdateProfileRequest, User } from '../../types/user'

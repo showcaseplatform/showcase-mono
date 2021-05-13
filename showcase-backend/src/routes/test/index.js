@@ -1,12 +1,16 @@
 /* eslint-disable promise/no-nesting */
 const { expo } = require('../../config')
 const TestRouter = require('express').Router()
-const { firestore: db } = require('../../services/firestore')
+const { firestore: db, auth } = require('../../services/firestore')
 const axios = require('axios')
 
-TestRouter.route('/getBearerToken').post(async (req, res) => {
+const API_KEY = 'AIzaSyCYBkt1m7Km3M7zQPzL_XlpSVPLG7uOVpo'
+
+TestRouter.route('/loginWithUid').post(async (req, res) => {
   try {
-    const { token } = req.body
+
+    const { uid } = req.body
+    const token = await auth().createCustomToken(uid)
     console.log({token})
     const url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${API_KEY}`;
     const data = {
@@ -161,4 +165,5 @@ TestRouter.route('/testq').get(async (req, res) => {
   }
 })
 
-module.exports = { TestRouter }
+
+export { TestRouter }

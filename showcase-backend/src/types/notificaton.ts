@@ -43,7 +43,7 @@ export interface NotificationDocumentData extends NotificationMessageInput {
   uid: Uid
   title?: string
   body?: string
-  data?: PushNotifcationData
+  data?: PushNotifcationData | null
   read?: boolean
   type?: NotificationType
   createdDate?: Date

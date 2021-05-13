@@ -1,14 +1,14 @@
-const { userAuthenticated } = require('../../middlewares/userAuthenticated')
-const { optionallyHasUser } = require('../../middlewares/optionallyHasUser')
+import { userAuthenticated } from '../../middlewares/userAuthenticated'
+import { optionallyHasUser } from '../../middlewares/optionallyHasUser'
+import Router from 'express-promise-router'
+import loadUserTradesHandler from './loadUserTrades.js'
+import loadUserMarketplaceHandler from './loadUserMarketplace.js'
+import loadOtherUserMarketplaceHandler from './loadOtherUserMarketplace.js'
+import loadBadgesForSaleHandler from './loadBadgesForSale.js'
+import purchaseBadgeHandler from './purchaseBadge.js'
+import publishBadgeHandler from './publishBadge.js'
 
-const MarketplaceRouter = require('express').Router()
-const loadUserTradesHandler = require('./loadUserTrades.js')
-const loadUserMarketplaceHandler = require('./loadUserMarketplace.js')
-const loadOtherUserMarketplaceHandler = require('./loadOtherUserMarketplace.js')
-const loadBadgesForSaleHandler = require('./loadBadgesForSale.js')
-const purchaseBadgeHandler = require('./purchaseBadge.js')
-const publishBadgeHandler = require('./publishBadge.js')
-
+const MarketplaceRouter = Router()
 // Public route
 MarketplaceRouter.route('/loadBadgesForSale').get(optionallyHasUser, loadBadgesForSaleHandler)
 
@@ -23,4 +23,4 @@ MarketplaceRouter.route('/loadOtherUserMarketplace').get(
 MarketplaceRouter.route('/purchaseBadge').post(userAuthenticated, purchaseBadgeHandler)
 MarketplaceRouter.route('/publishBadge').post(userAuthenticated, publishBadgeHandler)
 
-module.exports = { MarketplaceRouter }
+export { MarketplaceRouter }

@@ -17,6 +17,7 @@ import {
   ExpoPushTicket,
 } from '../services/expo'
 import moment from 'moment'
+import Boom from 'boom'
 
 // todo: store these is db so it can be modifed easier
 // To limit number of push notication sent to a specific user, modify this
@@ -67,7 +68,7 @@ class NotificationCenter {
         .collection('users')
         .doc(uid)
         .collection('notifcations')
-        .where('createdAt', '>', periodStartTimestamp)
+        .where('createdDate', '>', periodStartTimestamp)
         .where('name', '==', name)
         .limit(sendLimit)
         .get()
@@ -129,28 +130,31 @@ class NotificationCenter {
   private saveNotificationData = async ({
     name,
     uid,
-    title,
-    body,
-    data,
+    title = '',
+    body = '',
+    data = {},
     type = 'normal',
     read = false,
     createdDate = new Date(),
   }: NotificationDocumentData) => {
-    const notificationDoc: NotificationDocumentData = {
-      name,
-      title,
-      body,
-      uid,
-      data,
-      read,
-      type,
-      createdDate,
+    if (name && uid) {
+      const notificationDoc: NotificationDocumentData = {
+        name,
+        title,
+        body,
+        uid,
+        data,
+        read,
+        type,
+        createdDate,
+      }
+      await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
+      if (!read) {
+        await this.changeUnreadCount({ uid, change: 1 })
+      }
+    } else {
+      throw Boom.badData('Notifcation name and uid most be provided')
     }
-    await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
-    if (!read) {
-      await this.changeUnreadCount({ uid, change: 1 })
-    }
-    console.log('Notification  saved to db', notificationDoc)
   }
 
   // todo: how to deal with error tickets?

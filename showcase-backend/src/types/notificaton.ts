@@ -27,7 +27,7 @@ export interface PushNotifcationData {
 export interface NotifcationBase {
   title?: string
   body?: string
-  data?: PushNotifcationData
+  data?: PushNotifcationData | undefined 
 }
 
 export interface NotificationMessageInput extends NotifcationBase {
@@ -39,11 +39,6 @@ export interface PushMessage extends NotificationMessageInput {
   to: NotifcationToken
 }
 export interface NotificationDocumentData extends NotificationMessageInput {
-  name: NotificationName
-  uid: Uid
-  title?: string
-  body?: string
-  data?: PushNotifcationData | null
   read?: boolean
   type?: NotificationType
   createdDate?: Date

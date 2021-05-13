@@ -1,4 +1,3 @@
-import Boom from 'boom'
 import { notificationCenter } from '../../notifications/notificationCenter'
 import { firestore as db } from '../../services/firestore'
 import { Uid } from '../../types/user'

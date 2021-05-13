@@ -20,8 +20,7 @@ import { updateExchangeRatesJob } from './jobs/updateExchangeRates'
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
 // Import routing
-import { MainRouter } from './routes'
-import { periodEndJob } from './jobs/periodEnd'
+import { MainController } from './controllers/main'
 import { checkExpoReceiptsJob } from './jobs/checkNotificationReceipts'
 
 // import { buildSchema } from 'graphql'
@@ -37,7 +36,7 @@ app.use(cookieParser())
 app.use(express.json());
 
 // Setup routes
-MainRouter(app)
+MainController(app)
 
 // Add error handling
 app.use(globalErrorHandler)
@@ -75,11 +74,10 @@ bootstrap()
 
 
 // Api
-export const api = functions.runWith({ timeoutSeconds: 540 }).https.onRequest(app)
+export const api = functions.runWith({ timeoutSeconds: 30 }).https.onRequest(app)
 
 // Jobs
 export const updateExchangeRates = updateExchangeRatesJob
-export const onPeriodEnd = periodEndJob
 export const checkExpoReceipts = checkExpoReceiptsJob
 
 // Triggers

@@ -1,9 +1,7 @@
-import { firestore } from 'firebase-admin'
-import { Arg, Ctx, Field, ID, InputType, Int, Mutation, ObjectType, Query, Resolver } from 'type-graphql'
-import { getAllNotifications } from '../routes/notification/getAllNotifications'
-import { getNotification } from '../routes/notification/getNotification'
-import { markAsRead } from '../routes/notification/markNotifcations'
-import { NotificationName, PushNotifcationData, NotificationType } from '../types/notificaton'
+import { Arg, Ctx, Field, ID, Mutation, ObjectType, Query, Resolver } from 'type-graphql'
+import { getAllNotifications } from '../libs/notification/getAllNotifications'
+import { getNotification } from '../libs/notification/getNotification'
+import { markAsRead } from '../libs/notification/markNotifcations'
 import { Uid } from '../types/user'
 
 @ObjectType({ description: "The notifcation model" })

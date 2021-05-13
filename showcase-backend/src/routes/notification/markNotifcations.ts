@@ -22,11 +22,11 @@ export const markAllAsRead = async (uid: Uid) => {
     .where('read', '==', false)
     .get()
 
-  if (notificationsCollection.empty) throw Boom.notFound('User doesnt have any notifications')
-
-  await Promise.all(
-    notificationsCollection.docs.map(async (doc) => {
-      await markAsRead({ uid, notificationId: doc.id })
-    })
-  )
+  if (!notificationsCollection.empty) {
+    await Promise.all(
+      notificationsCollection.docs.map(async (doc) => {
+        await markAsRead({ uid, notificationId: doc.id })
+      })
+    )
+  }
 }

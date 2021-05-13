@@ -1,7 +1,7 @@
 import { FieldValue, firestore as db, Timestamp } from '../services/firestore'
 import {
   NotificationDocumentData,
-  NotificationMessageInput,
+  NotificationInput,
   NotificationName,
   PushMessage,
   NotificationLimitDoc,
@@ -36,7 +36,7 @@ class NotificationCenter {
 
   // todo: create a func like: sendNotifcation = () => {}, which handles all notification send, also decides whether to call sendPushNoti...
 
-  sendPushNotificationBatch = async (inputMessages: NotificationMessageInput[]) => {
+  sendPushNotificationBatch = async (inputMessages: NotificationInput[]) => {
     await this.saveMessages(inputMessages, 'push')
     const pushMessages = await this.validateInputMessages(inputMessages)
     const filteredPushMessages = await this.filterPushMessages(pushMessages)
@@ -105,7 +105,7 @@ class NotificationCenter {
     return tickets
   }
 
-  private validateInputMessages = async (inputMessages: NotificationMessageInput[]) => {
+  private validateInputMessages = async (inputMessages: NotificationInput[]) => {
     let pushMessages: PushMessage[] = []
 
     for (let message of inputMessages) {
@@ -121,7 +121,7 @@ class NotificationCenter {
     return pushMessages
   }
 
-  private saveMessages = async (messages: NotificationMessageInput[], type: NotificationType) => {
+  private saveMessages = async (messages: NotificationInput[], type: NotificationType) => {
     messages.forEach(async (message) => {
       await this.saveNotificationData({ ...message, type })
     })

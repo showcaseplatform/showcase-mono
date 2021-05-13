@@ -1,4 +1,4 @@
-import { NotificationDocumentData } from '../../types/notificaton'
+import { NotificationDocument, NotificationDocumentData } from '../../types/notificaton'
 import { firestore as db } from '../../services/firestore'
 import Boom from 'boom'
 import { Uid } from '../../types/user'
@@ -9,7 +9,7 @@ export const getAllNotifications = async ({
 }: {
   uid: Uid
   lastCreatedDate: string | undefined | any
-}): Promise<NotificationDocumentData[]> => {
+}): Promise<NotificationDocument[]> => {
   const notificationsQuery = db
     .collection('users')
     .doc(uid)
@@ -22,11 +22,14 @@ export const getAllNotifications = async ({
 
   const notificationsCollection = await notificationsQuery.limit(10).get()
 
-  if (notificationsCollection.empty) throw Boom.notFound('User doesnt have any notifications')
-
-  return notificationsCollection.docs.map((doc) => {
-    return {
-      ...(doc.data() as NotificationDocumentData),
-    }
-  })
+  if (!notificationsCollection.empty) {
+    return notificationsCollection.docs.map((doc) => {
+      return {
+        ...(doc.data() as NotificationDocumentData),
+        id: doc.id,
+      } as NotificationDocument
+    })
+  } else {
+    return []
+  }
 }

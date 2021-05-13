@@ -1,9 +1,8 @@
-import Boom from 'boom'
 import { firestore as db } from '../../services/firestore'
-import { UnreadDocument, UnreadDocumentData } from '../../types/notificaton'
+import { UnreadDocumentData } from '../../types/notificaton'
 import { Uid } from '../../types/user'
 
-export const getUnreadCount = async (uid: Uid): Promise<UnreadDocument> => {
+export const getUnreadCount = async (uid: Uid): Promise<UnreadDocumentData> => {
   const unreadDoc = await db
     .collection('users')
     .doc(uid)
@@ -11,10 +10,11 @@ export const getUnreadCount = async (uid: Uid): Promise<UnreadDocument> => {
     .doc('unread')
     .get()
 
-  if (!unreadDoc.exists) throw Boom.notFound('Notification document doesnt exists')
-
-  return {
-    ...(unreadDoc.data() as UnreadDocumentData),
-    updateTime: unreadDoc.updateTime,
-  } as UnreadDocument
+  if (unreadDoc.exists) {
+    return {
+      ...unreadDoc.data(),
+    } as UnreadDocumentData
+  } else {
+    return { count: 0 } as UnreadDocumentData
+  }
 }

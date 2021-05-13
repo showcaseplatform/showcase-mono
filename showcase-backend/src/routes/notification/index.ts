@@ -8,8 +8,9 @@ import { getAllNotifications } from './getAllNotifications'
 import { ApiRequest } from '../../types/request'
 import { User } from '../../types/user'
 import { getUnreadCount } from './getUnreadCount'
+import Router from 'express-promise-router'
 
-const NotificationRouter = express.Router()
+const NotificationRouter = Router()
 
 NotificationRouter.use(userAuthenticated)
 
@@ -23,7 +24,7 @@ NotificationRouter.route('/get/:id').get(async (req: ApiRequest, res) => {
 NotificationRouter.route('/getAll').get(async (req: ApiRequest, res) => {
   const { uid } = req?.user as User
   const { lastdate } = req.query
-  const notifications = await getAllNotifications({uid, lastCreatedDate: lastdate})
+  const notifications = await getAllNotifications({ uid, lastCreatedDate: lastdate })
   res.status(200).send(notifications)
 })
 

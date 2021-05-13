@@ -30,15 +30,15 @@ export interface NotifcationBase {
   data?: PushNotifcationData | undefined 
 }
 
-export interface NotificationMessageInput extends NotifcationBase {
+export interface NotificationInput extends NotifcationBase {
   name: NotificationName
   uid: Uid
 }
 
-export interface PushMessage extends NotificationMessageInput {
+export interface PushMessage extends NotificationInput {
   to: NotifcationToken
 }
-export interface NotificationDocumentData extends NotificationMessageInput {
+export interface NotificationDocumentData extends NotificationInput {
   read?: boolean
   type?: NotificationType
   createdDate?: Date
@@ -49,9 +49,6 @@ export interface NotificationDocument extends NotificationDocumentData {
 
 export interface UnreadDocumentData {
   count: number
-}
-export interface UnreadDocument extends UnreadDocumentData {
-  updateTime: firestore.FieldValue
 }
 
 type LimitRecord<K extends keyof any, T> = {

@@ -1,4 +1,3 @@
-import Boom from 'boom'
 import { firestore as db } from '../../services/firestore'
 import { NotificationDocument, NotificationDocumentData } from '../../types/notificaton'
 import { Uid } from '../../types/user'
@@ -9,22 +8,20 @@ export const getNotification = async ({
 }: {
   uid: Uid
   notificationId: string
-}): Promise<NotificationDocumentData> => {
-  try {
-    const notificationDoc = await db
-      .collection('users')
-      .doc(uid)
-      .collection('notifications')
-      .doc(notificationId)
-      .get()
+}): Promise<NotificationDocument> => {
+  const notificationDoc = await db
+    .collection('users')
+    .doc(uid)
+    .collection('notifications')
+    .doc(notificationId)
+    .get()
 
-    if (!notificationDoc.exists) throw Boom.notFound('Notification document doesnt exists')
-    
+  if (notificationDoc.exists) {
     return {
       ...(notificationDoc.data() as NotificationDocumentData),
+      id: notificationDoc.id,
     }
-  } catch (error) {
-    console.error(`findNotification failed: `, { uid }, { notificationId }, error)
-    throw error
+  } else {
+    return {} as NotificationDocument
   }
 }

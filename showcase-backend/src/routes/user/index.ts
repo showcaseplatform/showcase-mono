@@ -3,17 +3,21 @@ import Router from 'express-promise-router'
 
 const UserRouter = Router()
 
-import { updateProfile } from './updateProfile.js'
-import getOtherUserHandler from './loadOtherUser.js'
+import { updateProfile } from './updateProfile'
+import getOtherUserHandler from './loadOtherUser'
 import { listFollowers, listFollowings } from './listFollowers'
-import loadUserHandler from './loadUser.js'
+import loadUserHandler from './loadUser'
 import { toggleFollow } from './toggleFollow'
 import { ApiRequest } from '../../types/request'
 import { UpdateProfileRequest, User } from '../../types/user'
+import { getUserAvatar } from './avatar'
 
 // Public route
-// todo: implement this endpoint
-UserRouter.route('/avatar/:id').get(loadUserHandler)
+UserRouter.route('/avatar/:id').get(async (req: ApiRequest, res) => {
+  const uid = req.params.id
+  const avatar = await getUserAvatar(uid)
+  res.redirect(301, avatar)
+})
 
 // Protected by authentication
 UserRouter.route('/updateProfile').post(userAuthenticated, async (req: ApiRequest, res) => {

@@ -3,11 +3,12 @@ import validator from 'validator'
 import { Currency, UpdateProfileRequest, User } from '../../types/user'
 import Boom from 'boom'
 import { CURRENCIES } from '../../consts/currencies'
+import moment from 'moment'
 
 const MAX_BIO_LENGTH = 240
 const MAX_USERNAME_LENGTH = 28
 const MAX_DISPLAY_NAME_LENGTH = 36
-const MIN_USER_BRITH_DATE = new Date(2005, 12, 31)
+const MIN_USER_AGE = 18
 
 interface UpdateProfileInput extends UpdateProfileRequest {
   user: User
@@ -58,7 +59,7 @@ const validateDisplayName = (displayName: string) => {
 }
 
 const validateBirthdate = (birthDate: Date) => {
-  if (birthDate < MIN_USER_BRITH_DATE) {
+  if (birthDate <  moment().add(-MIN_USER_AGE, 'years').toDate()) {
     return birthDate
   } else {
     throw Boom.badData('Invalid birth date')
@@ -121,7 +122,7 @@ export const updateProfile = async ({
   if (Object.keys(updateData).length >= 1) {
     await db.collection('users').doc(user.uid).update(updateData)
     const userDoc = await db.collection('users').doc(user.uid).get()
-    return { user: { ...userDoc.data() as User } }
+    return { user: { ...(userDoc.data() as User) } }
   } else {
     return { user }
   }

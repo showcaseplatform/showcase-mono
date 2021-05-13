@@ -19,8 +19,7 @@ import { updateExchangeRatesJob } from './jobs/updateExchangeRates'
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
 // Import routing
-import { MainRouter } from './routes'
-import { periodEndJob } from './jobs/periodEnd'
+import { MainController } from './controllers/main'
 import { checkExpoReceiptsJob } from './jobs/checkNotificationReceipts'
 
 // Set up api server
@@ -29,7 +28,7 @@ app.use(cors({ origin: true }))
 app.use(cookieParser())
 
 // Setup routes
-MainRouter(app)
+MainController(app)
 
 // Add error handling
 app.use(globalErrorHandler)

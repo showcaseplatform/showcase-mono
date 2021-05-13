@@ -27,6 +27,6 @@ export const globalErrorHandler = (error: any, req: any, res: any, next: any) =>
   } else {
     console.error({ error })
     res.status(error.status || 500)
-    return res.send(error.stack) // for now, in development
+    return res.send(error.stack || error) // for now, in development
   }
 }

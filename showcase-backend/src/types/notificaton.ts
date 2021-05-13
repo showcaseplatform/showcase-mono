@@ -8,7 +8,7 @@ export enum NotificationName {
   NEW_FOLLOWER_ADDED = 'NEW_FOLLOWER_ADDED',
   NEW_MESSAGE_RECEIVED = 'NEW_MESSAGE_RECEIVED',
   SOLD_BADGES_SUMMARY = 'SOLD_BADGES_SUMMARY',
-  MOST_VIEWED_BADGE = 'MOST_VIEWED_BADGE'
+  MOST_VIEWED_BADGE = 'MOST_VIEWED_BADGE',
 }
 
 // todo: this should be calculated on the notfication type (see above)
@@ -27,7 +27,7 @@ export interface PushNotifcationData {
 export interface NotifcationBase {
   title?: string
   body?: string
-  data?: PushNotifcationData
+  data?: PushNotifcationData | undefined 
 }
 
 export interface NotificationInput extends NotifcationBase {
@@ -38,20 +38,17 @@ export interface NotificationInput extends NotifcationBase {
 export interface PushMessage extends NotificationInput {
   to: NotifcationToken
 }
-
-export interface BadgeMetaData {
-
-}
-
-export interface NotificationDocument {
-  name: NotificationName
-  uid: Uid
-  title?: string
-  body?: string
-  data?: PushNotifcationData | null
+export interface NotificationDocumentData extends NotificationInput {
   read?: boolean
   type?: NotificationType
-  createdAt?: firestore.FieldValue
+  createdDate?: Date
+}
+export interface NotificationDocument extends NotificationDocumentData {
+  id: string
+}
+
+export interface UnreadDocumentData {
+  count: number
 }
 
 type LimitRecord<K extends keyof any, T> = {

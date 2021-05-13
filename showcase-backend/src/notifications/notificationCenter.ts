@@ -1,8 +1,8 @@
-import { FieldValue, firestore as db, FieldPath, Timestamp } from '../services/firestore'
+import { FieldValue, firestore as db, Timestamp } from '../services/firestore'
 import {
-  NotificationDocument,
-  NotificationName,
+  NotificationDocumentData,
   NotificationInput,
+  NotificationName,
   PushMessage,
   NotificationLimitDoc,
   NotificationType,
@@ -68,7 +68,7 @@ class NotificationCenter {
         .collection('users')
         .doc(uid)
         .collection('notifcations')
-        .where('createdAt', '>', periodStartTimestamp)
+        .where('createdDate', '>', periodStartTimestamp)
         .where('name', '==', name)
         .limit(sendLimit)
         .get()
@@ -132,13 +132,13 @@ class NotificationCenter {
     uid,
     title = '',
     body = '',
-    data = null,
+    data = {},
     type = 'normal',
     read = false,
-    createdAt = FieldValue.serverTimestamp(),
-  }: NotificationDocument) => {
+    createdDate = new Date(),
+  }: NotificationDocumentData) => {
     if (name && uid) {
-      const notificationDoc: NotificationDocument = {
+      const notificationDoc: NotificationDocumentData = {
         name,
         title,
         body,
@@ -146,7 +146,7 @@ class NotificationCenter {
         data,
         read,
         type,
-        createdAt,
+        createdDate,
       }
       await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
       if (!read) {

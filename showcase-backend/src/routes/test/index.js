@@ -37,7 +37,6 @@ TestRouter.route('/loginWithUid').post(async (req, res) => {
   }
 })
 
-
 const sendNotification = (user, title, body, token, data, type, noPush) => {
   //'{    "data":"goes here" }'
   db.collection('users')

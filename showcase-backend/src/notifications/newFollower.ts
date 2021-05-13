@@ -1,26 +1,22 @@
-import { firestore as db } from '../services/firestore'
+import Boom from 'boom'
 import { NotificationName } from '../types/notificaton'
-import { Uid, User } from '../types/user'
+import { Uid } from '../types/user'
 import { notificationCenter } from './notificationCenter'
 
-const getFollowerDetails = async (followerUid: Uid) => {
-  const userDoc = await db.collection('users').doc(followerUid).get()
-  const { username = null } = userDoc.data() as User
-  return { username }
-}
+export const sendNotificationToFollowedUser = async (username: string, followerUid: Uid) => {
+  if (username) {
+    const title = `@${username} followed you`
+    const body = ''
 
-export const sendNotificationToFollowedUser = async (uid: Uid, followerUid: Uid) => {
-  const { username: followerName } = await getFollowerDetails(followerUid)
-
-  const title = `@${followerName} followed you`
-  const body = ''
-
-  await notificationCenter.sendPushNotificationBatch([
-    {
-      name: NotificationName.NEW_FOLLOWER_ADDED,
-      uid,
-      title,
-      body,
-    },
-  ])
+    await notificationCenter.sendPushNotificationBatch([
+      {
+        name: NotificationName.NEW_FOLLOWER_ADDED,
+        uid: followerUid,
+        title,
+        body,
+      },
+    ])
+  } else {
+    throw Boom.badData('Send notifcation failed, username is missing')
+  }
 }

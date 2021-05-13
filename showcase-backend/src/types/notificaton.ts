@@ -48,7 +48,7 @@ export interface NotificationDocument {
   uid: Uid
   title?: string
   body?: string
-  data?: PushNotifcationData
+  data?: PushNotifcationData | null
   read?: boolean
   type?: NotificationType
   createdAt?: firestore.FieldValue

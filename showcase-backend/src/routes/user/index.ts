@@ -7,7 +7,7 @@ import updateProfile from './updateProfile.js'
 import getOtherUserHandler from './loadOtherUser.js'
 import { listFollowers, listFollowings } from './listFollowers'
 import loadUserHandler from './loadUser.js'
-import { addFriend } from './addFriend'
+import { toggleFollow } from './toggleFollow'
 import { ApiRequest } from '../../types/request'
 import { User } from '../../types/user'
 
@@ -16,11 +16,10 @@ UserRouter.route('/avatar/:id').get(loadUserHandler)
 
 // Protected by authentication
 UserRouter.route('/updateProfile').post(userAuthenticated, updateProfile)
-UserRouter.route('/removeFriend').post(userAuthenticated, getOtherUserHandler)
-UserRouter.route('/addFriend').post(userAuthenticated, async (req: ApiRequest, res) => {
-  const { uid } = req.user as User
+UserRouter.route('/toggleFollow').post(userAuthenticated, async (req: ApiRequest, res) => {
+  const { uid, username } = req.user as User
   const { userid: followingUid } = req.body
-  await addFriend({uid, followingUid})
+  await toggleFollow({uid, username, followingUid})
   res.status(200).send()
 })
 

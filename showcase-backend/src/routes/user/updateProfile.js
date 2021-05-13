@@ -116,6 +116,7 @@ module.exports = (req, res) => {
         .update(updateData)
         .then((done) => {
           console.log('Updated profile')
+          console.log({done})
           return res.send('OK')
         })
         .catch((err) => {

@@ -92,25 +92,19 @@ export const listBadgeForSaleHandler = async ({
     badgeowner: user.crypto?.address || '',
     token: blockchain.authToken,
   }
-
-  try {
-    if (price < 0 || price > 200 || isNaN(price) || typeof price !== 'number') {
-      throw Boom.badData('Invalid Price', price)
+  if (price < 0 || price > 200 || isNaN(price) || typeof price !== 'number') {
+    throw Boom.badData('Invalid Price', price)
+  } else {
+    // todo: is it possible that this querry returns more then 1 item?
+    const badgesSnapshot = await db.collection('badges').where('tokenId', '==', badgeid).get()
+    if (!badgesSnapshot.empty) {
+      const [badge, id] = [
+        badgesSnapshot.docs[0].data() as BadgeDocumentData,
+        badgesSnapshot.docs[0].id,
+      ]
+      await validateBadgeOwnership({ badge, id, price, postData, user })
     } else {
-      // todo: is it possible that this querry returns more then 1 item?
-      const badgesSnapshot = await db.collection('badges').where('tokenId', '==', badgeid).get()
-      if (!badgesSnapshot.empty) {
-        const [badge, id] = [
-          badgesSnapshot.docs[0].data() as BadgeDocumentData,
-          badgesSnapshot.docs[0].id,
-        ]
-        await validateBadgeOwnership({ badge, id, price, postData, user })
-      } else {
-        throw Boom.notFound('Badge wasnt found', badgeid)
-      }
+      throw Boom.notFound('Badge wasnt found', badgeid)
     }
-  } catch (error) {
-    console.error('listBadgeForSaleHandler failed: ', { error })
-    throw error
   }
 }

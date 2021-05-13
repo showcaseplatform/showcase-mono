@@ -35,11 +35,11 @@ MainRouter(app)
 app.use(globalErrorHandler)
 
 // Api
-export const api = functions.runWith({ timeoutSeconds: 540 }).https.onRequest(app)
+export const api = functions.runWith({ timeoutSeconds: 30 }).https.onRequest(app)
 
 // Jobs
 export const updateExchangeRates = updateExchangeRatesJob
-export const checkExpoReceipts = checkExpoReceiptsJob 
+export const checkExpoReceipts = checkExpoReceiptsJob
 
 // Triggers
 export const onUserWrite = onUserWriteTrigger

@@ -6,14 +6,14 @@ import { userAuthenticated } from '../../middlewares/userAuthenticated'
 import { countViewHandler } from './countView'
 import { countLikeHandler } from './countLike'
 import { unlikeHandler } from './unLike'
-import { loadUserFeedHandler } from './loadUserFeed'
-import { loadOtherUserFeedHandler } from './loadOtherUserFeed'
+import { loadUserFeed } from './loadUserFeed'
 import { unlistBadgeForSaleHandler } from './unlistBadgeForSale'
 import { listBadgeForSaleHandler } from './listBadgeForSale'
 import { User } from '../../types/user'
 import { ROUTE_PATHS } from '../../consts/routePaths'
+import Router from 'express-promise-router'
 
-const BadgeRouter = express.Router()
+const BadgeRouter = Router()
 
 BadgeRouter.use(userAuthenticated)
 
@@ -57,17 +57,17 @@ BadgeRouter.route(ROUTE_PATHS.BADGE.UNLIST_BADGE_FOR_SALE).post(
 )
 
 BadgeRouter.route(ROUTE_PATHS.BADGE.LOAD_USER_FEED).get(async (req: ApiRequest, res: Response) => {
-  const user = req.user as User
+  const { uid } = req.user as User
   const lastDocumentDate = req.query.lastdate
-  const { feed } = await loadUserFeedHandler({ user, lastDocumentDate })
+  const { feed } = await loadUserFeed({ uid, lastDocumentDate })
   res.status(200).send({ feed })
 })
 
 BadgeRouter.route(ROUTE_PATHS.BADGE.LOAD_OTHER_USER_FEED).get(
   async (req: ApiRequest, res: Response) => {
-    const uid = req.query.userid && req.query.userid.toString().toLowerCase() || ''
+    const uid = (req.query.userid && req.query.userid.toString().toLowerCase()) || ''
     const lastDocumentDate = req.query.lastdate
-    const { feed } = await loadOtherUserFeedHandler({ uid, lastDocumentDate })
+    const { feed } = await loadUserFeed({ uid, lastDocumentDate })
     res.status(200).send({ feed })
   }
 )

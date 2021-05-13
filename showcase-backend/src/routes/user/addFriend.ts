@@ -1,7 +1,12 @@
-import { Response } from 'express'
+import Boom from 'boom'
 import { sendNotificationToFollowedUser } from '../../notifications/newFollower'
 import { firestore as db, FieldValue } from '../../services/firestore'
 import { User, Uid } from '../../types/user'
+
+interface AddFriendInput {
+  uid: Uid
+  followingUid: Uid
+}
 
 const addNewFollowing = async (uid: Uid, followingUid: Uid) => {
   await db
@@ -35,9 +40,7 @@ const updateFollowersCount = async (followingUid: Uid) => {
     .update({ followersCount: FieldValue.increment(1) })
 }
 
-export const addFriend = async (req: any, res: Response) => {
-  const { uid } = req.user as User
-  const { userid: followingUid } = req.body.userid
+export const addFriend = async ({ uid, followingUid }: AddFriendInput) => {
   if (followingUid && uid) {
     await addNewFollowing(uid, followingUid)
     await addNewFollower(uid, followingUid)
@@ -45,6 +48,6 @@ export const addFriend = async (req: any, res: Response) => {
     await updateFollowersCount(followingUid)
     await sendNotificationToFollowedUser(uid, followingUid)
   } else {
-    return res.status(422).send({ error: 'Invalid user' })
+    throw Boom.badData('Invalid user id')
   }
 }

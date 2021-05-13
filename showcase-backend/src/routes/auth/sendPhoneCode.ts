@@ -5,20 +5,15 @@ import { twilio } from '../../services/twilio'
 import {
   NewSmsVerification,
   GetPhoneCodeRequestBody,
-  GetPhoneCodeResponse,
   SmsVerification,
   TwilioSmsInput,
 } from '../../types/auth'
+import Boom from 'boom'
 
 // todo: later we can add a time length for the "ban" if too many attempts
 const MAX_CODE_SEND = 20
 const MAX_ENTER_ATTEMP = 8
 const CODE_EXPIRATION_SEC = 90000 // Expires in 90 sec
-
-const sendError = (error: string): GetPhoneCodeResponse => {
-  console.error('Error while requesting phone code: ', error)
-  return { success: false, error }
-}
 
 const validatePhoneNumber = ({ areaCode, phone }: GetPhoneCodeRequestBody): Promise<string> => {
   const phoneNumber = `+${areaCode + phone}`
@@ -71,8 +66,6 @@ const handleFirstAttempt = async ({
 
   await sendSmsCode({ phoneNumber, code })
   await db.collection('unverifiedsmsverifications').doc(phoneNumber.substring(1)).set(verification)
-
-  return { success: true }
 }
 
 const handleFollowingAttempts = async ({
@@ -87,7 +80,7 @@ const handleFollowingAttempts = async ({
     existingAttempt.codesSent > MAX_CODE_SEND ||
     existingAttempt.attemptsEnteredSinceValid > MAX_ENTER_ATTEMP
   ) {
-    return sendError('Too many attempts with this number')
+    throw Boom.paymentRequired('Too many attempts with this number')
   } else {
     let code = existingAttempt.code
     if (!existingAttempt.valid) {
@@ -104,7 +97,6 @@ const handleFollowingAttempts = async ({
       code,
     }
     await existingAttemptDoc.ref.update(updatedSettings)
-    return { success: true }
   }
 }
 
@@ -139,13 +131,8 @@ const checkIfNewUser = async (phoneNumber: string) => {
 export const sendPhoneCode = async ({
   phone,
   areaCode,
-}: GetPhoneCodeRequestBody): Promise<GetPhoneCodeResponse> => {
-  try {
-    const phoneNumber = await validatePhoneNumber({ areaCode, phone })
-    const { isNewUser } = await checkIfNewUser(phoneNumber)
-    const { success } = await sendSmsWithCode({ isNewUser, phoneNumber })
-    return { success }
-  } catch (error) {
-    return sendError(error)
-  }
+}: GetPhoneCodeRequestBody) => {
+  const phoneNumber = await validatePhoneNumber({ areaCode, phone })
+  const { isNewUser } = await checkIfNewUser(phoneNumber)
+  await sendSmsWithCode({ isNewUser, phoneNumber })
 }

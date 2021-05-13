@@ -6,42 +6,10 @@ import {
   VerifyPhoneCodeResponse,
   VerifyPhoneRequestBody,
 } from '../../types/auth'
+import Boom from 'boom'
+import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
 
 const uuidNamespace = 'b01abb38-c109-4b71-9136-a2aa73ddde27' // todo: maybe outsource to config
-const europeanCountryCodes = [
-  '39',
-  '43',
-  '32',
-  '387',
-  '385',
-  '420',
-  '45',
-  '372',
-  '358',
-  '33',
-  '49',
-  '350',
-  '30',
-  '36',
-  '353',
-  '371',
-  '382',
-  '31',
-  '47',
-  '48',
-  '351',
-  '7',
-  '421',
-  '386',
-  '34',
-  '46',
-  '41',
-]
-
-const sendError = (error: any) => {
-  console.error('Error happened while phone code verification', error)
-  return { error }
-}
 
 const resetVerification = async (
   docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>
@@ -69,7 +37,7 @@ const validatePhoneCode = async ({ areaCode, phone, code }: VerifyPhoneRequestBo
   const verificationSnapshot = await verificationRef.get()
 
   if (!verificationSnapshot.exists) {
-    throw 'No verification code sent to that number!'
+    throw Boom.notFound('No verification code sent to that number!', `+${areaCode + phone}`)
   }
 
   const verification = verificationSnapshot.data() as SmsVerification
@@ -103,7 +71,7 @@ const createUser = async ({ phone, areaCode }: PhoneNumber) => {
 
   if (areaCode + '' === '44') {
     userCurrency = 'GBP'
-  } else if (europeanCountryCodes.indexOf(areaCode + '') > -1) {
+  } else if (EUROPEAN_COUNTRY_CODES.indexOf(areaCode + '') > -1) {
     userCurrency = 'EUR'
   }
 
@@ -136,7 +104,6 @@ const getUserUid = async ({ phone, areaCode }: PhoneNumber) => {
     const { uid } = await auth().getUserByPhoneNumber(`+${areaCode + phone}`)
     return { uid, newUser: false }
   } catch (error) {
-    console.log('Get user error', { error })
     if (error.code === 'auth/user-not-found') {
       const { uid } = await createUser({ phone, areaCode })
       return { uid, newUser: true }
@@ -150,12 +117,8 @@ export const verifyPhoneCode = async ({
   phone,
   areaCode,
 }: VerifyPhoneRequestBody): Promise<VerifyPhoneCodeResponse> => {
-  try {
-    await validatePhoneCode({ areaCode, phone, code })
-    const { uid, newUser } = await getUserUid({ phone, areaCode })
-    const token = await auth().createCustomToken(uid)
-    return { token, newUser }
-  } catch (error) {
-    return sendError(error)
-  }
+  await validatePhoneCode({ areaCode, phone, code })
+  const { uid, newUser } = await getUserUid({ phone, areaCode })
+  const token = await auth().createCustomToken(uid)
+  return { token, newUser }
 }

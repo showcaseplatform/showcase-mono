@@ -7,20 +7,12 @@ export interface PhoneNumber {
 
 export interface GetPhoneCodeRequestBody extends PhoneNumber {}
 
-export interface GetPhoneCodeResponse {
-  success: boolean
-  error?: string
-}
-
 export interface VerifyPhoneRequestBody extends GetPhoneCodeRequestBody {
   code: number
 }
-
-
 export interface VerifyPhoneCodeResponse {
-  newUser?: boolean
-  token?: string
-  error?: string
+  newUser: boolean
+  token: string
 }
 
 export interface TwilioSmsInput {

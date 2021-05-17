@@ -19,7 +19,8 @@ import { updateExchangeRatesJob } from './jobs/updateExchangeRates'
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
 // Import routing
-import { MainRouter } from './routes'
+import { MainController } from './controllers/main'
+import { checkExpoReceiptsJob } from './jobs/checkNotificationReceipts'
 
 // Set up api server
 const app = express()
@@ -27,17 +28,18 @@ app.use(cors({ origin: true }))
 app.use(cookieParser())
 
 // Setup routes
-MainRouter(app)
+MainController(app)
 
 // Add error handling
 app.use(globalErrorHandler)
 app.listen(process.env.PORT || 3000)
 
 // Api
-export const api = functions.runWith({ timeoutSeconds: 540 }).https.onRequest(app)
+export const api = functions.runWith({ timeoutSeconds: 30 }).https.onRequest(app)
 
 // Jobs
 export const updateExchangeRates = updateExchangeRatesJob
+export const checkExpoReceipts = checkExpoReceiptsJob
 
 // Triggers
 export const onUserWrite = onUserWriteTrigger

@@ -1,7 +1,7 @@
 {
   "projects": {
     "default": "showcase-app-2b04e",
-    "master": "showcase-app-2b04e",
-    "develop": "showcase-dev-7507d"
+    "prod": "showcase-app-2b04e",
+    "dev": "showcase-dev-7507d"
   }
 }

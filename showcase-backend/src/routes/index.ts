@@ -21,6 +21,9 @@ export const MainRouter = (app: Application) => {
   app.use('/causes', CausesRouter)
   app.use('/withdrawals', WithdrawalsRouter)
   app.use('/marketplace', MarketplaceRouter)
+  app.get('/__healthy', (req, res) => {
+    res.send({ status: 'ok' })
+  })
 
   // add more routes here
 }

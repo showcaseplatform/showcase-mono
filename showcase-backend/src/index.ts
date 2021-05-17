@@ -31,6 +31,7 @@ MainRouter(app)
 
 // Add error handling
 app.use(globalErrorHandler)
+app.listen(process.env.PORT || 3000)
 
 // Api
 export const api = functions.runWith({ timeoutSeconds: 540 }).https.onRequest(app)

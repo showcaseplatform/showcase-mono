@@ -12,20 +12,65 @@ generator client {
 
 generator typegraphql {
   provider           = "typegraphql-prisma"
-  output             = "../prisma/generated/type-graphql"
+  output             = "../src/prisma/generated/type-graphql"
   emitTranspiledCode = false
 }
 
+enum Currency {
+  USD
+  EUR
+}
+
 model Profile {
-  id     String  @id @default(uuid())
-  bio    String?
-  user   User    @relation(fields: [userId], references: [id])
-  userId String  @unique
+  id          String   @id @default(uuid())
+  displayName String
+  username    String
+  bio         String?
+  isCreator   Boolean
+  currency    Currency @default(USD)
+  birthDate   DateTime
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  badgeTypesCreated BadgeType? @relation("badgeTypesCreated")
+  badgeTypesOwned   BadgeType? @relation("badgeTypesOwned")
 }
 
 model User {
-  id      String   @id @default(uuid())
-  email   String   @unique
-  name    String?
+  id    String @id @default(uuid())
+  email String @unique
+
+  phone   String
   profile Profile?
+}
+
+enum Category {
+  Art
+  Music
+  Photo
+  Misc
+  Podcast
+  Animals
+  Style
+}
+
+model BadgeType {
+  id               String  @id @default(uuid())
+  creator          Profile @relation(name: "badgeTypesCreated", fields: [creatorProfileId], references: [id])
+  creatorProfileId String
+
+  owner          Profile @relation(name: "badgeTypesOwned", fields: [ownerProfileId], references: [id])
+  ownerProfileId String
+
+  tokenTypeBlockhainId String   @unique
+  price                Int
+  title                String
+  description          String
+  category             Category @default(Art)
+  removedFromShowcase  Boolean  @default(false)
+  shares               Int
+  supply               Int
+
 }

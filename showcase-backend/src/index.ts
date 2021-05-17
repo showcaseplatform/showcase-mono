@@ -28,6 +28,7 @@ import { NotificationResolver } from './models/notifcationModel'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
 import { userAuthenticated } from './middlewares/userAuthenticated'
+import { resolvers } from "./prisma/generated/type-graphql";
 
 // Set up REST api server
 const app = express()
@@ -43,32 +44,45 @@ app.use(globalErrorHandler)
 app.listen(process.env.PORT || 3000)
 
 // Set up GQL api server
-export const resolvers = [NotificationResolver] as const
+// export const resolvers = [NotificationResolver] as const
 
 async function bootstrap() {
   const schema = await buildSchema({
-    resolvers: [NotificationResolver],
+    resolvers,
     // here provide all the types that are missing in schema
     //   orphanedTypes: [FirstObject],
   })
 
-  app.use('/gql', userAuthenticated)
-
+  // app.use('/graphql', userAuthenticated)
   // other initialization code, like creating http server
   const server = new ApolloServer({
     // typeDefs,
     schema,
     playground: true,
     // a () => {} to build our context object.
-    context: ({ req }) => {
-      const { user } = req as any
-      console.log({user})
-      return {
-        user
-      };
+    context: async ({ req, connection }: any) => {
+      // request is coming from http (queries, mutations)
+      // if (!params.req?.body) {
+      //   console.log(params)
+      // }
+      if (req) {
+        // We need it for codegen / introspection for playground
+        if (!req.user) return { req }
+        // const user = await User.findOneOrFail(req.user.sub)
+        const user = {}
+        return {
+          req,
+          user, // `req.user` comes from `express-jwt`
+        }
+      } else if (connection) {
+        // connection.user comes from websocket/onconnect (subscriptions)
+        // const user = await User.findOneOrFail(connection.context.user.sub)
+        const user = {}
+        return { user }
+      }
     },
   })
-  server.applyMiddleware({ app, path: '/gql', cors: true })
+  server.applyMiddleware({ app, path: '/graphql', cors: true })
 }
 
 bootstrap()

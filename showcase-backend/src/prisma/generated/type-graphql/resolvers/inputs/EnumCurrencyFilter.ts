@@ -1,0 +1,31 @@
+import * as TypeGraphQL from "type-graphql";
+import * as GraphQLScalars from "graphql-scalars";
+import { Prisma } from "@prisma/client";
+import { DecimalJSScalar } from "../../scalars";
+import { NestedEnumCurrencyFilter } from "../inputs/NestedEnumCurrencyFilter";
+import { Currency } from "../../enums/Currency";
+
+@TypeGraphQL.InputType({
+  isAbstract: true
+})
+export class EnumCurrencyFilter {
+  @TypeGraphQL.Field(_type => Currency, {
+    nullable: true
+  })
+  equals?: "USD" | "EUR" | undefined;
+
+  @TypeGraphQL.Field(_type => [Currency], {
+    nullable: true
+  })
+  in?: Array<"USD" | "EUR"> | undefined;
+
+  @TypeGraphQL.Field(_type => [Currency], {
+    nullable: true
+  })
+  notIn?: Array<"USD" | "EUR"> | undefined;
+
+  @TypeGraphQL.Field(_type => NestedEnumCurrencyFilter, {
+    nullable: true
+  })
+  not?: NestedEnumCurrencyFilter | undefined;
+}

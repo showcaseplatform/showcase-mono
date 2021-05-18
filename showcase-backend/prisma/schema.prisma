@@ -11,31 +11,33 @@ generator client {
 }
 
 generator typegraphql {
-  provider           = "typegraphql-prisma"
-  output             = "../src/prisma/generated/type-graphql"
-  emitTranspiledCode = false
+  provider = "typegraphql-prisma"
+  // output             = "../src/prisma/generated/type-graphql"
+  // emitTranspiledCode = false
 }
 
 enum Currency {
   USD
   EUR
+  GBP
 }
 
 model Profile {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   displayName String
   username    String
   bio         String?
-  isCreator   Boolean
-  currency    Currency @default(USD)
-  birthDate   DateTime
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String   @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isCreator   Boolean   @default(false)
+  currency    Currency  @default(USD)
+  birthDate   DateTime?
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  badgeTypesCreated BadgeType? @relation("badgeTypesCreated")
-  badgeTypesOwned   BadgeType? @relation("badgeTypesOwned")
+  badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
+  badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
+  badgesOwned         Badge[]
 }
 
 model User {
@@ -44,6 +46,9 @@ model User {
 
   phone   String
   profile Profile?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 enum Category {
@@ -61,16 +66,73 @@ model BadgeType {
   creator          Profile @relation(name: "badgeTypesCreated", fields: [creatorProfileId], references: [id])
   creatorProfileId String
 
-  owner          Profile @relation(name: "badgeTypesOwned", fields: [ownerProfileId], references: [id])
-  ownerProfileId String
+  resaller          Profile? @relation(name: "badgeTypesForResell", fields: [resallerProfileId], references: [id])
+  resallerProfileId String?
 
-  tokenTypeBlockhainId String   @unique
-  price                Int
-  title                String
-  description          String
-  category             Category @default(Art)
-  removedFromShowcase  Boolean  @default(false)
-  shares               Int
-  supply               Int
+  tokenTypeBlockhainId String @unique
 
+  supply   Int
+  price    Int
+  currency Currency @default(USD) // could be user's default currency aswell
+  sold     Int      @default(0)
+
+  image     String
+  imageHash String
+
+  causeId        Int
+  cause          Cause @relation(fields: [causeId], references: [id])
+  donationAmount Int   @default(0)
+
+  title       String   @db.VarChar(255)
+  description String   @db.VarChar(255)
+  category    Category @default(Art)
+
+  views  Int @default(0)
+  likes  Int @default(0)
+  shares Int @default(0)
+
+  forSale             Boolean @default(false)
+  soldout             Boolean @default(false)
+  resale              Boolean @default(false)
+  removedFromShowcase Boolean @default(false)
+  gif                 Boolean @default(false)
+  badges              Badge[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+}
+
+model Badge {
+  tokenId String @id
+
+  badgeType BadgeType @relation(fields: [saleId], references: [id])
+  saleId    String    @unique
+
+  creator          Profile @relation(fields: [creatorProfileId], references: [id])
+  creatorProfileId String
+
+  edition      Int
+  purchaseDate DateTime
+
+  views  Int @default(0)
+  likes  Int @default(0)
+  shares Int @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+}
+
+model Cause {
+  id                  Int         @id @default(autoincrement())
+  balanceEur          Int         @default(0)
+  balanceGpb          Int         @default(0)
+  balanceUsd          Int         @default(0)
+  contributionsAmount Int         @default(0)
+  image               String
+  name                String
+  site                String
+  badges              BadgeType[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }

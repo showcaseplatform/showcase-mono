@@ -23,18 +23,16 @@ import { globalErrorHandler } from './middlewares/globalErrorHandler'
 import { MainController } from './controllers/main'
 import { checkExpoReceiptsJob } from './jobs/checkNotificationReceipts'
 
-// import { buildSchema } from 'graphql'
-import { NotificationResolver } from './models/notifcationModel'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
-import { userAuthenticated } from './middlewares/userAuthenticated'
-import { resolvers } from "./prisma/generated/type-graphql";
+import { resolvers } from '@generated/type-graphql'
+import { PrismaClient } from '@prisma/client'
 
 // Set up REST api server
 const app = express()
 app.use(cors({ origin: true }))
 app.use(cookieParser())
-app.use(express.json());
+app.use(express.json())
 
 // Setup routes
 MainController(app)
@@ -46,57 +44,62 @@ app.listen(process.env.PORT || 3000)
 // Set up GQL api server
 // export const resolvers = [NotificationResolver] as const
 
+const prisma = new PrismaClient()
+
 async function bootstrap() {
   const schema = await buildSchema({
     resolvers,
+    validate: false,
     // here provide all the types that are missing in schema
     //   orphanedTypes: [FirstObject],
   })
 
-  // app.use('/graphql', userAuthenticated)
-  // other initialization code, like creating http server
   const server = new ApolloServer({
     // typeDefs,
     schema,
     playground: true,
-    // a () => {} to build our context object.
-    context: async ({ req, connection }: any) => {
-      // request is coming from http (queries, mutations)
-      // if (!params.req?.body) {
-      //   console.log(params)
-      // }
-      if (req) {
-        // We need it for codegen / introspection for playground
-        if (!req.user) return { req }
-        // const user = await User.findOneOrFail(req.user.sub)
-        const user = {}
-        return {
-          req,
-          user, // `req.user` comes from `express-jwt`
-        }
-      } else if (connection) {
-        // connection.user comes from websocket/onconnect (subscriptions)
-        // const user = await User.findOneOrFail(connection.context.user.sub)
-        const user = {}
-        return { user }
-      }
-    },
+    context: (): any => ({ prisma }),
+    // context: async ({ req, connection, prisma }: any) => {
+    //   // request is coming from http (queries, mutations)
+    //   // if (!params.req?.body) {
+    //   //   console.log(params)
+    //   // }
+    //   console.log({ prisma })
+    //   if (req) {
+    //     // We need it for codegen / introspection for playground
+    //     if (!req.user) return { req, prisma }
+    //     const user = {}
+    //     return {
+    //       req,
+    //       user, // `req.user` comes from `express-jwt`
+    //     }
+    //   } else if (connection) {
+    //     // connection.user comes from websocket/onconnect (subscriptions)
+    //     // const user = await User.findOneOrFail(connection.context.user.sub)
+    //     const user = {}
+    //     return { user }
+    //   }
+    // },
   })
   server.applyMiddleware({ app, path: '/graphql', cors: true })
 }
 
-bootstrap()
+bootstrap().catch(e => {
+  throw e
+})
+.finally(async () => {
+  await prisma.$disconnect()
+})
 
+// // Api
+// export const api = functions.runWith({ timeoutSeconds: 30 }).https.onRequest(app)
 
-// Api
-export const api = functions.runWith({ timeoutSeconds: 30 }).https.onRequest(app)
+// // Jobs
+// export const updateExchangeRates = updateExchangeRatesJob
+// export const checkExpoReceipts = checkExpoReceiptsJob
 
-// Jobs
-export const updateExchangeRates = updateExchangeRatesJob
-export const checkExpoReceipts = checkExpoReceiptsJob
-
-// Triggers
-export const onUserWrite = onUserWriteTrigger
-export const onUserDeletion = userDeletionTrigger
-export const onBadgeSaleWrite = badgeSaleWriteTrigger
-export const onBadgeSaleDeletion = badgeSaleDeletionTrigger
+// // Triggers
+// export const onUserWrite = onUserWriteTrigger
+// export const onUserDeletion = userDeletionTrigger
+// export const onBadgeSaleWrite = badgeSaleWriteTrigger
+// export const onBadgeSaleDeletion = badgeSaleDeletionTrigger

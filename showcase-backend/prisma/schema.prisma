@@ -22,6 +22,7 @@ enum Currency {
   GBP
 }
 
+// todo: is it neccesary to have separete id here?
 model Profile {
   id          String    @id @default(uuid())
   displayName String
@@ -30,14 +31,17 @@ model Profile {
   isCreator   Boolean   @default(false)
   currency    Currency  @default(USD)
   birthDate   DateTime?
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String    @unique
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
 
   badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
   badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
   badgesOwned         Badge[]
+  crypto              Crypto?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
@@ -48,7 +52,7 @@ model User {
   profile Profile?
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum Category {
@@ -70,6 +74,7 @@ model BadgeType {
   resallerProfileId String?
 
   tokenTypeBlockhainId String @unique
+  uri                  String @unique
 
   supply   Int
   price    Int
@@ -79,12 +84,12 @@ model BadgeType {
   image     String
   imageHash String
 
-  causeId        Int
-  cause          Cause @relation(fields: [causeId], references: [id])
-  donationAmount Int   @default(0)
+  causeId        Int?
+  cause          Cause? @relation(fields: [causeId], references: [id])
+  donationAmount Int?   @default(0)
 
   title       String   @db.VarChar(255)
-  description String   @db.VarChar(255)
+  description String?   @db.VarChar(255)
   category    Category @default(Art)
 
   views  Int @default(0)
@@ -99,7 +104,7 @@ model BadgeType {
   badges              Badge[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Badge {
@@ -117,9 +122,9 @@ model Badge {
   views  Int @default(0)
   likes  Int @default(0)
   shares Int @default(0)
-  
+
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Cause {
@@ -132,7 +137,20 @@ model Cause {
   name                String
   site                String
   badges              BadgeType[]
-  
+
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Crypto {
+  id                  Int     @id @default(autoincrement())
+  owner               Profile @relation(fields: [ownerProfileId], references: [id])
+  ownerProfileId      String  @unique
+  address             String
+  encryptedMnemonic   String
+  encrytpedPrivateKey String
+  ivMnemonic          String
+  ivPrivateKey        String
+  passwordHint        String
+  publicKey           String
 }

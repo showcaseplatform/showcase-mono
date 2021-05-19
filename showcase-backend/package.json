@@ -23,7 +23,8 @@
     "migrate": "npx prisma migrate dev",
     "generate": "npx prisma generate",
     "seed": "npx prisma db seed --preview-feature",
-    "studio": "npx prisma studio"
+    "studio": "npx prisma studio",
+    "push": "npx prisma db push"
   },
   "engines": {
     "node": "14"

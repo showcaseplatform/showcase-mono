@@ -1,4 +1,5 @@
 import { firestore } from 'firebase-admin';
+import { Currency } from './user';
 
 export type BadgeId = string
 
@@ -26,7 +27,7 @@ export interface LoadUserFeedHandlerRequestParam {
   lastdate: string | undefined
 }
 
-export interface BadgeDocumentData {
+export interface BadgeDocumentData  {
   category: string
 
   createdDate: Date
@@ -36,8 +37,8 @@ export interface BadgeDocumentData {
 
   description: string
 
-  donationAmount: number
-  donationCause: string
+  donationAmount?: number
+  donationCause?: string
 
   edition: number
   image: string
@@ -51,20 +52,34 @@ export interface BadgeDocumentData {
 
   removedFromShowcase: boolean
 
-  salesId: string
+  saleId: string
   shares: number
-  supply: number
   title: string
   tokenId: BadgeId // todo: id which links a badge to a token
   tokenType: string // todo: id of the nft contract?
   uri: string
   views: number
-  meta: {
-    periodViews: firestore.FieldValue
-    periodStartDate: firestore.FieldValue
-  }
+  // meta: {
+  //   periodViews: firestore.FieldValue
+  //   periodStartDate: firestore.FieldValue
+  // }
 }
 
 export interface BadgeDocument extends BadgeDocumentData{
  id: BadgeId
+}
+
+
+export interface SalesBadge extends BadgeDocumentData {
+  id: string
+  sold: number
+  supply: number
+  tokenType: string
+  currency: Currency
+  price: number
+
+  donationCauseImage?: string
+  donationCauseName?: string
+  donationAmount?: number
+  donationCause?: string
 }

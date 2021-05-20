@@ -1,5 +1,5 @@
 const { firestore: db } = require('../../services/firestore')
-const stripe = require('../../services/stripe')
+const stripe = require('../../services/stripe').default
 
 module.exports = (req, res) => {
   const { user } = req

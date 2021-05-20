@@ -1,4 +1,5 @@
-const { stripe: stripeConfig } = require('../config')
-const stripe = require('stripe')(stripeConfig)
+import { stripe as stripeConfig } from '../config'
+import Stripe from 'stripe'
+const stripe = new Stripe(stripeConfig)
 
-module.exports = { stripe }
+export { stripe }

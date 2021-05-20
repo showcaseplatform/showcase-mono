@@ -11,11 +11,13 @@ const registerUser = async (phone: string) => {
   if (!phoneNumber) {
     throw Boom.badData('Invalid phoneNumber')
   }
+
   const {
     user: { id: authyId },
   } = await authyClient.registerUser({
     countryCode: phoneNumber.country,
-    phone: phoneNumber.number,
+    email: 'marci@fidy.hu', // todo: figure out how to deal with email
+    phone: phoneNumber.nationalNumber,
   })
 
   return authyId

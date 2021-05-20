@@ -28,7 +28,7 @@ test('findOrCreateUser should return user if user already exists', async () => {
   const user = await prisma.user.create({
     data: {
       phone,
-      authyId: 'authyId'
+      authyId: 123456
     }
   })
 

@@ -49,7 +49,7 @@ model User {
   id String @id @default(uuid())
 
   phone   String   @unique
-  authyId String   @unique
+  authyId Int 
   profile Profile?
 
   createdAt DateTime @default(now())

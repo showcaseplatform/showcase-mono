@@ -46,6 +46,7 @@ var config = convict({
       env: 'BLOCKCHAIN_AUTH_TOKEN',
     },
   },
+  // todo: twilio got replaced with authy-client
   twilio: {
     account: {
       doc: 'Twillio account id',
@@ -100,6 +101,14 @@ var config = convict({
       env: 'EXPO_ACCESS_TOKEN'
     }
   },
+  authy: {
+    key: {
+      doc: 'Api key for authy-client lib',
+      format: String,
+      default: '',
+      env: 'AUTHY_KEY'
+    }
+  }
 })
 
 // Load environment dependent configuration

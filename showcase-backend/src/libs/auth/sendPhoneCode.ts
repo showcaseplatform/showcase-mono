@@ -9,6 +9,9 @@ import {
   TwilioSmsInput,
 } from '../../types/auth'
 import Boom from 'boom'
+import { prisma } from '../../services/prisma'
+import { User } from '@prisma/client'
+import { registerUser } from '../../services/authy'
 
 // todo: later we can add a time length for the "ban" if too many attempts
 const MAX_CODE_SEND = 20
@@ -26,7 +29,7 @@ const validatePhoneNumber = ({ areaCode, phone }: GetPhoneCodeRequestBody): Prom
   })
 }
 
-const sendSmsCode = async ({ phoneNumber, code }: TwilioSmsInput) => {
+const sendTwilioSmsWithCode = async ({ phoneNumber, code }: TwilioSmsInput) => {
   await twilio.messages.create({
     body: `Your Showcase login code is ${code}`,
     to: phoneNumber,
@@ -64,7 +67,7 @@ const handleFirstAttempt = async ({
     verification.phoneNumber = phoneNumber
   }
 
-  await sendSmsCode({ phoneNumber, code })
+  await sendTwilioSmsWithCode({ phoneNumber, code })
   await db.collection('unverifiedsmsverifications').doc(phoneNumber.substring(1)).set(verification)
 }
 
@@ -86,7 +89,7 @@ const handleFollowingAttempts = async ({
     if (!existingAttempt.valid) {
       code = generateSmsCode()
     }
-    await sendSmsCode({ phoneNumber, code })
+    await sendTwilioSmsWithCode({ phoneNumber, code })
     const updatedSettings: SmsVerification = {
       valid: true,
       codesSent: FieldValue.increment(1),
@@ -100,13 +103,7 @@ const handleFollowingAttempts = async ({
   }
 }
 
-const sendSmsWithCode = async ({
-  isNewUser,
-  phoneNumber,
-}: {
-  isNewUser: boolean
-  phoneNumber: string
-}) => {
+const sendSmsWithCode = async (user: User) => {
   let existingAttemptRef = db.collection('unverifiedsmsverifications').doc(phoneNumber.substring(1))
   const existingAttemptDoc = await existingAttemptRef.get()
   if (!existingAttemptDoc.exists) {
@@ -116,23 +113,27 @@ const sendSmsWithCode = async ({
   }
 }
 
-const checkIfNewUser = async (phoneNumber: string) => {
-  try {
-    await auth().getUserByPhoneNumber(phoneNumber)
-    return { isNewUser: false }
-  } catch (error) {
-    if (error.code === 'auth/user-not-found') {
-      return { isNewUser: true }
-    }
-    throw error
+export const findOrCreateUser = async (phone: string) => {
+  let user = await prisma.user.findUnique({
+    where: {
+      phone,
+    },
+  })
+  if (!user) {
+    const authyId = await registerUser(phone)
+    console.log({ authyId })
+    user = await prisma.user.create({
+      data: {
+        phone,
+        authyId,
+      },
+    })
   }
+  return user
 }
 
-export const sendPhoneCode = async ({
-  phone,
-  areaCode,
-}: GetPhoneCodeRequestBody) => {
+export const sendPhoneCode = async ({ phone, areaCode }: GetPhoneCodeRequestBody) => {
   const phoneNumber = await validatePhoneNumber({ areaCode, phone })
-  const { isNewUser } = await checkIfNewUser(phoneNumber)
-  await sendSmsWithCode({ isNewUser, phoneNumber })
+  const user = await findOrCreateUser(phoneNumber)
+  await sendSmsWithCode(user)
 }

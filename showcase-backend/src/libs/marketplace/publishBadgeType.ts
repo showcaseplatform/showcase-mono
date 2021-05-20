@@ -2,27 +2,22 @@
 import axios from 'axios'
 import { blockchain } from '../../config'
 import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
-import { PublishBadgeTypeInput } from '../../resolvers/marketplaceResolver'
 import { Profile } from '@generated/type-graphql'
 import Boom from 'boom'
 import { prisma } from '../../services/prisma'
+import { PublishBadgeTypeInput } from '../../resolvers/types/publishBadgeTypeInput'
 
-interface Input extends PublishBadgeTypeInput {
+interface InputWithUser extends PublishBadgeTypeInput {
   user: Profile
 }
 
-// todo: maybe not all of these are neccesary, because resolvers validates these input already
 // todo: does user musst have a crypto account?
 const validateInputs = async ({
   user,
-  title,
-  price,
-  supply,
-  image,
-  description,
   donationAmount,
   causeId,
-}: Input) => {
+}: Partial<InputWithUser>) => {
+
   if (!user) {
     throw Boom.badData('Invalid user')
   }
@@ -30,27 +25,16 @@ const validateInputs = async ({
     throw Boom.preconditionFailed('You are not a verified creator')
   }
 
-  if (title.length > 20 || title.length === 0) {
-    throw Boom.preconditionFailed('Invalid title length')
-  } else if (price < 0 || price > 200 || isNaN(price) || typeof price !== 'number') {
-    throw Boom.preconditionFailed('Invalid Price')
-  } else if (supply < 1 || supply > 1000000 || isNaN(supply) || typeof supply !== 'number') {
-    throw Boom.preconditionFailed('Invalid quantity')
-  } else if (!image || image.length === 0) {
-    throw Boom.preconditionFailed('Invalid image')
-  } else if (description && description.length > 240) {
-    throw Boom.preconditionFailed('Invalid description')
-  } else if (donationAmount && (donationAmount < 0.05 || donationAmount > 0.5)) {
-    throw Boom.preconditionFailed('Invalid donation amount')
-  } else if (causeId) {
+  if (causeId || donationAmount) {
     try {
+      if (!donationAmount) throw Boom.badData('Invalid donation amount')
       await prisma.cause.findUnique({
         where: {
           id: causeId,
         },
       })
     } catch (e) {
-      Boom.preconditionFailed('Invalid donation cause', e)
+      Boom.badData('Invalid donation cause', e)
     }
   }
 }
@@ -64,7 +48,7 @@ const createTokenTypeOnBlockchain = async ({
   image,
   imageHash,
   supply,
-}: Partial<Input> & { id: string }): Promise<string> => {
+}: Partial<InputWithUser>): Promise<string> => {
   const data = {
     token: blockchain.authToken,
     uri: 'https://showcase.to/badge/' + id,

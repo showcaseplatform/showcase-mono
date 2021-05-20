@@ -5,6 +5,7 @@ module.exports = (req, res) => {
   const { user } = req
   const { stripetoken, lastfour } = req.body
   if (!lastfour) {
+    // todo: additional length validation?
     return res.status(422).send({ error: 'Invalid Card' })
   } else {
     stripe.customers

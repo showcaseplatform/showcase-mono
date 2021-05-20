@@ -38,7 +38,8 @@ model Profile {
   badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
   badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
   badgesOwned         Badge[]
-  crypto              Crypto?
+  cryptoWallet        Crypto?
+  stripeBalance       Balance?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -89,7 +90,7 @@ model BadgeType {
   donationAmount Int?   @default(0)
 
   title       String   @db.VarChar(255)
-  description String?   @db.VarChar(255)
+  description String?  @db.VarChar(255)
   category    Category @default(Art)
 
   views  Int @default(0)
@@ -153,4 +154,18 @@ model Crypto {
   ivPrivateKey        String
   passwordHint        String
   publicKey           String
+}
+
+model Balance {
+  id             Int     @id @default(autoincrement())
+  owner          Profile @relation(fields: [ownerProfileId], references: [id])
+  ownerProfileId String  @unique
+  eur            Int
+  gbp            Int
+  usd            Int
+}
+
+model CurrencyRate {
+  code String @id
+  rate Int
 }

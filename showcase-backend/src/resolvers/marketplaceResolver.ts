@@ -6,10 +6,13 @@ import {
 } from 'type-graphql'
 import {
   BadgeType,
+  Badge
 } from '@generated/type-graphql'
 
 import { publishBadgeType } from '../libs/marketplace/publishBadgeType'
 import { PublishBadgeTypeInput } from './types/publishBadgeTypeInput'
+import { PurchaseBadgeInput } from './types/purchaseBadgeInput'
+import { purchaseBadge } from '../libs/marketplace/purchaseBadge'
 
 
 // @Resolver((_of) => BadgeType)
@@ -21,6 +24,14 @@ export class MarketplaceTypeResolver {
     @Arg('data') publishBadgeTypeInput: PublishBadgeTypeInput
   ): Promise<BadgeType | null> {
     return await publishBadgeType(publishBadgeTypeInput, ctx.user)
+  }
+
+  @Mutation((_returns) => Badge)
+  async purchaseBadge(
+    @Ctx() ctx: any,
+    @Arg('data') purchaseBadgeInput: PurchaseBadgeInput
+  ): Promise<Badge| null> {
+    return await purchaseBadge(purchaseBadgeInput, ctx.user)
   }
 }
 

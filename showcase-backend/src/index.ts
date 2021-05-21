@@ -59,7 +59,11 @@ async function bootstrap() {
     // typeDefs,
     schema,
     playground: true,
-    context: (): any => ({ prisma }),
+    context: async (): Promise<any> => {
+      const users = await prisma.user.findMany()
+      console.log(users[0])
+      return { prisma, user: users[0] }
+    },
     // context: async ({ req, connection, prisma }: any) => {
     //   // request is coming from http (queries, mutations)
     //   // if (!params.req?.body) {
@@ -85,12 +89,13 @@ async function bootstrap() {
   server.applyMiddleware({ app, path: '/graphql', cors: true })
 }
 
-bootstrap().catch(e => {
-  throw e
-})
-.finally(async () => {
-  await prisma.$disconnect()
-})
+bootstrap()
+  .catch((e) => {
+    throw e
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
 
 // // Api
 // export const api = functions.runWith({ timeoutSeconds: 30 }).https.onRequest(app)

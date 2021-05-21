@@ -14,7 +14,7 @@ test('create user', async () => {
   testUser = await prisma.user.create({
     data: {
       phone: `367098${randomNum}`,
-      email: `alice${randomNum}@prisma.io`,
+      authyId: randomNum,
       profile: {
         create: {
           bio: 'I like turtles',

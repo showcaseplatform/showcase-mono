@@ -4,7 +4,6 @@ import loadUserTradesHandler from '../libs/marketplace/loadUserTrades'
 import loadUserMarketplaceHandler from '../libs/marketplace/loadUserMarketplace'
 import loadOtherUserMarketplaceHandler from '../libs/marketplace/loadOtherUserMarketplace'
 import loadBadgesForSaleHandler from '../libs/marketplace/loadBadgesForSale'
-import purchaseBadgeHandler from '../libs/marketplace/purchaseBadge'
 import Router from 'express-promise-router'
 
 const MarketplaceController = Router()
@@ -21,7 +20,5 @@ MarketplaceController.route('/loadOtherUserMarketplace').get(
   userAuthenticated,
   loadOtherUserMarketplaceHandler
 )
-
-MarketplaceController.route('/purchaseBadge').post(userAuthenticated, purchaseBadgeHandler)
 
 export { MarketplaceController }

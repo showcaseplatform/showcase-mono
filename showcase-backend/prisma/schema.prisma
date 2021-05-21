@@ -22,24 +22,31 @@ enum Currency {
   GBP
 }
 
-// todo: is it neccesary to have separete id here?
+// todo: is it neccesary to have separete id here? 👉 create profile with user.id
 model Profile {
-  id          String    @id @default(uuid())
+  id          String    @id
   displayName String
   username    String
   bio         String?
   isCreator   Boolean   @default(false)
+  kycVerified Boolean   @default(false)
   currency    Currency  @default(USD)
   birthDate   DateTime?
 
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique
+  user User @relation(fields: [id], references: [id])
 
   badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
   badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
-  badgesOwned         Badge[]
-  cryptoWallet        Crypto?
-  stripeBalance       Balance?
+
+  badgesOwned          Badge[] @relation("badgeCurrentlyOwned")
+  badgesOriginatedFrom Badge[] @relation("badgeOriginatedFrom")
+
+  cryptoWallet  Crypto?
+  stripeBalance Balance?
+  stripeInfo    Stripe?
+
+  buyReceipts  Receipt[] @relation("buyReceipts")
+  sellReceipts Receipt[] @relation("sellReceipts")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -49,7 +56,7 @@ model User {
   id String @id @default(uuid())
 
   phone   String   @unique
-  authyId Int 
+  authyId Int?
   profile Profile?
 
   createdAt DateTime @default(now())
@@ -97,25 +104,31 @@ model BadgeType {
   likes  Int @default(0)
   shares Int @default(0)
 
-  forSale             Boolean @default(false)
-  soldout             Boolean @default(false)
-  resale              Boolean @default(false)
-  removedFromShowcase Boolean @default(false)
-  gif                 Boolean @default(false)
+  forSale             Boolean   @default(false)
+  soldout             Boolean   @default(false)
+  resale              Boolean   @default(false)
+  removedFromShowcase Boolean   @default(false) //todo: is it possible to remove a badgeType
+  gif                 Boolean   @default(false)
   badges              Badge[]
+  receipts            Receipt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Badge {
-  tokenId String @id
+  id String @id
 
-  badgeType BadgeType @relation(fields: [saleId], references: [id])
-  saleId    String    @unique
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+  badgeTypeId String
 
-  creator          Profile @relation(fields: [creatorProfileId], references: [id])
+  creator          Profile @relation(name: "badgeOriginatedFrom", fields: [creatorProfileId], references: [id])
   creatorProfileId String
+
+  owner          Profile @relation(name: "badgeCurrentlyOwned", fields: [ownerProfileId], references: [id])
+  ownerProfileId String
+
+  receipt Receipt?
 
   edition      Int
   purchaseDate DateTime
@@ -124,20 +137,23 @@ model Badge {
   likes  Int @default(0)
   shares Int @default(0)
 
+  removedFromShowcase Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Cause {
-  id                  Int         @id @default(autoincrement())
-  balanceEur          Int         @default(0)
-  balanceGpb          Int         @default(0)
-  balanceUsd          Int         @default(0)
-  contributionsAmount Int         @default(0)
-  image               String
-  name                String
-  site                String
-  badges              BadgeType[]
+  id                    Int         @id @default(autoincrement())
+  balanceEur            Int         @default(0)
+  balanceGpb            Int         @default(0)
+  balanceUsd            Int         @default(0)
+  numberOfContributions Int         @default(0)
+  image                 String
+  name                  String
+  site                  String
+  badges                BadgeType[]
+  Receipt               Receipt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -157,15 +173,63 @@ model Crypto {
 }
 
 model Balance {
-  id             Int     @id @default(autoincrement())
+  id                           Int @id @default(autoincrement())
+  eur                          Int
+  gbp                          Int
+  usd                          Int
+  totalSpentAmountConvertedUsd Int
+
   owner          Profile @relation(fields: [ownerProfileId], references: [id])
   ownerProfileId String  @unique
-  eur            Int
-  gbp            Int
-  usd            Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model CurrencyRate {
   code String @id
   rate Int
+}
+
+model Receipt {
+  id Int @id @default(autoincrement())
+
+  recipient          Profile @relation(name: "buyReceipts", fields: [recipientProfileId], references: [id])
+  recipientProfileId String
+
+  creator          Profile @relation(name: "sellReceipts", fields: [creatorProfileId], references: [id])
+  creatorProfileId String
+
+  badge   Badge  @relation(fields: [badgeId], references: [id])
+  badgeId String
+
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+  badgeTypeId String
+
+  stripeChargeId String
+
+  salePrice          Int
+  saleDonationAmount Int?
+  saleCurrency       Currency
+
+  convertedPrice    Int
+  convertedRate     Int
+  convertedCurrency Currency
+
+  cause   Cause? @relation(fields: [causeId], references: [id])
+  causeId Int?
+
+  transactionHash String @unique
+
+  createdAt DateTime @default(now())
+}
+
+model Stripe {
+  id Int @id @default(autoincrement())
+
+  owner          Profile @relation(fields: [ownerProfileId], references: [id])
+  ownerProfileId String  @unique
+
+  stripeId       String @unique
+  lastFourCardDigit Int
 }

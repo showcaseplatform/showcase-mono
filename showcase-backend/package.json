@@ -16,16 +16,19 @@
     "logs": "firebase functions:log",
     "export-firestore": "firebase emulators:export seed",
     "import-firestore": "firebase emulators:exec --import=seed",
+    
     "test": "jest",
+
     "postgresql": "npm run postgresql:kill && npm run postgresql:start",
     "postgresql:kill": "docker ps -a | grep showcase-postgresql | awk '{print $1}' | xargs -I {} docker rm -f {}",
     "postgresql:start": "docker run --rm -p 5432:5432 --name showcase-postgresql -e POSTGRES_PASSWORD=showcase-test -e POSTGRES_USER=showcase-test -d postgres:13",
-    "migrate": "npx prisma migrate dev",
-    "reset": "npx prisma migrate reset",
-    "generate": "npx prisma generate",
-    "seed": "npx prisma db seed --preview-feature",
-    "studio": "npx prisma studio",
-    "push": "npx prisma db push"
+
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:reset": "npx prisma migrate reset",
+    "prisma:generate": "npx prisma generate",
+    "prisma:seed": "npx prisma db seed --preview-feature",
+    "prisma:studio": "npx prisma studio",
+    "prisma:push": "npx prisma db push"
   },
   "engines": {
     "node": "14"

@@ -3,6 +3,16 @@ import { BadgeTypeCreateInput, Category } from '@generated/type-graphql'
 import { Min, Max, MaxLength } from 'class-validator'
 
 import { registerEnumType } from 'type-graphql'
+import {
+  BADGE_TYPE_MIN_SALE_PRICE,
+  BADGE_TYPE_MAX_SALE_PRICE,
+  BADGE_TYPE_MAX_DESC_LENGTH,
+  BADGE_TYPE_MAX_SUPPLY,
+  BADGE_TYPE_MAX_TITLE_LENGTH,
+  BADGE_TYPE_MIN_SUPPLY,
+  DONATION_MAX_AMOUNT,
+  DONATION_MIN_AMOUNT,
+} from '../../consts/businessRules'
 
 registerEnumType(Category, {
   name: 'Category',
@@ -15,22 +25,22 @@ export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
   id: string
 
   @Field()
-  @MaxLength(20)
+  @MaxLength(BADGE_TYPE_MAX_TITLE_LENGTH)
   title: string
 
   // todo: what type should price have
   @Field((_type) => Int)
-  @Min(0.01)
-  @Max(200)
+  @Min(BADGE_TYPE_MIN_SALE_PRICE)
+  @Max(BADGE_TYPE_MAX_SALE_PRICE)
   price: number
 
   @Field((_type) => Int)
-  @Min(1)
-  @Max(1000000)
+  @Min(BADGE_TYPE_MIN_SUPPLY)
+  @Max(BADGE_TYPE_MAX_SUPPLY)
   supply: number
 
   @Field({ nullable: true })
-  @MaxLength(240)
+  @MaxLength(BADGE_TYPE_MAX_DESC_LENGTH)
   description?: string
 
   @Field()
@@ -46,8 +56,8 @@ export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
   causeId?: number
 
   @Field((_type) => Int)
-  @Min(0.05)
-  @Max(0.5)
+  @Min(DONATION_MIN_AMOUNT)
+  @Max(DONATION_MAX_AMOUNT)
   donationAmount?: number
 
   @Field()

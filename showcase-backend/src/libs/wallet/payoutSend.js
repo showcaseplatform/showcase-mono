@@ -45,6 +45,7 @@ module.exports = (req, res) => {
     user.balances[req.body.currency.toLowerCase()] &&
     user.balances[req.body.currency.toLowerCase()] >= parseFloat(req.body.amount)
   ) {
+    // todo: transferwise integration
     axios({
       method: 'post',
       url: 'https://api.sandbox.transferwise.tech/v1/quotes',

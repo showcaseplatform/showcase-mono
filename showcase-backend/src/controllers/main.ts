@@ -6,7 +6,6 @@ import { CurrencyController } from './currencyController'
 import { BadgeController } from './badgeController'
 import { CausesController } from './causesController'
 import { WithdrawalsController } from './withdrawalsController'
-import { MarketplaceController } from './marketplaceController'
 import { Application } from 'express'
 import { UserController } from './userController'
 import { TestController } from './testController'
@@ -22,7 +21,6 @@ export const MainController = (app: Application) => {
   app.use('/badge', BadgeController)
   app.use('/causes', CausesController)
   app.use('/withdrawals', WithdrawalsController)
-  app.use('/marketplace', MarketplaceController)
   app.use('/test', TestController)
   app.get('/__healthy', (req, res) => {
     res.send({ status: 'ok' })

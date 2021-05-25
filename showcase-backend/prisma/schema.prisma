@@ -22,9 +22,23 @@ enum Currency {
   GBP
 }
 
+model User {
+  id String @id @default(uuid())
+
+  phone   String   @unique
+  profile Profile?
+
+  isBanned Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
 // todo: is it neccesary to have separete id here? 👉 create profile with user.id
 model Profile {
-  id          String    @id
+  id   String @id
+  user User   @relation(fields: [id], references: [id])
+
   displayName String
   username    String
   bio         String?
@@ -32,8 +46,6 @@ model Profile {
   kycVerified Boolean   @default(false)
   currency    Currency  @default(USD)
   birthDate   DateTime?
-
-  user User @relation(fields: [id], references: [id])
 
   badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
   badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
@@ -48,19 +60,13 @@ model Profile {
   buyReceipts  Receipt[] @relation("buyReceipts")
   sellReceipts Receipt[] @relation("sellReceipts")
 
+  likeBadge     LikeBadge[]
+  likeBadgeType LikeBadgeType[]
+  viewBadge     ViewBadge[]
+  viewBadgeType ViewBadgeType[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model User {
-  id String @id @default(uuid())
-
-  phone   String   @unique
-  authyId Int?
-  profile Profile?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum Category {
@@ -85,7 +91,7 @@ model BadgeType {
   uri                  String @unique
 
   supply   Int
-  price    Int
+  price    Float
   currency Currency @default(USD) // could be user's default currency aswell
   sold     Int      @default(0)
 
@@ -94,14 +100,12 @@ model BadgeType {
 
   causeId        Int?
   cause          Cause? @relation(fields: [causeId], references: [id])
-  donationAmount Int?   @default(0)
+  donationAmount Float? @default(0)
 
   title       String   @db.VarChar(255)
   description String?  @db.VarChar(255)
   category    Category @default(Art)
 
-  views  Int @default(0)
-  likes  Int @default(0)
   shares Int @default(0)
 
   forSale             Boolean   @default(false)
@@ -111,6 +115,9 @@ model BadgeType {
   gif                 Boolean   @default(false)
   badges              Badge[]
   receipts            Receipt[]
+
+  likes LikeBadgeType[]
+  views ViewBadgeType[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -133,11 +140,12 @@ model Badge {
   edition      Int
   purchaseDate DateTime
 
-  views  Int @default(0)
-  likes  Int @default(0)
   shares Int @default(0)
 
   removedFromShowcase Boolean @default(false)
+
+  likes LikeBadge[]
+  views ViewBadge[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -145,10 +153,10 @@ model Badge {
 
 model Cause {
   id                    Int         @id @default(autoincrement())
-  balanceEur            Int         @default(0)
-  balanceGpb            Int         @default(0)
-  balanceUsd            Int         @default(0)
-  numberOfContributions Int         @default(0)
+  balanceEur            Float       @default(0)
+  balanceGpb            Float       @default(0)
+  balanceUsd            Float       @default(0)
+  numberOfContributions Float       @default(0)
   image                 String
   name                  String
   site                  String
@@ -160,9 +168,8 @@ model Cause {
 }
 
 model Crypto {
-  id                  Int     @id @default(autoincrement())
-  owner               Profile @relation(fields: [ownerProfileId], references: [id])
-  ownerProfileId      String  @unique
+  id                  String  @id
+  owner               Profile @relation(fields: [id], references: [id])
   address             String
   encryptedMnemonic   String
   encrytpedPrivateKey String
@@ -173,14 +180,13 @@ model Crypto {
 }
 
 model Balance {
-  id                           Int @id @default(autoincrement())
-  eur                          Int
-  gbp                          Int
-  usd                          Int
-  totalSpentAmountConvertedUsd Int
+  id    String  @id
+  owner Profile @relation(fields: [id], references: [id])
 
-  owner          Profile @relation(fields: [ownerProfileId], references: [id])
-  ownerProfileId String  @unique
+  eur                          Float
+  gbp                          Float
+  usd                          Float
+  totalSpentAmountConvertedUsd Float
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -188,7 +194,7 @@ model Balance {
 
 model CurrencyRate {
   code String @id
-  rate Int
+  rate Float
 }
 
 model Receipt {
@@ -208,12 +214,12 @@ model Receipt {
 
   stripeChargeId String
 
-  salePrice          Int
-  saleDonationAmount Int?
+  salePrice          Float
+  saleDonationAmount Float?
   saleCurrency       Currency
 
-  convertedPrice    Int
-  convertedRate     Int
+  convertedPrice    Float
+  convertedRate     Float
   convertedCurrency Currency
 
   cause   Cause? @relation(fields: [causeId], references: [id])
@@ -222,14 +228,61 @@ model Receipt {
   transactionHash String @unique
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Stripe {
-  id Int @id @default(autoincrement())
+  id    String  @id
+  owner Profile @relation(fields: [id], references: [id])
 
-  owner          Profile @relation(fields: [ownerProfileId], references: [id])
-  ownerProfileId String  @unique
-
-  stripeId       String @unique
+  stripeId          String @unique // todo: should stripeId be unique here? 
   lastFourCardDigit Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model LikeBadge {
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+  badgeId   String
+  badge     Badge   @relation(fields: [badgeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([profileId, badgeId])
+}
+
+// todo: maybe like tables can be merged together
+model LikeBadgeType {
+  profileId   String
+  profile     Profile   @relation(fields: [profileId], references: [id])
+  badgeTypeId String
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([profileId, badgeTypeId])
+}
+
+model ViewBadge {
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+  badgeId   String
+  badge     Badge   @relation(fields: [badgeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([profileId, badgeId])
+}
+
+model ViewBadgeType {
+  profileId   String
+  profile     Profile   @relation(fields: [profileId], references: [id])
+  badgeTypeId String
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([profileId, badgeTypeId])
 }

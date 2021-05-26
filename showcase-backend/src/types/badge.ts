@@ -1,15 +1,8 @@
-import { firestore } from 'firebase-admin';
 import { Currency } from './user';
 
 export type BadgeId = string
+export type BadgeTypeId = string
 
-export interface CountViewRequestBody {
-  marketplace: boolean
-  badgeid: BadgeId
-}
-
-export interface CountLikeRequestBody extends CountViewRequestBody {}
-export interface UnlikeRequestBody extends CountViewRequestBody {}
 
 export interface ListBadgeForSaleRequestBody {
   sig: string
@@ -23,9 +16,6 @@ export interface UnlistBadgeForSaleRequestBody {
   badgeid: BadgeId
 }
 
-export interface LoadUserFeedHandlerRequestParam {
-  lastdate: string | undefined
-}
 
 export interface BadgeDocumentData  {
   category: string

@@ -18,6 +18,6 @@ export class PurchaseBadgeInput {
 
   @Field((_type) => Int)
   @Min(BADGE_TYPE_MIN_SALE_PRICE)
-  @Max(BADGE_TYPE_MAX_SALE_PRICE * 2)
+  @Max(BADGE_TYPE_MAX_SALE_PRICE * 2) //todo: how to deal with max price in multiple currency
   displayedPrice: number
 }

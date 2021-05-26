@@ -1,35 +1,40 @@
-import {
-    Resolver,
-    Ctx,
-    Mutation,
-    Arg,
-  } from 'type-graphql'
-  
+import { Resolver, Ctx, Mutation, Arg } from 'type-graphql'
+
 import { toggleLike } from '../libs/badge/toggleLike'
-import { ToggleLikeInput } from './types/toggleLikeInput'
+import { ToggleLikeInput, LikeBadgeUnion } from './types/toggleLikeInput'
 import { countView } from '../libs/badge/countView'
-import { CountViewInput } from './types/countViewInput'
-  
-  
-  @Resolver()
-  export class BadgeResolver {
-    @Mutation(_returns => String)
-    async toggleLike(
-      @Ctx() ctx: any,
-      @Arg('data') countLikeInput: ToggleLikeInput
-    ): Promise<string> {
-      await toggleLike(countLikeInput, ctx.user.id)
-      return 'Ok'
-    }
-  
-    @Mutation(_returns => String)
-    async countView(
-      @Ctx() ctx: any,
-      @Arg('data') countViewInput: CountViewInput
-    ): Promise<string> {
-      await countView(countViewInput, ctx.user.id)
-      return 'Ok'
-    }
+import { CountViewInput, ViewBadgeUnion } from './types/countViewInput'
+import { Badge, LikeBadgeType, LikeBadge } from '@generated/type-graphql'
+import { listBadgeForSale } from '../libs/badge/listBadgeForSale'
+import { ListBadgeForSaleInput } from './types/listBadgeForSaleInput'
+import { unlistBadgeForSale } from '../libs/badge/unlistBadgeForSale'
+import { UnListBadgeForSaleInput } from './types/unlistBadgeForSaleInput'
+
+@Resolver()
+export class BadgeResolver {
+  @Mutation((_returns) => LikeBadgeUnion)
+  async toggleLike(@Ctx() ctx: any, @Arg('data') countLikeInput: ToggleLikeInput) {
+    return await toggleLike(countLikeInput, ctx.user.id)
   }
-  
-  
+
+  @Mutation((_returns) => ViewBadgeUnion)
+  async countView(@Ctx() ctx: any, @Arg('data') countViewInput: CountViewInput) {
+    return await countView(countViewInput, ctx.user.id)
+  }
+
+  @Mutation((_returns) => Badge)
+  async listBadgeForSale(
+    @Ctx() ctx: any,
+    @Arg('data') listBadgeForSaleInput: ListBadgeForSaleInput
+  ) {
+    return await listBadgeForSale(listBadgeForSaleInput, ctx.user.id)
+  }
+
+  @Mutation((_returns) => Badge)
+  async unlistBadgeForSale(
+    @Ctx() ctx: any,
+    @Arg('data') unListBadgeForSaleInput: UnListBadgeForSaleInput
+  ) {
+    return await unlistBadgeForSale(unListBadgeForSaleInput, ctx.user.id)
+  }
+}

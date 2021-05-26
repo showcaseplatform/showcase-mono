@@ -27,8 +27,9 @@ import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
 import { resolvers } from '@generated/type-graphql'
 import { PrismaClient } from '@prisma/client'
-import { MarketplaceTypeResolver } from './resolvers/marketplaceResolver'
-import { BadgeResolver } from './resolvers/badgeResolver'
+import { MarketplaceResolver } from './resolvers/marketplaceResolver'
+import { InventoryResolver } from './resolvers/inventoryResolver'
+import { SocialResolver } from './resolvers/socialResolver'
 
 // Set up REST api server
 const app = express()
@@ -50,7 +51,7 @@ const prisma = new PrismaClient()
 
 async function bootstrap() {
   const schema = await buildSchema({
-    resolvers: [...resolvers, MarketplaceTypeResolver, BadgeResolver],
+    resolvers: [...resolvers, MarketplaceResolver, InventoryResolver, SocialResolver],
     validate: false,
     // here provide all the types that are missing in schema
     //   orphanedTypes: [FirstObject],

@@ -3,9 +3,8 @@ import axios from 'axios'
 import { Uid } from '../../types/user'
 import Boom from 'boom'
 import prisma from '../../services/prisma'
-import { CountViewInput } from '../../resolvers/types/countViewInput'
+import { CountViewInput, ViewInfo } from '../../resolvers/types/countViewInput'
 import { BadgeId } from '../../types/badge'
-import { User } from '../../models/userModel'
 
 const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
@@ -70,7 +69,7 @@ const removeBadgeFromShowCase = async ({ badgeId, uid }: { badgeId: BadgeId; uid
     },
   })
 
-  console.log(`❗❗❗ Bage removed from showcase: `, { badgeId }, { uid })
+  console.log(`❗❗❗ Badge removed from showcase: `, { badgeId }, { uid })
 }
 
 const checkBadgeOwnedOnBlockchain = async (badgeId: BadgeId): Promise<boolean> => {
@@ -116,7 +115,7 @@ const randomBadgeInspection = (marketplace: boolean): boolean => {
   return randomNum === 51
 }
 
-export const countView = async (input: CountViewInput, uid: Uid): Promise<void> => {
+export const countView = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (randomBadgeInspection(marketplace)) {
     console.log('👁️‍🗨️ Random badge inspection triggered 👁️‍🗨️')
@@ -126,7 +125,9 @@ export const countView = async (input: CountViewInput, uid: Uid): Promise<void> 
 
   const isAlreadyViewed = await checkIfBadgeAlreadyViewed(input, uid)
   if (!isAlreadyViewed) {
-    await createViewRecord(input, uid)
+    return await createViewRecord(input, uid)
+  } else {
+    return { info: "Already viewed"} as ViewInfo
   }
 }
 

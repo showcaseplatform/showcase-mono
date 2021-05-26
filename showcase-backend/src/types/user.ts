@@ -1,4 +1,4 @@
-import { BadgeId } from './badge'
+import { BadgeItemId } from './badge'
 import { Chat } from './chat'
 
 export type Currency = 'USD' | 'GBP' | 'EUR'
@@ -26,7 +26,7 @@ export interface User {
   displayName: string
   followersCount: number
   followingCount: number
-  liked: Record<BadgeId, boolean>
+  liked: Record<BadgeItemId, boolean>
   notificationToken?: NotificationToken
   phoneLocal: string
   phoneNumber: string

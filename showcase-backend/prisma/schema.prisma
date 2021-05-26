@@ -40,18 +40,20 @@ model Profile {
   user User   @relation(fields: [id], references: [id])
 
   displayName String
-  username    String
+  username    String    @unique
   bio         String?
+  email       String?   @unique
   isCreator   Boolean   @default(false)
   kycVerified Boolean   @default(false)
   currency    Currency  @default(USD)
   birthDate   DateTime?
+  avatar      String?
 
   badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
   badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
 
-  badgesOwned          Badge[] @relation("badgeCurrentlyOwned")
-  badgesOriginatedFrom Badge[] @relation("badgeOriginatedFrom")
+  badgeItemsOwned          BadgeItem[] @relation("badgeCurrentlyOwned")
+  badgeItemsOriginatedFrom BadgeItem[] @relation("badgeOriginatedFrom")
 
   cryptoWallet  Crypto?
   stripeBalance Balance?
@@ -64,6 +66,8 @@ model Profile {
   likeBadgeType LikeBadgeType[]
   viewBadge     ViewBadge[]
   viewBadgeType ViewBadgeType[]
+  friends       Follow[]        @relation("friends")
+  followers     Follow[]        @relation("followers")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -108,11 +112,11 @@ model BadgeType {
 
   shares Int @default(0)
 
-  soldout             Boolean   @default(false)
-  resale              Boolean   @default(false)
-  removedFromShowcase Boolean   @default(false) //todo: is it possible to remove a badgeType
-  gif                 Boolean   @default(false)
-  badges              Badge[]
+  soldout             Boolean     @default(false)
+  resale              Boolean     @default(false)
+  removedFromShowcase Boolean     @default(false) //todo: set this to true when all badgeItems all badges get removed
+  gif                 Boolean     @default(false)
+  badgeItems          BadgeItem[]
   receipts            Receipt[]
 
   likes LikeBadgeType[]
@@ -122,7 +126,7 @@ model BadgeType {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model Badge {
+model BadgeItem {
   id String @id
 
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
@@ -160,7 +164,7 @@ model Cause {
   image                 String
   name                  String
   site                  String
-  badges                BadgeType[]
+  badgeTypes            BadgeType[]
   Receipt               Receipt[]
 
   createdAt DateTime @default(now())
@@ -206,8 +210,8 @@ model Receipt {
   creator          Profile @relation(name: "sellReceipts", fields: [creatorProfileId], references: [id])
   creatorProfileId String
 
-  badge   Badge  @relation(fields: [badgeId], references: [id])
-  badgeId String
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
+  badgeItemId String
 
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String
@@ -243,14 +247,14 @@ model Stripe {
 }
 
 model LikeBadge {
-  profileId String
-  profile   Profile @relation(fields: [profileId], references: [id])
-  badgeId   String
-  badge     Badge   @relation(fields: [badgeId], references: [id])
+  profileId   String
+  profile     Profile   @relation(fields: [profileId], references: [id])
+  badgeItemId String
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
 
   createdAt DateTime @default(now())
 
-  @@id([profileId, badgeId])
+  @@id([profileId, badgeItemId])
 }
 
 // todo: maybe like tables can be merged together
@@ -266,14 +270,14 @@ model LikeBadgeType {
 }
 
 model ViewBadge {
-  profileId String
-  profile   Profile @relation(fields: [profileId], references: [id])
-  badgeId   String
-  badge     Badge   @relation(fields: [badgeId], references: [id])
+  profileId   String
+  profile     Profile   @relation(fields: [profileId], references: [id])
+  badgeItemId String
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
 
   createdAt DateTime @default(now())
 
-  @@id([profileId, badgeId])
+  @@id([profileId, badgeItemId])
 }
 
 model ViewBadgeType {
@@ -285,4 +289,24 @@ model ViewBadgeType {
   createdAt DateTime @default(now())
 
   @@id([profileId, badgeTypeId])
+}
+
+// todo: are these statuses enough?
+enum FollowStatus {
+  Pending
+  Accepted
+  Declined
+  Unfollowed
+}
+
+model Follow {
+  profileId         String
+  profile           Profile      @relation(name: "followers", fields: [profileId], references: [id])
+  followerProfileId String
+  follower          Profile      @relation(name: "friends", fields: [followerProfileId], references: [id])
+  status            FollowStatus
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now()) @updatedAt
+
+  @@id([profileId, followerProfileId])
 }

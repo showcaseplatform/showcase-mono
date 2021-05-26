@@ -1,7 +1,7 @@
 /* eslint-disable promise/no-nesting */
 import axios from 'axios'
 import { blockchain } from '../../config'
-import { BadgeId } from '../../types/badge'
+import { BadgeItemId } from '../../types/badge'
 import { Uid } from '../../types/user'
 import Boom from 'boom'
 import { ListBadgeForSaleInput } from '../../resolvers/types/listBadgeForSaleInput'
@@ -13,13 +13,13 @@ import { v4 } from 'uuid'
 interface BlockChainPostData {
   sig: string
   message: string
-  badgeid: BadgeId
+  badgeid: BadgeItemId
   badgeowner: string
   token: string
 }
 
 const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleInput, uid: Uid) => {
-  const { sig, message, badgeId} = input
+  const { sig, message, badgeItemId} = input
 
   const cryptoWallet = await prisma.crypto.findUnique({
     where: {
@@ -32,7 +32,7 @@ const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleI
   const postData: BlockChainPostData = {
     sig,
     message,
-    badgeid: badgeId,
+    badgeid: badgeItemId,
     badgeowner: cryptoWallet.address,
     token: blockchain.authToken,
   }
@@ -50,13 +50,13 @@ const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleI
 }
 
 const createResaleBadgeTypeAndUpdateBadge = async ({
-  badgeId,
+  badgeItemId,
   currency,
   uid,
   price,
   originBadgeType,
 }: {
-  badgeId: BadgeId
+  badgeItemId: BadgeItemId
   currency: Currency
   uid: Uid
   price: number
@@ -71,7 +71,7 @@ const createResaleBadgeTypeAndUpdateBadge = async ({
       data: {
         ...originBadgeType,
         id: newBadgeTypeId,
-        uri: 'https://showcase.to/badge/' + badgeId,
+        uri: 'https://showcase.to/badge/' + badgeItemId,
         currency,
         price,
         resale: true,
@@ -82,18 +82,18 @@ const createResaleBadgeTypeAndUpdateBadge = async ({
         removedFromShowcase: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        badges: {
+        badgeItems: {
           // connect resaleBadgType with the actual badge
           connect: {
-            id: badgeId,
+            id: badgeItemId,
           },
         },
       },
     }),
 
-    prisma.badge.update({
+    prisma.badgeItem.update({
       where: {
-        id: badgeId,
+        id: badgeItemId,
       },
       data: {
         // here we need to set forSale = true on the original badge doc
@@ -107,7 +107,7 @@ const createResaleBadgeTypeAndUpdateBadge = async ({
 
 // todo: currency is not used from input type, should be removed if realy not neccesary
 export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) => {
-  const { badgeId, price } = input
+  const { badgeItemId, price } = input
 
   // todo: price validation should be done with gql class-validators
   if (
@@ -125,9 +125,9 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
     },
   })
 
-  const badge = await prisma.badge.findUnique({
+  const badge = await prisma.badgeItem.findUnique({
     where: {
-      id: badgeId,
+      id: badgeItemId,
     },
     include: {
       badgeType: true,
@@ -138,7 +138,7 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
     await addNonFungibleToEscrowWithSignatureRelay(input, uid)
     const { badgeType } = badge
     return await createResaleBadgeTypeAndUpdateBadge({
-      badgeId,
+      badgeItemId,
       price,
       uid,
       currency: profile.currency,

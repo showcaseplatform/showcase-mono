@@ -1,5 +1,5 @@
 import { InputType, Field, Float, registerEnumType } from 'type-graphql'
-import { BadgeId } from '../../types/badge'
+import { BadgeItemId } from '../../types/badge'
 import { Min, Max } from 'class-validator'
 import { BADGE_TYPE_MIN_SALE_PRICE, BADGE_TYPE_MAX_SALE_PRICE } from '../../consts/businessRules'
 import { Currency } from '@generated/type-graphql'
@@ -13,7 +13,7 @@ export class ListBadgeForSaleInput {
   message: string
 
   @Field()
-  badgeId: BadgeId
+  badgeItemId: BadgeItemId
 
   @Field((_type) => Currency, { nullable: true })
   currency?: Currency

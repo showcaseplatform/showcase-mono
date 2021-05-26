@@ -7,13 +7,12 @@ import { prisma } from '../../services/prisma'
 import { BadgeType, Currency, User } from '.prisma/client'
 import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
 import { PurchaseBadgeInput } from '../../resolvers/types/purchaseBadgeInput'
-import { Badge } from '@prisma/client'
 
 interface PurchaseTransactionInput {
   profileId: string
   badgeType: BadgeType
   newSoldAmount: number
-  badgeId: string
+  badgeItemId: string
   causeFullAmount: number
   payoutAmount: number
   transactionHash: string
@@ -30,7 +29,7 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
       id: userId,
     },
     select: {
-      badgesOwned: {
+      badgeItemsOwned: {
         where: {
           badgeTypeId,
         },
@@ -56,6 +55,7 @@ const getCurrencyRates = async () => {
   }
 }
 
+// todo: why is it neccesary to construct this id? would be better to auto-gen badgeItem ids, and store this in a prop if neccesary
 const constructNewBadgeId = (badge: BadgeType, newSoldAmount: number) => {
   let newLastDigits = (parseInt(badge.tokenTypeBlockhainId.slice(-10)) + newSoldAmount).toFixed(0)
 
@@ -99,14 +99,14 @@ const chargeStripeAccount = async ({
   amount,
   currency,
   customerStripeId,
-  badgeId,
+  badgeItemId,
   title,
   creatorProfileId,
 }: {
   amount: number
   currency: Currency
   customerStripeId: string
-  badgeId: string
+  badgeItemId: string
   title: string
   creatorProfileId: string
 }) => {
@@ -116,9 +116,9 @@ const chargeStripeAccount = async ({
     amount: amount * twoDecimalCurrencyMultiplier,
     currency,
     customer: customerStripeId,
-    description: 'Showcase Badge "' + title + '" (ID: ' + badgeId + ')',
+    description: 'Showcase Badge "' + title + '" (ID: ' + badgeItemId + ')',
     metadata: {
-      badgeid: badgeId,
+      badgeid: badgeItemId,
       badgename: title,
       creatorid: creatorProfileId,
     },
@@ -137,7 +137,7 @@ const executeDBTransaction = async ({
   profileId,
   badgeType,
   newSoldAmount,
-  badgeId,
+  badgeItemId,
   causeFullAmount,
   payoutAmount,
   transactionHash,
@@ -155,9 +155,9 @@ const executeDBTransaction = async ({
       data: {
         sold: newSoldAmount,
         soldout: newSoldAmount === badgeType.supply,
-        badges: {
+        badgeItems: {
           create: {
-            id: badgeId,
+            id: badgeItemId,
             creatorProfileId: badgeType.creatorProfileId,
             ownerProfileId: profileId,
             edition: newSoldAmount,
@@ -168,7 +168,7 @@ const executeDBTransaction = async ({
           create: {
             recipientProfileId: profileId,
             creatorProfileId: badgeType.creatorProfileId,
-            badgeId: badgeId,
+            badgeItemId,
             stripeChargeId: chargeId,
             salePrice: badgeType.price,
             saleCurrency: badgeType.currency,
@@ -221,9 +221,9 @@ const executeDBTransaction = async ({
   ])
 }
 
-export const purchaseBadge = async (input: PurchaseBadgeInput, user: User): Promise<Badge | null> => {
+export const purchaseBadge = async (input: PurchaseBadgeInput, user: User) => {
   const { badgeTypeId, currencyRate, displayedPrice } = input
-  const  { id  } = user
+  const { id } = user
 
   const profile = await getUserProfileWithFinancialInfo(id)
 
@@ -231,7 +231,6 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, user: User): Prom
     throw Boom.badData('Profile missing')
   }
 
-  // todo: how does a user become kycVerified?
   if (
     (!profile.kycVerified &&
       profile.stripeBalance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
@@ -287,7 +286,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, user: User): Prom
     amount: calculatedPrice,
     currency: profile.currency,
     title: badgeType.title,
-    badgeId: newBadgeId,
+    badgeItemId: newBadgeId,
     creatorProfileId: badgeType.creatorProfileId,
     customerStripeId: profile.stripeInfo.stripeId,
   })
@@ -319,7 +318,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, user: User): Prom
       profileId: profile.id,
       payoutAmount,
       causeFullAmount,
-      badgeId: newBadgeId,
+      badgeItemId: newBadgeId,
       badgeType,
       chargeId,
       transactionHash,
@@ -330,12 +329,16 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, user: User): Prom
       newSoldAmount,
     })
 
-    return await prisma.badge.findUnique({
+    const badgeItem = await prisma.badgeItem.findUnique({
       where: {
-        id: newBadgeId
-      }
+        id: newBadgeId,
+      },
     })
-
+    if (badgeItem) {
+      return badgeItem
+    } else {
+      throw Boom.internal('Couldnt create badgeItem', { newBadgeId })
+    }
   } catch (error) {
     const refund = await stripe.refunds.create({ charge: chargeId })
     throw Boom.internal('Purchase failed to execute', { error, refund })

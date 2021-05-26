@@ -17,8 +17,8 @@ export const checkIfBadgeAlreadyLiked = async (input: ToggleLikeInput, uid: Uid)
   } else {
     const like = await prisma.likeBadge.findUnique({
       where: {
-        profileId_badgeId: {
-          badgeId,
+        profileId_badgeItemId: {
+          badgeItemId: badgeId,
           profileId: uid,
         },
       },
@@ -41,8 +41,8 @@ export const deleteLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
   } else {
     return await prisma.likeBadge.delete({
       where: {
-        profileId_badgeId: {
-          badgeId,
+        profileId_badgeItemId: {
+          badgeItemId: badgeId,
           profileId: uid,
         },
       },
@@ -62,7 +62,7 @@ export const createLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
   } else {
     return await prisma.likeBadge.create({
       data: {
-        badgeId: badgeId,
+        badgeItemId: badgeId,
         profileId: uid,
       },
     })

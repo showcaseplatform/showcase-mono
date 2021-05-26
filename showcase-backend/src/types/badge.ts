@@ -1,19 +1,19 @@
 import { Currency } from './user';
 
-export type BadgeId = string
+export type BadgeItemId = string
 export type BadgeTypeId = string
 
 
 export interface ListBadgeForSaleRequestBody {
   sig: string
   message: string
-  badgeid: BadgeId
+  badgeid: BadgeItemId
   currency: string
   price: number
 }
 
 export interface UnlistBadgeForSaleRequestBody {
-  badgeid: BadgeId
+  badgeid: BadgeItemId
 }
 
 
@@ -45,7 +45,7 @@ export interface BadgeDocumentData  {
   saleId: string
   shares: number
   title: string
-  tokenId: BadgeId // todo: id which links a badge to a token
+  tokenId: BadgeItemId // todo: id which links a badge to a token
   tokenType: string // todo: id of the nft contract?
   uri: string
   views: number
@@ -56,7 +56,7 @@ export interface BadgeDocumentData  {
 }
 
 export interface BadgeDocument extends BadgeDocumentData{
- id: BadgeId
+ id: BadgeItemId
 }
 
 

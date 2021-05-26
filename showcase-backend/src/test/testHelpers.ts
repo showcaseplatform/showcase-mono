@@ -20,8 +20,8 @@ export const mockCreateLikeBadgeType = (badgeTypeId: string, profileId: Uid) => 
   createdAt: new Date(),
 })
 
-export const mockCreateLikeBadge = (badgeId: string, profileId: Uid) => prismaMock.likeBadge.create.mockResolvedValue({
+export const mockCreateLikeBadge = (badgeItemId: string, profileId: Uid) => prismaMock.likeBadge.create.mockResolvedValue({
   profileId,
-  badgeId,
+  badgeItemId,
   createdAt: new Date(),
 })

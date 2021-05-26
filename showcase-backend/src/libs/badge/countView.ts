@@ -4,7 +4,7 @@ import { Uid } from '../../types/user'
 import Boom from 'boom'
 import prisma from '../../services/prisma'
 import { CountViewInput, ViewInfo } from '../../resolvers/types/countViewInput'
-import { BadgeId } from '../../types/badge'
+import { BadgeItemId } from '../../types/badge'
 
 const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
@@ -21,8 +21,8 @@ const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
   } else {
     const view = await prisma.viewBadge.findUnique({
       where: {
-        profileId_badgeId: {
-          badgeId,
+        profileId_badgeItemId: {
+          badgeItemId: badgeId,
           profileId: uid,
         },
       },
@@ -43,14 +43,14 @@ const createViewRecord = async (input: CountViewInput, uid: Uid) => {
   } else {
     return await prisma.viewBadge.create({
       data: {
-        badgeId: badgeId,
+        badgeItemId: badgeId,
         profileId: uid,
       },
     })
   }
 }
 
-const removeBadgeFromShowCase = async ({ badgeId, uid }: { badgeId: BadgeId; uid: Uid }) => {
+const removeBadgeFromShowCase = async ({ badgeItemId, uid }: { badgeItemId: BadgeItemId; uid: Uid }) => {
   await prisma.user.update({
     where: {
       id: uid,
@@ -60,22 +60,22 @@ const removeBadgeFromShowCase = async ({ badgeId, uid }: { badgeId: BadgeId; uid
     },
   })
 
-  await prisma.badge.update({
+  await prisma.badgeItem.update({
     where: {
-      id: badgeId,
+      id: badgeItemId,
     },
     data: {
       removedFromShowcase: true,
     },
   })
 
-  console.log(`❗❗❗ Badge removed from showcase: `, { badgeId }, { uid })
+  console.log(`❗❗❗ Badge removed from showcase: `, { badgeItemId }, { uid })
 }
 
-const checkBadgeOwnedOnBlockchain = async (badgeId: BadgeId): Promise<boolean> => {
-  const badge = await prisma.badge.findUnique({
+const checkBadgeOwnedOnBlockchain = async (badgeItemId: BadgeItemId): Promise<boolean> => {
+  const badge = await prisma.badgeItem.findUnique({
     where: {
-      id: badgeId,
+      id: badgeItemId,
     },
     include: {
       owner: {
@@ -90,11 +90,11 @@ const checkBadgeOwnedOnBlockchain = async (badgeId: BadgeId): Promise<boolean> =
     },
   })
   if (!badge) {
-    throw Boom.badData('Badge id not found', { badgeId })
+    throw Boom.badData('Badge id not found', { badgeItemId })
   }
 
   const data = {
-    badgeid: badgeId,
+    badgeid: badgeItemId,
     badgeowner: badge.ownerProfileId,
     token: blockchain.authToken,
   }
@@ -120,7 +120,7 @@ export const countView = async (input: CountViewInput, uid: Uid) => {
   if (randomBadgeInspection(marketplace)) {
     console.log('👁️‍🗨️ Random badge inspection triggered 👁️‍🗨️')
     const isOwner = await checkBadgeOwnedOnBlockchain(badgeId)
-    !isOwner && (await removeBadgeFromShowCase({badgeId, uid}))
+    !isOwner && (await removeBadgeFromShowCase({badgeItemId: badgeId, uid}))
   }
 
   const isAlreadyViewed = await checkIfBadgeAlreadyViewed(input, uid)

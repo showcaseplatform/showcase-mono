@@ -6,7 +6,7 @@ import {
 } from 'type-graphql'
 import {
   BadgeType,
-  Badge
+  BadgeItem
 } from '@generated/type-graphql'
 
 import { publishBadgeType } from '../libs/marketplace/publishBadgeType'
@@ -17,20 +17,20 @@ import { purchaseBadge } from '../libs/marketplace/purchaseBadge'
 
 // @Resolver((_of) => BadgeType)
 @Resolver()
-export class MarketplaceTypeResolver {
+export class MarketplaceResolver {
   @Mutation((_returns) => BadgeType)
   async publishBadgeType(
     @Ctx() ctx: any,
     @Arg('data') publishBadgeTypeInput: PublishBadgeTypeInput
-  ): Promise<BadgeType | null> {
+  ): Promise<BadgeType> {
     return await publishBadgeType(publishBadgeTypeInput, ctx.user)
   }
 
-  @Mutation((_returns) => Badge)
+  @Mutation((_returns) => BadgeItem)
   async purchaseBadge(
     @Ctx() ctx: any,
     @Arg('data') purchaseBadgeInput: PurchaseBadgeInput
-  ): Promise<Badge| null> {
+  ): Promise<BadgeItem> {
     return await purchaseBadge(purchaseBadgeInput, ctx.user)
   }
 }

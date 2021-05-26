@@ -4,14 +4,14 @@ import { toggleLike } from '../libs/badge/toggleLike'
 import { ToggleLikeInput, LikeBadgeUnion } from './types/toggleLikeInput'
 import { countView } from '../libs/badge/countView'
 import { CountViewInput, ViewBadgeUnion } from './types/countViewInput'
-import { Badge, LikeBadgeType, LikeBadge } from '@generated/type-graphql'
+import { BadgeItem } from '@generated/type-graphql'
 import { listBadgeForSale } from '../libs/badge/listBadgeForSale'
 import { ListBadgeForSaleInput } from './types/listBadgeForSaleInput'
 import { unlistBadgeForSale } from '../libs/badge/unlistBadgeForSale'
 import { UnListBadgeForSaleInput } from './types/unlistBadgeForSaleInput'
 
 @Resolver()
-export class BadgeResolver {
+export class InventoryResolver {
   @Mutation((_returns) => LikeBadgeUnion)
   async toggleLike(@Ctx() ctx: any, @Arg('data') countLikeInput: ToggleLikeInput) {
     return await toggleLike(countLikeInput, ctx.user.id)
@@ -22,7 +22,7 @@ export class BadgeResolver {
     return await countView(countViewInput, ctx.user.id)
   }
 
-  @Mutation((_returns) => Badge)
+  @Mutation((_returns) => BadgeItem)
   async listBadgeForSale(
     @Ctx() ctx: any,
     @Arg('data') listBadgeForSaleInput: ListBadgeForSaleInput
@@ -30,7 +30,7 @@ export class BadgeResolver {
     return await listBadgeForSale(listBadgeForSaleInput, ctx.user.id)
   }
 
-  @Mutation((_returns) => Badge)
+  @Mutation((_returns) => BadgeItem)
   async unlistBadgeForSale(
     @Ctx() ctx: any,
     @Arg('data') unListBadgeForSaleInput: UnListBadgeForSaleInput

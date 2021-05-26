@@ -19,16 +19,16 @@ test('createLikeRecord should create new LikeBadgeType record if badge viewed in
 })
 
 test('createLikeRecord should create new LikeBadgeType record if badge viewed NOT in marketplace', async () => {
-  const badgeId = 'badgeId'
+  const badgeItemId = 'badgeItemId'
   const likerUserId = 'likerUserId'
 
   const input: ToggleLikeInput = {
-    badgeId,
+    badgeId: badgeItemId,
     marketplace: false,
   }
 
-  mockCreateLikeBadge(badgeId, likerUserId)
+  mockCreateLikeBadge(badgeItemId, likerUserId)
 
-  await expect(createLikeRecord(input, likerUserId)).resolves.toHaveProperty('badgeId', badgeId)
+  await expect(createLikeRecord(input, likerUserId)).resolves.toHaveProperty('badgeId', badgeItemId)
   await expect(createLikeRecord(input, likerUserId)).resolves.toHaveProperty('profileId', likerUserId)
 })

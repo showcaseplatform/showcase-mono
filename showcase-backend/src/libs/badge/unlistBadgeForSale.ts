@@ -7,11 +7,11 @@ import { UnListBadgeForSaleInput } from '../../resolvers/types/unlistBadgeForSal
 import prisma from '../../services/prisma'
 
 export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Uid) => {
-  const { badgeId } = input
+  const { badgeItemId } = input
 
-  const badge = await prisma.badge.findUnique({
+  const badge = await prisma.badgeItem.findUnique({
     where: {
-      id: badgeId
+      id: badgeItemId
     }
   })
   
@@ -19,13 +19,13 @@ export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Ui
   if (!badge || badge.ownerProfileId != uid) {
     throw Boom.preconditionFailed('User doesnt match badge owner', { badge, uid })
   }
-  const response = await axios.post(blockchain.server + '/removeBadgeFromEscrow', { badgeid: badgeId })
+  const response = await axios.post(blockchain.server + '/removeBadgeFromEscrow', { badgeid: badgeItemId })
 
   if (response && response.data && response.data.success) {
     // todo: delete related the badgeSale for this listing, if concept stays to create new badgeType when resale
-    return await prisma.badge.update({
+    return await prisma.badgeItem.update({
       where: {
-        id: badgeId
+        id: badgeItemId
       },
       data: {
         forSale: false

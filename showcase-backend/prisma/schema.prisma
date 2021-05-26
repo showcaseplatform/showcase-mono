@@ -80,19 +80,19 @@ enum Category {
 }
 
 model BadgeType {
-  id               String  @id @default(uuid())
+  id               String  @id
   creator          Profile @relation(name: "badgeTypesCreated", fields: [creatorProfileId], references: [id])
   creatorProfileId String
 
   resaller          Profile? @relation(name: "badgeTypesForResell", fields: [resallerProfileId], references: [id])
   resallerProfileId String?
 
-  tokenTypeBlockhainId String @unique
-  uri                  String @unique
+  tokenTypeBlockhainId String // todo: should this be unique? incase of resell it would be violated
+  uri                  String // todo: should this be unique? incase of resell it would be violated
 
   supply   Int
   price    Float
-  currency Currency @default(USD) // could be user's default currency aswell
+  currency Currency @default(USD)
   sold     Int      @default(0)
 
   image     String
@@ -102,13 +102,12 @@ model BadgeType {
   cause          Cause? @relation(fields: [causeId], references: [id])
   donationAmount Float? @default(0)
 
-  title       String   @db.VarChar(255)
-  description String?  @db.VarChar(255)
+  title       String   @db.VarChar(50) // todo: should we really limit this field?
+  description String?  @db.VarChar(240)
   category    Category @default(Art)
 
   shares Int @default(0)
 
-  forSale             Boolean   @default(false)
   soldout             Boolean   @default(false)
   resale              Boolean   @default(false)
   removedFromShowcase Boolean   @default(false) //todo: is it possible to remove a badgeType
@@ -143,6 +142,7 @@ model Badge {
   shares Int @default(0)
 
   removedFromShowcase Boolean @default(false)
+  forSale             Boolean @default(false)
 
   likes LikeBadge[]
   views ViewBadge[]

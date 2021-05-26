@@ -27,6 +27,7 @@ const main = async () => {
           username: `alice_${id}`,
           badgeTypesCreated: {
             create: {
+              id,
               title: `BadgeType Title ${id}`,
               price: 1,
               supply: 10,
@@ -41,7 +42,6 @@ const main = async () => {
               sold: 1,
               shares: 0,
               soldout: false,
-              forSale: false,
               removedFromShowcase: false,
               causeId: carpathiaFoundation.id,
               donationAmount: 0.1
@@ -86,7 +86,6 @@ const main = async () => {
       },
     },
   })
-
 
 }
 

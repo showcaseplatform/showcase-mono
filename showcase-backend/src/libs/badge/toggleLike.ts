@@ -30,7 +30,7 @@ export const checkIfBadgeAlreadyLiked = async (input: ToggleLikeInput, uid: Uid)
 export const deleteLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (marketplace) {
-    await prisma.likeBadgeType.delete({
+    return await prisma.likeBadgeType.delete({
       where: {
         profileId_badgeTypeId: {
           badgeTypeId: badgeId,
@@ -39,7 +39,7 @@ export const deleteLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
       },
     })
   } else {
-    await prisma.likeBadge.delete({
+    return await prisma.likeBadge.delete({
       where: {
         profileId_badgeId: {
           badgeId,
@@ -72,9 +72,9 @@ export const createLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
 export const toggleLike = async (input: ToggleLikeInput, uid: Uid) => {
   const isLikedAlready = await checkIfBadgeAlreadyLiked(input, uid)
   if (isLikedAlready) {
-    // todo: how to deal with unlikes
-    await deleteLikeRecord(input, uid)
+    // todo: how to deal with unlikes (delete or flag)
+    return await deleteLikeRecord(input, uid)
   } else {
-    await createLikeRecord(input, uid)
+    return await createLikeRecord(input, uid)
   }
 }

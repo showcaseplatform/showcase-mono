@@ -6,7 +6,7 @@ import Boom from 'boom'
 import { prisma } from '../../services/prisma'
 import { BadgeType, Currency, User } from '.prisma/client'
 import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
-import { PurchaseBadgeInput } from '../../resolvers/types/purchaseBadgeInput'
+import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 
 interface PurchaseTransactionInput {
   profileId: string

@@ -9,9 +9,9 @@ import {
   PROFILE_MAX_DISPLAY_NAME_LENGTH,
   PROFILE_MIN_USER_AGE,
 } from '../../consts/businessRules'
-import { Currency, ProfileUpdateInput } from '@generated/type-graphql'
+import { Currency } from '@generated/type-graphql'
 import prisma from '../../services/prisma'
-import { UpdateProfileInput } from '../../resolvers/types/updateProfileInput'
+import { UpdateProfileInput } from './types/updateProfile.type'
 
 const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {

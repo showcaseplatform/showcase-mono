@@ -2,7 +2,7 @@ import { auth } from '../../services/firestore'
 import prisma from '../../services/prisma'
 import Boom from 'boom'
 import { VerifyPhoneCodeInput, VerifyPhoneCodeResponse } from './types/verifyPhoneCode.type'
-import { createNewUser } from './createNewUser'
+import { createNewUser } from '../user/createNewUser'
 
 const INCREMENT_WITH_ONE = {
   increment: 1,

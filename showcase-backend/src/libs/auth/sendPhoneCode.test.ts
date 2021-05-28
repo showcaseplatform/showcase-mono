@@ -1,5 +1,5 @@
 import { Currency, PrismaClient, User, Category, Profile } from '@prisma/client'
-import { findOrCreateUser } from './sendPhoneCode'
+import { checkIfNewUser } from './sendPhoneCode'
 
 const prisma = new PrismaClient()
 
@@ -19,7 +19,7 @@ beforeAll(async() => {
 
 test('findOrCreateUser should create new user if user doesnt exists', async () => {
   const dummyPhone = '+36709788821'
-  const user = await findOrCreateUser(dummyPhone)
+  const user = await checkIfNewUser(dummyPhone)
   expect(user).toHaveProperty('phone', dummyPhone)
 })
 
@@ -28,11 +28,11 @@ test('findOrCreateUser should return user if user already exists', async () => {
   const user = await prisma.user.create({
     data: {
       phone,
-      authyId: 123456
+      authId: "123456"
     }
   })
 
-  const returnedUser = await findOrCreateUser(user.phone)
+  const returnedUser = await checkIfNewUser(user.phone)
   expect(returnedUser).toHaveProperty('phone', phone)
   expect(returnedUser).toHaveProperty('id', user.id)
 })

@@ -199,7 +199,7 @@ const executeDBTransaction = async ({
       where: {
         id: profileId,
       },
-      data: {
+    data: {
         stripeBalance: {
           update: {
             eur: {

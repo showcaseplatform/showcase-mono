@@ -6,6 +6,7 @@ const { firestore: db, FieldValue } = require('../../services/firestore')
 const moment = require('moment')
 const { v4: uuidv4 } = require('uuid')
 
+//todo: transferwise integration
 module.exports = (req, res) => {
   const { user } = req
   const originalBalance = user.balances[req.body.currency.toLowerCase()]

@@ -25,19 +25,22 @@ import { checkExpoReceiptsJob } from './jobs/checkNotificationReceipts'
 
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
-import { resolvers } from '@generated/type-graphql'
+import { resolvers as crudResolvers } from '@generated/type-graphql'
 import { PrismaClient } from '@prisma/client'
 import { MarketplaceResolver } from './resolvers/marketplaceResolver'
 import { InventoryResolver } from './resolvers/inventoryResolver'
 import { SocialResolver } from './resolvers/socialResolver'
+import { getUserFromToken } from './libs/auth/getUserFromToken'
+import { TestResolver } from './resolvers/testResolver'
+import { AuthResolver } from './resolvers/authResolver'
 
-// Set up REST api server
+// Set up express server
 const app = express()
 app.use(cors({ origin: true }))
 app.use(cookieParser())
 app.use(express.json())
 
-// Setup routes
+// Setup REST api routes
 MainController(app)
 
 // Add error handling
@@ -45,14 +48,19 @@ app.use(globalErrorHandler)
 app.listen(process.env.PORT || 3000)
 
 // Set up GQL api server
-// export const resolvers = [NotificationResolver] as const
-
 const prisma = new PrismaClient()
 
 async function bootstrap() {
   const schema = await buildSchema({
-    resolvers: [...resolvers, MarketplaceResolver, InventoryResolver, SocialResolver],
-    validate: false,
+    resolvers: [
+      ...crudResolvers,
+      MarketplaceResolver,
+      InventoryResolver,
+      SocialResolver,
+      AuthResolver,
+      TestResolver,
+    ],
+    validate: true,
     // here provide all the types that are missing in schema
     //   orphanedTypes: [FirstObject],
   })
@@ -61,32 +69,21 @@ async function bootstrap() {
     // typeDefs,
     schema,
     playground: true,
-    context: async (): Promise<any> => {
-      const users = await prisma.user.findMany()
-      console.log(users[0])
-      return { prisma, user: users[0] }
+    context: async ({ req }): Promise<any> => {
+      // Get the user token from the headers.
+      const token = req.headers.authorization || ''
+      // Try to retrieve a user with the token
+      let authUser = await getUserFromToken(token)
+
+      // Only for testing purposes
+      if (!authUser) {
+        const users = await prisma.user.findMany()
+        authUser = users[0]
+        console.log(users[0])
+      }
+
+      return { prisma, user: authUser }
     },
-    // context: async ({ req, connection, prisma }: any) => {
-    //   // request is coming from http (queries, mutations)
-    //   // if (!params.req?.body) {
-    //   //   console.log(params)
-    //   // }
-    //   console.log({ prisma })
-    //   if (req) {
-    //     // We need it for codegen / introspection for playground
-    //     if (!req.user) return { req, prisma }
-    //     const user = {}
-    //     return {
-    //       req,
-    //       user, // `req.user` comes from `express-jwt`
-    //     }
-    //   } else if (connection) {
-    //     // connection.user comes from websocket/onconnect (subscriptions)
-    //     // const user = await User.findOneOrFail(connection.context.user.sub)
-    //     const user = {}
-    //     return { user }
-    //   }
-    // },
   })
   server.applyMiddleware({ app, path: '/graphql', cors: true })
 }

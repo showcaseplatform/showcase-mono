@@ -1,6 +1,5 @@
 import { Response } from 'express'
 import { firestore as db, auth } from '../services/firestore'
-import { prisma } from '../services/prisma'
 import { ApiRequest } from '../types/request'
 import { User } from '../types/user'
 
@@ -11,11 +10,7 @@ export const userAuthenticated = async (req: ApiRequest, res: Response, next: an
     if (!token) throw 'Missing authentication token'
 
     const { uid } = await auth().verifyIdToken(token.replace('Bearer ', ''))
-    const user = await prisma.profile.findUnique({
-      where: {
-        userId: uid
-      }
-    })
+    const userDoc = await db.collection('users').doc(uid).get()
 
     if (!userDoc.exists) throw 'User doesnt exists'
 

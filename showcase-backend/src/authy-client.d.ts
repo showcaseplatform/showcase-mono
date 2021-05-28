@@ -1,1 +1,1 @@
-declare module 'authy-client'
+// declare module 'authy-client'

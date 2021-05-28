@@ -3,7 +3,7 @@ import axios from 'axios'
 import { blockchain } from '../../config'
 import { Uid } from '../../types/user'
 import Boom from 'boom'
-import { UnListBadgeForSaleInput } from '../../resolvers/types/unlistBadgeForSaleInput'
+import { UnListBadgeForSaleInput } from './types/unlistBadgeForSale.type'
 import prisma from '../../services/prisma'
 
 export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Uid) => {

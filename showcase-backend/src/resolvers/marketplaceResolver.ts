@@ -9,13 +9,12 @@ import {
   BadgeItem
 } from '@generated/type-graphql'
 
-import { publishBadgeType } from '../libs/marketplace/publishBadgeType'
-import { PublishBadgeTypeInput } from './types/publishBadgeTypeInput'
-import { PurchaseBadgeInput } from './types/purchaseBadgeInput'
-import { purchaseBadge } from '../libs/marketplace/purchaseBadge'
+import { publishBadgeType } from '../libs/badge/publishBadgeType'
+import { PublishBadgeTypeInput } from '../libs/badge/types/publishBadgeType.type'
+import { PurchaseBadgeInput } from '../libs/badge/types/purchaseBadge.type'
+import { purchaseBadge } from '../libs/badge/purchaseBadge'
 
 
-// @Resolver((_of) => BadgeType)
 @Resolver()
 export class MarketplaceResolver {
   @Mutation((_returns) => BadgeType)

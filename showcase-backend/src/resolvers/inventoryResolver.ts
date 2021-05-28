@@ -1,14 +1,14 @@
 import { Resolver, Ctx, Mutation, Arg } from 'type-graphql'
 
 import { toggleLike } from '../libs/badge/toggleLike'
-import { ToggleLikeInput, LikeBadgeUnion } from './types/toggleLikeInput'
+import { ToggleLikeInput, LikeBadgeUnion } from '../libs/badge/types/toggleLike.type'
 import { countView } from '../libs/badge/countView'
-import { CountViewInput, ViewBadgeUnion } from './types/countViewInput'
+import { CountViewInput, ViewBadgeUnion } from '../libs/badge/types/countView.type'
 import { BadgeItem } from '@generated/type-graphql'
 import { listBadgeForSale } from '../libs/badge/listBadgeForSale'
-import { ListBadgeForSaleInput } from './types/listBadgeForSaleInput'
+import { ListBadgeForSaleInput } from '../libs/badge/types/listBadgeForSale.type'
 import { unlistBadgeForSale } from '../libs/badge/unlistBadgeForSale'
-import { UnListBadgeForSaleInput } from './types/unlistBadgeForSaleInput'
+import { UnListBadgeForSaleInput } from '../libs/badge/types/unlistBadgeForSale.type'
 
 @Resolver()
 export class InventoryResolver {

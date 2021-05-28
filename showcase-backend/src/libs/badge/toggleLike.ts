@@ -1,4 +1,4 @@
-import { ToggleLikeInput } from '../../resolvers/types/toggleLikeInput'
+import { ToggleLikeInput } from './types/toggleLike.type'
 import  prisma  from '../../services/prisma'
 import { Uid } from '../../types/user'
 

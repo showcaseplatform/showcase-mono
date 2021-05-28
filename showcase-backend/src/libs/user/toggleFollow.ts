@@ -1,5 +1,5 @@
 import { FollowStatus } from '.prisma/client'
-import { ToggleFollowInput } from '../../resolvers/types/toggleFollowInput'
+import { ToggleFollowInput } from './types/toggleFollow.type'
 import prisma from '../../services/prisma'
 import { Uid } from '../../types/user'
 

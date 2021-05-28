@@ -10,7 +10,7 @@ import {
   BADGE_TYPE_MIN_SUPPLY,
   DONATION_MAX_AMOUNT,
   DONATION_MIN_AMOUNT,
-} from '../../consts/businessRules'
+} from '../../../consts/businessRules'
 
 // todo: validations are not tiggered
 @InputType({ description: 'Data for publishing a new badgeType' })

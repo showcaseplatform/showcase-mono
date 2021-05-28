@@ -1,7 +1,7 @@
 import { InputType, Field, Float, registerEnumType } from 'type-graphql'
-import { BadgeItemId } from '../../types/badge'
+import { BadgeItemId } from '../../../types/badge'
 import { Min, Max } from 'class-validator'
-import { BADGE_TYPE_MIN_SALE_PRICE, BADGE_TYPE_MAX_SALE_PRICE } from '../../consts/businessRules'
+import { BADGE_TYPE_MIN_SALE_PRICE, BADGE_TYPE_MAX_SALE_PRICE } from '../../../consts/businessRules'
 import { Currency } from '@generated/type-graphql'
 
 @InputType({ description: 'Data for listing a badge for sale' })

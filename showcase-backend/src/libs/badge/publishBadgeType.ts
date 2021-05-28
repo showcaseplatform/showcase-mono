@@ -5,7 +5,7 @@ import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/n
 import { Profile } from '@generated/type-graphql'
 import Boom from 'boom'
 import { prisma } from '../../services/prisma'
-import { PublishBadgeTypeInput } from '../../resolvers/types/publishBadgeTypeInput'
+import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { User } from '.prisma/client'
 
 interface InputWithUser extends PublishBadgeTypeInput {

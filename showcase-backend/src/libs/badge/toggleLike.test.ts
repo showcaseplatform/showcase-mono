@@ -1,4 +1,4 @@
-import { ToggleLikeInput } from '../../resolvers/types/toggleLikeInput'
+import { ToggleLikeInput } from './types/toggleLike.type'
 import { mockCreateLikeBadge, mockCreateLikeBadgeType } from '../../test/testHelpers'
 import { createLikeRecord } from './toggleLike'
 

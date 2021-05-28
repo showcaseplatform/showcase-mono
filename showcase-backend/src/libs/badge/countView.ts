@@ -3,7 +3,7 @@ import axios from 'axios'
 import { Uid } from '../../types/user'
 import Boom from 'boom'
 import prisma from '../../services/prisma'
-import { CountViewInput, ViewInfo } from '../../resolvers/types/countViewInput'
+import { CountViewInput, ViewInfo } from './types/countView.type'
 import { BadgeItemId } from '../../types/badge'
 
 const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {

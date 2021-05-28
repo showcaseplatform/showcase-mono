@@ -1,5 +1,5 @@
 import { InputType, Field, createUnionType } from 'type-graphql'
-import { BadgeItemId, BadgeTypeId } from '../../types/badge'
+import { BadgeItemId, BadgeTypeId } from '../../../types/badge'
 import { LikeBadgeType, LikeBadge } from '@generated/type-graphql'
 
 @InputType({ description: 'Data for counting likes' })

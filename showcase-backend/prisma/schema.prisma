@@ -22,13 +22,30 @@ enum Currency {
   GBP
 }
 
+model SmsVerification {
+  phone                     String   @id
+  user                      User?
+  code                      String
+  codesSent                 Int
+  codesSentSinceValid       Int
+  attemptsEntered           Int
+  attemptsEnteredSinceValid Int
+  valid                     Boolean
+  expiration                DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
 model User {
   id String @id @default(uuid())
 
+  authId  String
   phone   String   @unique
   profile Profile?
 
-  isBanned Boolean @default(false)
+  isBanned        Boolean         @default(false)
+  smsVerification SmsVerification @relation(fields: [phone], references: [phone])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -70,7 +87,7 @@ model Profile {
   followers     Follow[]        @relation("followers")
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum Category {
@@ -165,7 +182,7 @@ model Cause {
   name                  String
   site                  String
   badgeTypes            BadgeType[]
-  Receipt               Receipt[]
+  receipts              Receipt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

@@ -12,39 +12,49 @@ const main = async () => {
     data: {
       name: `Carpathia Foundation`,
       site: `https://www.carpathia.org/`,
-      image:
-        `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fcarpathia.jpg?alt=media`,
+      image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fcarpathia.jpg?alt=media`,
     },
   })
 
-  const alice = await prisma.user.create({
+  const alice = await prisma.smsVerification.create({
     data: {
-      phone: `3670978${getRandomNum()}`,
-      profile: {
+      phone: `+3670978${id}`,
+      code: `111111`,
+      attemptsEntered: 1,
+      attemptsEnteredSinceValid: 1,
+      codesSent: 1,
+      codesSentSinceValid: 1,
+      expiration: new Date(),
+      valid: false,
+      user: {
         create: {
-          bio: `I like turtles ${id}`,
-          displayName: `Alice ${id}`,
-          username: `alice_${id}`,
-          badgeTypesCreated: {
+          authId: id,
+          profile: {
             create: {
-              id,
-              title: `BadgeType Title ${id}`,
-              price: 1,
-              supply: 10,
-              description: `BadgeType description ${id}`,
-              image:
-                `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2Fgiph6.gif?alt=media`,
-              imageHash: `2973d3caefc59b3855b142471699e054`,
-              category: Category.Art,
-              uri: `https://showcase.to/badge/${id}`,
-              currency: Currency.USD,
-              tokenTypeBlockhainId: id,
-              sold: 1,
-              shares: 0,
-              soldout: false,
-              removedFromShowcase: false,
-              causeId: carpathiaFoundation.id,
-              donationAmount: 0.1
+              bio: `I like turtles ${id}`,
+              displayName: `Alice ${id}`,
+              username: `alice_${id}`,
+              badgeTypesCreated: {
+                create: {
+                  id,
+                  title: `BadgeType Title ${id}`,
+                  price: 1,
+                  supply: 10,
+                  description: `BadgeType description ${id}`,
+                  image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2Fgiph6.gif?alt=media`,
+                  imageHash: `2973d3caefc59b3855b142471699e054`,
+                  category: Category.Art,
+                  uri: `https://showcase.to/badge/${id}`,
+                  currency: Currency.USD,
+                  tokenTypeBlockhainId: id,
+                  sold: 1,
+                  shares: 0,
+                  soldout: false,
+                  removedFromShowcase: false,
+                  causeId: carpathiaFoundation.id,
+                  donationAmount: 0.1,
+                },
+              },
             },
           },
         },
@@ -54,7 +64,7 @@ const main = async () => {
 
   const aliceWithBadgeType = await prisma.user.findUnique({
     where: {
-      id: alice.id,
+      phone: alice.phone,
     },
     include: {
       profile: {
@@ -65,28 +75,39 @@ const main = async () => {
     },
   })
 
-  const bob = await prisma.user.create({
+  const bob = await prisma.smsVerification.create({
     data: {
-      phone: `3670978${getRandomNum()}`,
-      profile: {
+      phone: `+3670978${id.substring(1)}1`,
+      code: `222222`,
+      attemptsEntered: 0,
+      attemptsEnteredSinceValid: 0,
+      codesSent: 0,
+      codesSentSinceValid: 1,
+      expiration: new Date(),
+      valid: true,
+      user: {
         create: {
-          bio: `I like turtles ${id}`,
-          displayName: `Bob ${id}`,
-          username: `bob_${id}`,
-          badgesOwned: {
+          authId: id + 1,
+          profile: {
             create: {
-              id: `badgeToken_${getRandomNum()}`,
-              badgeTypeId: aliceWithBadgeType?.profile?.badgeTypesCreated[0].id || ``,
-              creatorProfileId: aliceWithBadgeType?.profile?.id || ``,
-              edition: 1,
-              purchaseDate: new Date(),
+              bio: `I like turtles ${id}`,
+              displayName: `Bob ${id}`,
+              username: `bob_${id}`,
+              badgeItemsOwned: {
+                create: {
+                  id: `badgeToken_${getRandomNum()}`,
+                  badgeTypeId: aliceWithBadgeType?.profile?.badgeTypesCreated[0].id || ``,
+                  creatorProfileId: aliceWithBadgeType?.profile?.id || ``,
+                  edition: 1,
+                  purchaseDate: new Date(),
+                },
+              },
             },
           },
         },
       },
     },
   })
-
 }
 
 main()

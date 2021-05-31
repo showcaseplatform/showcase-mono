@@ -6,7 +6,7 @@ export const getUserFromToken = async (token: string) => {
   const { uid } = await auth().verifyIdToken(token.replace('Bearer ', ''))
   const user = await prisma.user.findUnique({
     where: {
-      id: uid,
+      authId: uid,
     },
   })
 

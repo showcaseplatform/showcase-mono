@@ -40,7 +40,7 @@ model SmsVerification {
 model User {
   id String @id @default(uuid())
 
-  authId  String
+  authId  String   @unique
   phone   String   @unique
   profile Profile?
 
@@ -322,13 +322,13 @@ enum FollowStatus {
 }
 
 model Follow {
-  userId         String
-  profile        User         @relation(name: "followers", fields: [userId], references: [id])
+  userId     String
+  user    User         @relation(name: "followers", fields: [userId], references: [id])
   followerId String
-  follower       User         @relation(name: "friends", fields: [followerId], references: [id])
-  status         FollowStatus
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now()) @updatedAt
+  follower   User         @relation(name: "friends", fields: [followerId], references: [id])
+  status     FollowStatus
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now()) @updatedAt
 
   @@id([userId, followerId])
 }

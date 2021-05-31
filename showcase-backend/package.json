@@ -3,7 +3,6 @@
   "description": "Cloud Functions for Firebase",
   "main": "dist/index.js",
   "scripts": {
-    "prebuild": "rimraf dist",
     "build": "npx rimraf dist && tsc -p tsconfig.build.json",
     "start:dev": "ts-node-dev --respawn -- src/index.ts",
     "start-emulators": "npm run build & firebase emulators:start --import=seed --export-on-exit=seed",

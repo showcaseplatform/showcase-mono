@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "rimraf dist && tsc -p tsconfig.build.json",
+    "build": "npx rimraf dist && tsc -p tsconfig.build.json",
     "start:dev": "ts-node-dev --respawn -- src/index.ts",
     "start-emulators": "npm run build & firebase emulators:start --import=seed --export-on-exit=seed",
     "serve": "firebase serve --only functions",

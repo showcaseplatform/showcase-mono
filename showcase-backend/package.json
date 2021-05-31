@@ -24,7 +24,8 @@
     "prisma:generate": "npx prisma generate",
     "prisma:seed": "npx prisma db seed --preview-feature",
     "prisma:studio": "npx prisma studio",
-    "prisma:push": "npx prisma db push"
+    "prisma:push": "npx prisma db push",
+    "prisma:ci": "npx prisma migrate deploy"
   },
   "engines": {
     "node": "14"

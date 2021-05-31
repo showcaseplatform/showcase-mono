@@ -8,7 +8,7 @@ services:
     region: oregon
     env: node
     buildCommand: yarn && yarn run build
-    startCommand: yarn prisma:migrate && yarn start
+    startCommand: yarn prisma:ci && yarn start
     afterFirstDeployCommand: yarn prisma:seed
     envVars:
       - key: DATABASE_URL

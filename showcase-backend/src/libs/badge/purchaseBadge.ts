@@ -281,11 +281,11 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
 
   if (calculatedPrice !== displayedPrice && badgeType.price !== 0) {
-    throw Boom.preconditionFailed('Wrong price displayed')
+    throw new GraphQLError('Wrong price displayed')
   }
 
   if (currenciesData[user.profile.currency] !== currencyRate) {
-    throw Boom.preconditionFailed('Transaction currency conversion rate dont match!')
+    throw new GraphQLError('Transaction currency conversion rate dont match!')
   }
 
   const { chargeId } = await chargeStripeAccount({
@@ -343,10 +343,10 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
     if (badgeItem) {
       return badgeItem
     } else {
-      throw Boom.internal('Couldnt create badgeItem', { newBadgeId })
+      throw new GraphQLError('Couldnt create badgeItem')
     }
   } catch (error) {
-    const refund = await stripe.refunds.create({ charge: chargeId })
-    throw Boom.internal('Purchase failed to execute', { error, refund })
+    await stripe.refunds.create({ charge: chargeId })
+    throw new GraphQLError('Purchase failed to execute,')
   }
 }

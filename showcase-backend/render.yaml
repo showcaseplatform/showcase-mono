@@ -7,7 +7,7 @@ services:
     name: showcase-backend
     region: oregon
     env: node
-    buildCommand: yarn run build
+    buildCommand: yarn && yarn run build
     startCommand: yarn prisma:migrate && yarn start
     afterFirstDeployCommand: yarn prisma:seed
     envVars:

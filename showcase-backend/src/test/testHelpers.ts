@@ -9,19 +9,22 @@ const getRandomNum = () => {
 export const mockFindUniqueUser = (id: Uid) => prismaMock.user.findUnique.mockResolvedValue({
   id,
   isBanned: false,
+  isCreator: false,
+  kycVerified: false,
+  authId: `${getRandomNum()}`,
   phone: `3670978${getRandomNum()}`,
   createdAt: new Date(),
   updatedAt: new Date(),
 })
 
-export const mockCreateLikeBadgeType = (badgeTypeId: string, profileId: Uid) => prismaMock.likeBadgeType.create.mockResolvedValue({
-  profileId,
+export const mockCreateLikeBadgeType = (badgeTypeId: string, userId: Uid) => prismaMock.badgeTypeLike.create.mockResolvedValue({
+  userId,
   badgeTypeId,
   createdAt: new Date(),
 })
 
-export const mockCreateLikeBadge = (badgeItemId: string, profileId: Uid) => prismaMock.likeBadge.create.mockResolvedValue({
-  profileId,
+export const mockCreateLikeBadge = (badgeItemId: string, userId: Uid) => prismaMock.badgeItemLike.create.mockResolvedValue({
+  userId,
   badgeItemId,
   createdAt: new Date(),
 })

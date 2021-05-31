@@ -1,110 +1,150 @@
 /* eslint-disable promise/no-nesting */
 import axios from 'axios'
-import { firestore as db } from '../../services/firestore'
 import { blockchain } from '../../config'
-import { BadgeDocumentData, BadgeId, ListBadgeForSaleRequestBody } from '../../types/badge'
-import { User } from '../../types/user'
+import { BadgeItemId } from '../../types/badge'
+import { Uid } from '../../types/user'
 import Boom from 'boom'
+import { ListBadgeForSaleInput } from './types/listBadgeForSale.type'
+import { BADGE_TYPE_MAX_SALE_PRICE, BADGE_TYPE_MIN_SALE_PRICE } from '../../consts/businessRules'
+import prisma from '../../services/prisma'
+import { BadgeType, Currency } from '.prisma/client'
+import { v4 } from 'uuid'
 
-interface ListBadgeForSaleHandlerInput extends ListBadgeForSaleRequestBody {
-  user: User
-}
-
-interface PostData {
+interface BlockChainPostData {
   sig: string
   message: string
-  badgeid: BadgeId
+  badgeid: BadgeItemId
   badgeowner: string
   token: string
 }
 
-interface ValidateBadgeOwnershipInput {
-  badge: BadgeDocumentData
-  user: User
-  price: number
-  postData: PostData
-  id: string
-}
+const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleInput, uid: Uid) => {
+  const { sig, message, badgeItemId} = input
 
-const validateBadgeOwnership = async ({
-  badge,
-  user,
-  price,
-  postData,
-  id,
-}: ValidateBadgeOwnershipInput) => {
-  try {
-    if (badge.ownerId === user.uid) {
-      const response = await axios.post(
-        blockchain.server + '/addNonFungibleToEscrowWithSignatureRelay',
-        postData
-      )
-      if (response && response.data && response.data.success) {
-        // do we make a new badge sale here? probably. then we will delete the badge from user profile on purchase
-        let badgeDoc = Object.assign(badge, {
-          currency: user.currency,
-          price: price,
-          removedFromShowcase: false,
-          soldout: false,
-          sold: 0,
-          shares: 0,
-          likes: 0,
-          supply: 1,
-          id,
-          uri: 'https://showcase.to/badge/' + id,
-          resale: true,
-          resaleUser: user.uid,
-          resaleUsername: user.username,
-        })
+  const cryptoWallet = await prisma.crypto.findUnique({
+    where: {
+      id: uid,
+    },
+  })
 
-        const docRef = await db.collection('badgesales').add(badgeDoc)
-        // here we need to set forSale = true in the original badge doc and set saleId = the bade sale doc id
-        await db
-          .collection('badges')
-          .doc(postData.badgeid)
-          .update({ forSale: true, saleid: docRef.id })
-        return { success: true }
-      } else {
-        throw Boom.internal('Blockchain server gave invalid response', response)
-      }
-    } else {
-      throw Boom.preconditionFailed('User doesnt match badge owner', { badge, user })
-    }
-  } catch (error) {
-    console.error('validateBadgeOwnership failed: ', error)
-    throw error
-  }
-}
+  if (!cryptoWallet?.address) throw Boom.badData('User doesnt have crypto address')
 
-// todo: currency is not used, should be removed if realy not neccesary
-export const listBadgeForSaleHandler = async ({
-  user,
-  sig,
-  message,
-  badgeid,
-  currency,
-  price,
-}: ListBadgeForSaleHandlerInput) => {
-  const postData: PostData = {
+  const postData: BlockChainPostData = {
     sig,
     message,
-    badgeid,
-    badgeowner: user.crypto?.address || '',
+    badgeid: badgeItemId,
+    badgeowner: cryptoWallet.address,
     token: blockchain.authToken,
   }
-  if (price < 0 || price > 200 || isNaN(price) || typeof price !== 'number') {
-    throw Boom.badData('Invalid Price', price)
+
+  const response = await axios.post(
+    blockchain.server + '/addNonFungibleToEscrowWithSignatureRelay',
+    postData
+  )
+
+  if (response && response.data && response.data.success) {
+    return
   } else {
-    // todo: is it possible that this querry returns more then 1 item?
-    const badgesSnapshot = await db.collection('badges').where('tokenId', '==', badgeid).get()
-    if (!badgesSnapshot.empty) {
-      const [badge, id] = [
-        badgesSnapshot.docs[0].data() as BadgeDocumentData,
-        badgesSnapshot.docs[0].id,
-      ]
-      await validateBadgeOwnership({ badge, id, price, postData, user })
-    } else {
-      throw Boom.notFound('Badge wasnt found', badgeid)
-    }
+    throw Boom.internal('Blockchain server gave invalid response', response)
+  }
+}
+
+const createResaleBadgeTypeAndUpdateBadge = async ({
+  badgeItemId,
+  currency,
+  uid,
+  price,
+  originBadgeType,
+}: {
+  badgeItemId: BadgeItemId
+  currency: Currency
+  uid: Uid
+  price: number
+  originBadgeType: BadgeType
+}) => {
+  const newBadgeTypeId = v4()
+
+  const [_, updatedBadge] = await prisma.$transaction([
+    // todo: delete resaleBadgeType on purchase or handle resaleBadges separetly to badgeTypes
+    // do we make a new badge sale here? probably. then we will delete the badge from user profile on purchase
+    prisma.badgeType.create({
+      data: {
+        ...originBadgeType,
+        id: newBadgeTypeId,
+        uri: 'https://showcase.to/badge/' + badgeItemId,
+        currency,
+        price,
+        resale: true,
+        resallerId: uid,
+        supply: 1,
+        shares: 0,
+        soldout: false,
+        removedFromShowcase: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        badgeItems: {
+          // connect resaleBadgType with the actual badge
+          connect: {
+            id: badgeItemId,
+          },
+        },
+      },
+    }),
+
+    prisma.badgeItem.update({
+      where: {
+        id: badgeItemId,
+      },
+      data: {
+        // here we need to set forSale = true on the original badge doc
+        forSale: true,
+      },
+    }),
+  ])
+
+  return updatedBadge
+}
+
+// todo: currency is not used from input type, should be removed if realy not neccesary
+export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) => {
+  const { badgeItemId, price } = input
+
+  // todo: price validation should be done with gql class-validators
+  if (
+    price < BADGE_TYPE_MIN_SALE_PRICE ||
+    price > BADGE_TYPE_MAX_SALE_PRICE ||
+    isNaN(price) ||
+    typeof price !== 'number'
+  ) {
+    throw Boom.badData('Invalid Price', price)
+  }
+
+  const profile = await prisma.profile.findUnique({
+    where: {
+      id: uid,
+    },
+  })
+
+  const badge = await prisma.badgeItem.findUnique({
+    where: {
+      id: badgeItemId,
+    },
+    include: {
+      badgeType: true,
+    },
+  })
+
+  if (profile && badge && badge.ownerProfileId === uid) {
+    await addNonFungibleToEscrowWithSignatureRelay(input, uid)
+    const { badgeType } = badge
+    return await createResaleBadgeTypeAndUpdateBadge({
+      badgeItemId,
+      price,
+      uid,
+      currency: profile.currency,
+      originBadgeType: badgeType,
+    })
+  } else {
+    throw Boom.preconditionFailed('User doesnt own the provided badge', { badge, uid })
   }
 }

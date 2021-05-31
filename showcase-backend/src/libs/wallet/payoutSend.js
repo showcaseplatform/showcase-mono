@@ -6,6 +6,7 @@ const { firestore: db, FieldValue } = require('../../services/firestore')
 const moment = require('moment')
 const { v4: uuidv4 } = require('uuid')
 
+//todo: transferwise integration
 module.exports = (req, res) => {
   const { user } = req
   const originalBalance = user.balances[req.body.currency.toLowerCase()]
@@ -45,6 +46,7 @@ module.exports = (req, res) => {
     user.balances[req.body.currency.toLowerCase()] &&
     user.balances[req.body.currency.toLowerCase()] >= parseFloat(req.body.amount)
   ) {
+    // todo: transferwise integration
     axios({
       method: 'post',
       url: 'https://api.sandbox.transferwise.tech/v1/quotes',

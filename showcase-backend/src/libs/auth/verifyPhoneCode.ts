@@ -1,50 +1,55 @@
-import { auth, firestore as db, FieldValue } from '../../services/firestore'
-import { v5 as uuidv5 } from 'uuid'
-import {
-  PhoneNumber,
-  SmsVerification,
-  VerifyPhoneCodeResponse,
-  VerifyPhoneRequestBody,
-} from '../../types/auth'
+import { auth } from '../../services/firestore'
+import prisma from '../../services/prisma'
 import Boom from 'boom'
-import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
+import { VerifyPhoneCodeInput, VerifyPhoneCodeResponse } from './types/verifyPhoneCode.type'
+import { createNewUser } from '../user/createNewUser'
 
-const uuidNamespace = 'b01abb38-c109-4b71-9136-a2aa73ddde27' // todo: maybe outsource to config
+const INCREMENT_WITH_ONE = {
+  increment: 1,
+}
 
-const resetVerification = async (
-  docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>
-) => {
-  await docRef.update({
-    valid: false,
-    codesSentSinceValid: 0,
-    attemptsEnteredSinceValid: 0,
+const resetVerification = async (phone: string) => {
+  return await prisma.smsVerification.update({
+    where: {
+      phone,
+    },
+    data: {
+      valid: false,
+      codesSentSinceValid: INCREMENT_WITH_ONE,
+      attemptsEnteredSinceValid: INCREMENT_WITH_ONE,
+    },
   })
 }
 
-const incrementVerificationCount = async (
-  docRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData>
-) => {
-  await docRef.update({
-    codeSent: FieldValue.increment(1),
-    codesSentSinceValid: FieldValue.increment(1),
-    attemptsEntered: FieldValue.increment(1),
-    attemptsEnteredSinceValid: FieldValue.increment(1),
+const incrementVerificationCount = async (phone: string) => {
+  return await prisma.smsVerification.update({
+    where: {
+      phone,
+    },
+    data: {
+      codesSent: INCREMENT_WITH_ONE,
+      codesSentSinceValid: INCREMENT_WITH_ONE,
+      attemptsEntered: INCREMENT_WITH_ONE,
+      attemptsEnteredSinceValid: INCREMENT_WITH_ONE,
+    },
   })
 }
 
-const validatePhoneCode = async ({ areaCode, phone, code }: VerifyPhoneRequestBody) => {
-  const verificationRef = db.collection('unverifiedsmsverifications').doc(`${areaCode + phone}`)
-  const verificationSnapshot = await verificationRef.get()
+const validateSmsCode = async ({ phone, code }: { phone: string; code: string }) => {
+  const verification = await prisma.smsVerification.findUnique({
+    where: {
+      phone,
+    },
+  })
 
-  if (!verificationSnapshot.exists) {
-    throw Boom.notFound('No verification code sent to that number!', `+${areaCode + phone}`)
+  if (!verification) {
+    throw Boom.notFound('No verification code sent to that number!', `${phone}`)
   }
 
-  const verification = verificationSnapshot.data() as SmsVerification
-  const timeNow = Date.now()
+  const timeNow = new Date()
 
   let error = null
-  if (verification.code.toString() !== code.toString()) {
+  if (verification.code !== code) {
     error = 'custom/code-does-not-match'
   } else if (!verification.valid) {
     error = 'custom/code-already-used'
@@ -52,61 +57,21 @@ const validatePhoneCode = async ({ areaCode, phone, code }: VerifyPhoneRequestBo
     error = 'custom/code-expired'
   }
   if (error) {
-    await incrementVerificationCount(verificationRef)
-    throw Boom.notAcceptable(error, { areaCode, phone, code })
+    await incrementVerificationCount(phone)
+    throw Boom.notAcceptable(error, { phone, code })
   } else {
-    await resetVerification(verificationRef)
+    await resetVerification(phone)
   }
 }
 
-const createUser = async ({ phone, areaCode }: PhoneNumber) => {
-  const customUserId = uuidv5(phone, uuidNamespace)
-  const phoneNumber = `+${areaCode + phone}`
-
-  const { uid } = await auth().createUser({
-    phoneNumber,
-    uid: customUserId,
-  })
-  let userCurrency = 'USD' //default USD
-
-  if (areaCode + '' === '44') {
-    userCurrency = 'GBP'
-  } else if (EUROPEAN_COUNTRY_CODES.indexOf(areaCode + '') > -1) {
-    userCurrency = 'EUR'
-  }
-
-  await db
-    .collection('users')
-    .doc(uid)
-    .set({
-      phoneNumber,
-      phoneLocal: phone,
-      areaCode: areaCode,
-      liked: {},
-      followingCount: 0,
-      followersCount: 0,
-      uid: customUserId,
-      currency: userCurrency,
-      badgesCount: 0,
-      chats: {},
-      balances: {
-        usd: 0,
-        eur: 0,
-        gbp: 0,
-      },
-    })
-
-  return { uid }
-}
-
-const getUserUid = async ({ phone, areaCode }: PhoneNumber) => {
+const findOrCreateUser = async ({ phone, areaCode }: { phone: string; areaCode: string }) => {
   try {
-    const { uid } = await auth().getUserByPhoneNumber(`+${areaCode + phone}`)
-    return { uid, newUser: false }
+    const { uid } = await auth().getUserByPhoneNumber(phone)
+    return { authId: uid, isNewUser: false }
   } catch (error) {
     if (error.code === 'auth/user-not-found') {
-      const { uid } = await createUser({ phone, areaCode })
-      return { uid, newUser: true }
+      const { authId } = await createNewUser({ phone, areaCode })
+      return { authId, isNewUser: true }
     }
     throw error
   }
@@ -114,11 +79,12 @@ const getUserUid = async ({ phone, areaCode }: PhoneNumber) => {
 
 export const verifyPhoneCode = async ({
   code,
-  phone,
+  phone: phoneNums,
   areaCode,
-}: VerifyPhoneRequestBody): Promise<VerifyPhoneCodeResponse> => {
-  await validatePhoneCode({ areaCode, phone, code })
-  const { uid, newUser } = await getUserUid({ phone, areaCode })
-  const token = await auth().createCustomToken(uid)
-  return { token, newUser }
+}: VerifyPhoneCodeInput): Promise<VerifyPhoneCodeResponse> => {
+  const phone = `+${areaCode + phoneNums}`
+  await validateSmsCode({ phone, code })
+  const { authId, isNewUser } = await findOrCreateUser({ phone, areaCode })
+  const token = await auth().createCustomToken(authId)
+  return { token, isNewUser }
 }

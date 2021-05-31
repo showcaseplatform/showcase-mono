@@ -1,109 +1,137 @@
-import { firestore as db, FieldValue } from '../../services/firestore'
-import { BadgeDocumentData, BadgeId, CountViewRequestBody } from '../../types/badge'
 import { blockchain } from '../../config'
 import axios from 'axios'
-import { User } from '../../types/user'
+import { Uid } from '../../types/user'
 import Boom from 'boom'
+import prisma from '../../services/prisma'
+import { CountViewInput, ViewInfo } from './types/countView.type'
+import { BadgeItemId } from '../../types/badge'
 
-const increaseBadgeViewCount = async (badgeid: BadgeId) => {
-  try {
-    await db
-      .collection('badges')
-      .doc(badgeid)
-      .update({ views: FieldValue.increment(1), lastViewed: new Date() })
-  } catch (error) {
-    console.error('increaseBadgeViewCount failed: ', error)
-    throw error
+const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
+  const { badgeId, marketplace } = input
+  if (marketplace) {
+    const view = await prisma.badgeTypeView.findUnique({
+      where: {
+        userId_badgeTypeId: {
+          userId: uid,
+          badgeTypeId: badgeId,
+        },
+      },
+    })
+    return !!view
+  } else {
+    const view = await prisma.badgeItemView.findUnique({
+      where: {
+        userId_badgeItemId: {
+          badgeItemId: badgeId,
+          userId: uid,
+        },
+      },
+    })
+    return !!view
   }
 }
 
-const removeBadgeFromShowCase = async ({
-  badge,
-  badgeid,
-}: {
-  badge: BadgeDocumentData
-  badgeid: BadgeId
-}) => {
-  try {
-    await db.collection('users').doc(badge.creatorId).update({ banned: true })
-    await db.collection('badges').doc(badgeid).update({ removedFromShowcase: true })
-    console.log('Badge removed from showcase: ', { badgeid }, { badge })
-  } catch (error) {
-    console.error('removeBadgeFromShowCase failed: ', error)
-    throw error
+const createViewRecord = async (input: CountViewInput, uid: Uid) => {
+  const { badgeId, marketplace } = input
+  if (marketplace) {
+    return await prisma.badgeTypeView.create({
+      data: {
+        badgeTypeId: badgeId,
+        userId: uid,
+      },
+    })
+  } else {
+    return await prisma.badgeItemView.create({
+      data: {
+        badgeItemId: badgeId,
+        userId: uid,
+      },
+    })
   }
 }
 
-const checkBadgeOnBlockchain = async (
-  badgeowner: any,
-  badgeid: BadgeId,
-  badge: BadgeDocumentData
-) => {
+const removeBadgeFromShowCase = async ({ badgeItemId, uid }: { badgeItemId: BadgeItemId; uid: Uid }) => {
+  await prisma.user.update({
+    where: {
+      id: uid,
+    },
+    data: {
+      isBanned: true,
+    },
+  })
+
+  await prisma.badgeItem.update({
+    where: {
+      id: badgeItemId,
+    },
+    data: {
+      removedFromShowcase: true,
+    },
+  })
+
+  console.log(`❗❗❗ Badge removed from showcase: `, { badgeItemId }, { uid })
+}
+
+const checkBadgeOwnedOnBlockchain = async (badgeItemId: BadgeItemId): Promise<boolean> => {
+  const badge = await prisma.badgeItem.findUnique({
+    where: {
+      id: badgeItemId,
+    },
+    include: {
+      owner: {
+        include: {
+          cryptoWallet: {
+            select: {
+              address: true,
+            },
+          },
+        },
+      },
+    },
+  })
+  if (!badge) {
+    throw Boom.badData('Badge id not found', { badgeItemId })
+  }
+
   const data = {
-    badgeid,
-    badgeowner,
+    badgeid: badgeItemId,
+    badgeowner: badge.ownerProfileId,
     token: blockchain.authToken,
   }
-  console.log('BAGDE VERIFICATION DATA', data)
-  try {
-    const response = await axios.post(blockchain.server + '/verifyOwnershipOfBadge', data)
-    console.log(response.data)
-    if (!response?.data?.isOwner) {
-      await removeBadgeFromShowCase({ badge, badgeid })
-    }
-  } catch (error) {
-    // we don't want to have a network error make peole get banned.
-    console.error('checkBadgeOnBlockchain failed: ', error)
-    throw error
-  }
+
+  const response = await axios.post(blockchain.server + '/verifyOwnershipOfBadge', data)
+  console.log('Blockchain response: ', { response })
+
+  return !!response?.data?.isOwner
 }
 
-const countPrivateBadgeView = async (badgeid: BadgeId) => {
-  //random badge inspection....
+const randomBadgeInspection = (marketplace: boolean): boolean => {
+  if (marketplace) return false
+
   let min = Math.ceil(1)
   let max = Math.floor(51)
   let randomNum = Math.floor(Math.random() * (max - min + 1)) + min
-  //check badge
-  try {
-    if (randomNum === 51) {
-      const badgeDoc = await db.collection('badges').doc(badgeid).get()
-      const badge = badgeDoc.data() as BadgeDocumentData
-      const userdoc = await db.collection('users').doc(badge.creatorId).get()
-      if (!userdoc.exists) {
-        throw Boom.notFound('Creator not found', { badge, userdoc })
-      } else {
-        console.log('CHECKING BADGE from creator', { badge }, { userdoc })
-        const user = userdoc.data() as User
-        await checkBadgeOnBlockchain(user.crypto?.address, badge.tokenId, badge)
-      }
-    }
-    await increaseBadgeViewCount(badgeid)
-  } catch (error) {
-    console.error('countPrivateBadgeView failed: ', error)
-    throw error
+
+  return randomNum === 51
+}
+
+export const countView = async (input: CountViewInput, uid: Uid) => {
+  const { badgeId, marketplace } = input
+  if (randomBadgeInspection(marketplace)) {
+    console.log('👁️‍🗨️ Random badge inspection triggered 👁️‍🗨️')
+    const isOwner = await checkBadgeOwnedOnBlockchain(badgeId)
+    !isOwner && (await removeBadgeFromShowCase({badgeItemId: badgeId, uid}))
+  }
+
+  const isAlreadyViewed = await checkIfBadgeAlreadyViewed(input, uid)
+  if (!isAlreadyViewed) {
+    return await createViewRecord(input, uid)
+  } else {
+    return { info: "Already viewed"} as ViewInfo
   }
 }
 
-export const countViewHandler = async ({
-  marketplace,
-  badgeid,
-}: CountViewRequestBody): Promise<void> => {
-  try {
-    if (!marketplace) {
-      await countPrivateBadgeView(badgeid)
-    } else {
-      await db
-        .collection('badgesales')
-        .doc(badgeid)
-        .update({ views: FieldValue.increment(1) })
-    }
-  } catch (error) {
-    console.error('countViewHandler failed: ', error)
-    throw error
-  }
-}
-
-// todo: why is this commented out
+// todo: why is this commented out, are these valid endpoint for something?
 /*axios.post(blockchain.server+'/getMetadataOfBadge', {badgetype:"57896044618658097711785492504343953941267134110420635948653900123522597912576", token:  blockchain.authToken})
         .then(async (response) => {
             console.log("METADATA", response.data);

@@ -1,47 +1,61 @@
-import { firestore as db } from '../../services/firestore'
 import validator from 'validator'
-import { Currency, UpdateProfileRequest, User } from '../../types/user'
+import { Uid } from '../../types/user'
 import Boom from 'boom'
 import { CURRENCIES } from '../../consts/currencies'
 import moment from 'moment'
-
-const MAX_BIO_LENGTH = 240
-const MAX_USERNAME_LENGTH = 28
-const MAX_DISPLAY_NAME_LENGTH = 36
-const MIN_USER_AGE = 18
-
-interface UpdateProfileInput extends UpdateProfileRequest {
-  user: User
-}
-
-interface UpdateData extends UpdateProfileRequest {
-  birthDay?: number
-  birthMonth?: number
-  birthYear?: number
-}
+import {
+  PROFILE_MAX_BIO_LENGTH,
+  PROFILE_MAX_USERNAME_LENGTH,
+  PROFILE_MAX_DISPLAY_NAME_LENGTH,
+  PROFILE_MIN_USER_AGE,
+} from '../../consts/businessRules'
+import { Currency } from '@generated/type-graphql'
+import prisma from '../../services/prisma'
+import { UpdateProfileInput } from './types/updateProfile.type'
 
 const validateBio = (bio: string) => {
-  if (bio.length <= MAX_BIO_LENGTH) {
+  if (bio.length <= PROFILE_MAX_BIO_LENGTH) {
     return bio
   } else {
     throw Boom.badData('Invalid bio')
   }
 }
 
-const validateEmail = async (email: string, user: User) => {
-  const { empty } = await db.collection('users').where('email', '==', email).get()
-  if ((validator.isEmail(email) && empty) || user?.email === email) {
+const validateEmail = async (email: string, uid: Uid) => {
+  // todo: is it neccesary to do this check this in db? or enough to add unique constrain
+  const profileWithSameEmail = await prisma.profile.findMany({
+    where: {
+      email,
+    },
+    select: {
+      email: true
+    }
+  })
+
+  if (
+    (validator.isEmail(email) && profileWithSameEmail.length === 0) ||
+    profileWithSameEmail[0]?.email === email
+  ) {
     return email
   } else {
     throw Boom.badData('Invalid email')
   }
 }
 
-const validateUsername = async (username: string, user: User) => {
-  const { empty } = await db.collection('users').where('username', '==', username).get()
+const validateUsername = async (username: string, uid: Uid) => {
+   // todo: is it neccesary to do this check this in db? or enough to add unique constrain
+  const profileWithSameUsername = await prisma.profile.findMany({
+    where: {
+      username,
+    },
+    select: {
+      username: true
+    }
+  })
+
   if (
-    username.length <= MAX_USERNAME_LENGTH &&
-    (empty || user.username === username) &&
+    username.length <= PROFILE_MAX_USERNAME_LENGTH &&
+    (profileWithSameUsername.length === 0 || profileWithSameUsername[0].username === username) &&
     /^[a-zA-Z0-9_]+$/g.test(username)
   ) {
     return username
@@ -51,7 +65,8 @@ const validateUsername = async (username: string, user: User) => {
 }
 
 const validateDisplayName = (displayName: string) => {
-  if (displayName.length <= MAX_DISPLAY_NAME_LENGTH) {
+  // todo: display name can be the same?
+  if (displayName.length <= PROFILE_MAX_DISPLAY_NAME_LENGTH) {
     return displayName
   } else {
     throw Boom.badData('Invalid display name')
@@ -59,7 +74,7 @@ const validateDisplayName = (displayName: string) => {
 }
 
 const validateBirthdate = (birthDate: Date) => {
-  if (birthDate <  moment().add(-MIN_USER_AGE, 'years').toDate()) {
+  if (birthDate < moment().add(-PROFILE_MIN_USER_AGE, 'years').toDate()) {
     return birthDate
   } else {
     throw Boom.badData('Invalid birth date')
@@ -73,28 +88,21 @@ const validateCurrency = (currency: Currency) => {
   }
 }
 
-export const updateProfile = async ({
-  bio,
-  email,
-  username,
-  displayName,
-  birthDate,
-  user,
-  avatar,
-  currency,
-}: UpdateProfileInput) => {
-  const updateData: UpdateData = {} as UpdateData
+export const updateProfile = async (input: UpdateProfileInput, uid: Uid) => {
+  const { bio, email, username, displayName, birthDate, avatar, currency } = input
+
+  const updateData = {} as Partial<UpdateProfileInput>
 
   if (bio) {
     updateData.bio = validateBio(bio)
   }
 
   if (email) {
-    updateData.email = await validateEmail(email, user)
+    updateData.email = await validateEmail(email, uid)
   }
 
   if (username) {
-    updateData.username = await validateUsername(username, user)
+    updateData.username = await validateUsername(username, uid)
   }
 
   if (displayName) {
@@ -103,27 +111,34 @@ export const updateProfile = async ({
 
   if (birthDate) {
     updateData.birthDate = validateBirthdate(new Date(birthDate))
-    updateData.birthDay = updateData.birthDate.getDate()
-    updateData.birthMonth = updateData.birthDate.getMonth()
-    updateData.birthYear = updateData.birthDate.getFullYear()
+    //todo: is it neccesary to store these? maybe replace with fieldResolver if needed
+    // updateData.birthDay = updateData.birthDate.getDate()
+    // updateData.birthMonth = updateData.birthDate.getMonth()
+    // updateData.birthYear = updateData.birthDate.getFullYear()
   }
 
   if (currency) {
     updateData.currency = validateCurrency(currency)
   }
 
+  // todo: update this validation once we are able to upload images from client
   if (avatar) {
     updateData.avatar =
       'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/images%2F' +
-      user.uid +
+      uid +
       '?alt=media'
   }
 
   if (Object.keys(updateData).length >= 1) {
-    await db.collection('users').doc(user.uid).update(updateData)
-    const userDoc = await db.collection('users').doc(user.uid).get()
-    return { user: { ...(userDoc.data() as User) } }
+    return await prisma.profile.update({
+      where: {
+        id: uid,
+      },
+      data: {
+        ...updateData,
+      },
+    })
   } else {
-    return { user }
+    throw Boom.preconditionFailed('There wasnt any data to update')
   }
 }

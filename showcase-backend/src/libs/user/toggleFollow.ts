@@ -1,85 +1,76 @@
-import Boom from 'boom'
-import { sendNotificationToFollowedUser } from '../../libs/pushNotifications/newFollower'
-import { firestore as db, FieldValue } from '../../services/firestore'
+import { FollowStatus } from '.prisma/client'
+import { ToggleFollowInput } from './types/toggleFollow.type'
+import prisma from '../../services/prisma'
 import { Uid } from '../../types/user'
 
-interface ToggleFollowInput {
+interface FollowInput {
   uid: Uid
-  username: string
-  followingUid: Uid
+  friendId: Uid
 }
 
-const deleteFollowing = async (uid: Uid, followingUid: Uid) => {
-  await db.collection('users').doc(uid).collection('following').doc(followingUid).delete()
-}
-const deleteFollower = async (uid: Uid, followingUid: Uid) => {
-  await db.collection('users').doc(followingUid).collection('followers').doc(uid).delete()
-}
-
-const addNewFollowing = async (uid: Uid, followingUid: Uid) => {
-  await db
-    .collection('users')
-    .doc(uid)
-    .collection('following')
-    .doc(followingUid)
-    .set({ uid: followingUid, createdDate: new Date() })
+const isUserAlreadyFollowed = async ({ uid, friendId }: FollowInput) => {
+  const follow = await prisma.follow.findUnique({
+    where: {
+      userId_followerId: {
+        userId: friendId,
+        followerId: uid,
+      },
+    },
+  })
+  return !!follow && follow.status != FollowStatus.Unfollowed
 }
 
-const addNewFollower = async (uid: Uid, followingUid: Uid) => {
-  await db
-    .collection('users')
-    .doc(followingUid)
-    .collection('followers')
-    .doc(uid)
-    .set({ uid, createdDate: new Date() })
+const addFriend = async ({ uid, friendId }: FollowInput) => {
+  const updatedFollow = await prisma.follow.update({
+    where: {
+      userId_followerId: {
+        userId: friendId,
+        followerId: uid,
+      },
+    },
+    data: {
+      // todo: currently pending state is not used, request get insatly accepted
+      status: FollowStatus.Accepted,
+    },
+  })
+
+  const profile= await prisma.profile.findUnique({
+    where: {
+      id: uid,
+    },
+    select: {
+      username: true,
+    },
+  })
+
+  if (profile?.username) {
+    // todo: notifcation is turned off temporarly
+    // await sendNotificationToFollowedUser(profile?.username, friendId)
+  }
+
+  return updatedFollow
 }
 
-const updateFollowingCount = async (uid: Uid, change: number) => {
-  await db
-    .collection('users')
-    .doc(uid)
-    .update({ followingCount: FieldValue.increment(change) })
+const removeFriend = async ({ uid, friendId }: { uid: Uid; friendId: Uid }) => {
+  return await prisma.follow.update({
+    where: {
+      userId_followerId: {
+        userId: friendId,
+        followerId: uid,
+      },
+    },
+    data: {
+      status: FollowStatus.Unfollowed,
+    },
+  })
 }
 
-const updateFollowersCount = async (followingUid: Uid, change: number) => {
-  await db
-    .collection('users')
-    .doc(followingUid)
-    .update({ followersCount: FieldValue.increment(change) })
-}
-
-const isUserAlreadyFollowed = async ({ uid, followingUid }: { uid: Uid; followingUid: Uid }) => {
-  const followingDoc = await db
-    .collection('users')
-    .doc(uid)
-    .collection('following')
-    .doc(followingUid)
-    .get()
-
-  return followingDoc.exists
-}
-
-const addFollowing = async ({ uid, username, followingUid }: ToggleFollowInput) => {
-  await addNewFollowing(uid, followingUid)
-  await addNewFollower(uid, followingUid)
-  await updateFollowingCount(uid, 1)
-  await updateFollowersCount(followingUid, 1)
-  await sendNotificationToFollowedUser(username, followingUid)
-}
-
-const removeFollowing = async ({ uid, followingUid }: { uid: Uid; followingUid: Uid }) => {
-  await deleteFollowing(uid, followingUid)
-  await deleteFollower(uid, followingUid)
-  await updateFollowingCount(uid, -1)
-  await updateFollowersCount(followingUid, -1)
-}
-
-export const toggleFollow = async ({ uid, username, followingUid }: ToggleFollowInput) => {
-  if (followingUid && uid) {
-    (await isUserAlreadyFollowed({ uid, followingUid }))
-      ? await removeFollowing({ uid, followingUid })
-      : await addFollowing({ uid, username, followingUid })
+export const toggleFollow = async (input: ToggleFollowInput, uid: Uid) => {
+  const { friendId } = input
+  const isAlreadyFollowed = await isUserAlreadyFollowed({ uid, friendId })
+  if (isAlreadyFollowed) {
+    return await removeFriend({ uid, friendId })
   } else {
-    throw Boom.badData('Invalid user id')
+    return await addFriend({ uid, friendId })
   }
 }

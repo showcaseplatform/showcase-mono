@@ -1,80 +1,36 @@
 import {
   Resolver,
   Ctx,
-  InputType,
-  Field,
-  Int,
   Mutation,
   Arg,
 } from 'type-graphql'
 import {
   BadgeType,
-  BadgeTypeCreateInput,
-  Category,
+  BadgeItem
 } from '@generated/type-graphql'
-import { Min, Max, MaxLength } from 'class-validator'
 
-import { registerEnumType } from 'type-graphql'
-import { publishBadgeType } from '../libs/marketplace/publishBadgeType'
+import { publishBadgeType } from '../libs/badge/publishBadgeType'
+import { PublishBadgeTypeInput } from '../libs/badge/types/publishBadgeType.type'
+import { PurchaseBadgeInput } from '../libs/badge/types/purchaseBadge.type'
+import { purchaseBadge } from '../libs/badge/purchaseBadge'
 
-registerEnumType(Category, {
-  name: 'Category',
-  description: 'Categories which could be selected when creating BadgeType',
-})
 
-@InputType({ description: 'Data for publishing a new badgeType' })
-export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
-  @Field()
-  id: string
-
-  @Field()
-  @MaxLength(20)
-  title: string
-
-  // todo: what type should price have
-  @Field((_type) => Int)
-  @Min(0.01)
-  @Max(200)
-  price: number
-
-  @Field((_type) => Int)
-  @Min(1)
-  @Max(1000000)
-  supply: number
-
-  @Field({ nullable: true })
-  @MaxLength(240)
-  description?: string
-
-  @Field()
-  image: string
-
-  @Field()
-  imageHash: string
-
-  @Field((_type) => Category)
-  category: Category
-
-  @Field((_type) => Int)
-  causeId: number
-
-  @Field((_type) => Int)
-  @Min(0.05)
-  @Max(0.05)
-  donationAmount: number
-
-  @Field()
-  gif: boolean
-}
-
-// @Resolver((_of) => BadgeType)
 @Resolver()
-export class MarketplaceTypeResolver {
+export class MarketplaceResolver {
   @Mutation((_returns) => BadgeType)
   async publishBadgeType(
     @Ctx() ctx: any,
     @Arg('data') publishBadgeTypeInput: PublishBadgeTypeInput
-  ): Promise<BadgeType | null> {
+  ): Promise<BadgeType> {
     return await publishBadgeType(publishBadgeTypeInput, ctx.user)
   }
+
+  @Mutation((_returns) => BadgeItem)
+  async purchaseBadge(
+    @Ctx() ctx: any,
+    @Arg('data') purchaseBadgeInput: PurchaseBadgeInput
+  ): Promise<BadgeItem> {
+    return await purchaseBadge(purchaseBadgeInput, ctx.user.id)
+  }
 }
+

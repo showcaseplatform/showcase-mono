@@ -7,6 +7,7 @@ const crypto = require('crypto')
 module.exports = (req, res) => {
   const { user } = req
 
+  // todo: maybe not a good idea to send password without hashing
   const { password, hint } = req.body
 
   // check auth

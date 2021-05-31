@@ -22,34 +22,74 @@ enum Currency {
   GBP
 }
 
-// todo: is it neccesary to have separete id here?
-model Profile {
-  id          String    @id @default(uuid())
-  displayName String
-  username    String
-  bio         String?
-  isCreator   Boolean   @default(false)
-  currency    Currency  @default(USD)
-  birthDate   DateTime?
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique
-
-  badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
-  badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
-  badgesOwned         Badge[]
-  crypto              Crypto?
+model SmsVerification {
+  phone                     String   @id
+  user                      User?
+  code                      String
+  codesSent                 Int
+  codesSentSinceValid       Int
+  attemptsEntered           Int
+  attemptsEnteredSinceValid Int
+  valid                     Boolean
+  expiration                DateTime
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model User {
-  id    String @id @default(uuid())
-  email String @unique
+  id String @id @default(uuid())
 
-  phone   String
+  authId  String   @unique
+  phone   String   @unique
   profile Profile?
+
+  isCreator   Boolean @default(false)
+  kycVerified Boolean @default(false)
+  isBanned    Boolean @default(false)
+
+  smsVerification SmsVerification @relation(fields: [phone], references: [phone])
+
+  badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
+  badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
+
+  badgeItemsOwned          BadgeItem[] @relation("badgeCurrentlyOwned")
+  badgeItemsOriginatedFrom BadgeItem[] @relation("badgeOriginatedFrom")
+
+  cryptoWallet  Crypto?
+  stripeBalance Balance?
+  stripeInfo    Stripe?
+
+  buyReceipts  Receipt[] @relation("buyReceipts")
+  sellReceipts Receipt[] @relation("sellReceipts")
+
+  badgeItemLikes BadgeItemLike[]
+  badgeTypeLikes BadgeTypeLike[]
+
+  badgeItemViews BadgeItemView[]
+  badgeTypeViews BadgeTypeView[]
+  friends        Follow[]        @relation("friends")
+  followers      Follow[]        @relation("followers")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+// todo: is it neccesary to have separete id here? 👉 create profile with user.id
+model Profile {
+  id   String @id
+  user User   @relation(fields: [id], references: [id])
+
+  displayName String
+  username    String  @unique
+  bio         String?
+  email       String? @unique
+
+  currency  Currency  @default(USD)
+  birthDate DateTime?
+  avatar    String?
+
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -66,19 +106,19 @@ enum Category {
 }
 
 model BadgeType {
-  id               String  @id @default(uuid())
-  creator          Profile @relation(name: "badgeTypesCreated", fields: [creatorProfileId], references: [id])
-  creatorProfileId String
+  id        String @id
+  creator   User   @relation(name: "badgeTypesCreated", fields: [creatorId], references: [id])
+  creatorId String
 
-  resaller          Profile? @relation(name: "badgeTypesForResell", fields: [resallerProfileId], references: [id])
-  resallerProfileId String?
+  resaller   User?   @relation(name: "badgeTypesForResell", fields: [resallerId], references: [id])
+  resallerId String?
 
-  tokenTypeBlockhainId String @unique
-  uri                  String @unique
+  tokenTypeBlockhainId String // todo: should this be unique? incase of resell it would be violated
+  uri                  String // todo: should this be unique? incase of resell it would be violated
 
   supply   Int
-  price    Int
-  currency Currency @default(USD) // could be user's default currency aswell
+  price    Float
+  currency Currency @default(USD)
   sold     Int      @default(0)
 
   image     String
@@ -86,66 +126,76 @@ model BadgeType {
 
   causeId        Int?
   cause          Cause? @relation(fields: [causeId], references: [id])
-  donationAmount Int?   @default(0)
+  donationAmount Float? @default(0)
 
-  title       String   @db.VarChar(255)
-  description String?   @db.VarChar(255)
+  title       String   @db.VarChar(50) // todo: should we really limit this field?
+  description String?  @db.VarChar(240)
   category    Category @default(Art)
 
-  views  Int @default(0)
-  likes  Int @default(0)
   shares Int @default(0)
 
-  forSale             Boolean @default(false)
-  soldout             Boolean @default(false)
-  resale              Boolean @default(false)
-  removedFromShowcase Boolean @default(false)
-  gif                 Boolean @default(false)
-  badges              Badge[]
+  soldout             Boolean     @default(false)
+  resale              Boolean     @default(false)
+  removedFromShowcase Boolean     @default(false) //todo: set this to true when all badgeItems all badges get removed
+  gif                 Boolean     @default(false)
+  badgeItems          BadgeItem[]
+  receipts            Receipt[]
+
+  likes BadgeTypeLike[]
+  views BadgeTypeView[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model Badge {
-  tokenId String @id
+model BadgeItem {
+  id String @id
 
-  badgeType BadgeType @relation(fields: [saleId], references: [id])
-  saleId    String    @unique
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+  badgeTypeId String
 
-  creator          Profile @relation(fields: [creatorProfileId], references: [id])
+  creator          User   @relation(name: "badgeOriginatedFrom", fields: [creatorProfileId], references: [id])
   creatorProfileId String
+
+  owner          User   @relation(name: "badgeCurrentlyOwned", fields: [ownerProfileId], references: [id])
+  ownerProfileId String
+
+  receipt Receipt?
 
   edition      Int
   purchaseDate DateTime
 
-  views  Int @default(0)
-  likes  Int @default(0)
   shares Int @default(0)
+
+  removedFromShowcase Boolean @default(false)
+  forSale             Boolean @default(false)
+
+  likes BadgeItemLike[]
+  views BadgeItemView[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Cause {
-  id                  Int         @id @default(autoincrement())
-  balanceEur          Int         @default(0)
-  balanceGpb          Int         @default(0)
-  balanceUsd          Int         @default(0)
-  contributionsAmount Int         @default(0)
-  image               String
-  name                String
-  site                String
-  badges              BadgeType[]
+  id                    Int         @id @default(autoincrement())
+  balanceEur            Float       @default(0)
+  balanceGpb            Float       @default(0)
+  balanceUsd            Float       @default(0)
+  numberOfContributions Float       @default(0)
+  image                 String
+  name                  String
+  site                  String
+  badgeTypes            BadgeType[]
+  receipts              Receipt[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Crypto {
-  id                  Int     @id @default(autoincrement())
-  owner               Profile @relation(fields: [ownerProfileId], references: [id])
-  ownerProfileId      String  @unique
+  id                  String @id
+  owner               User   @relation(fields: [id], references: [id])
   address             String
   encryptedMnemonic   String
   encrytpedPrivateKey String
@@ -153,4 +203,132 @@ model Crypto {
   ivPrivateKey        String
   passwordHint        String
   publicKey           String
+}
+
+model Balance {
+  id    String @id
+  owner User   @relation(fields: [id], references: [id])
+
+  eur                          Float
+  gbp                          Float
+  usd                          Float
+  totalSpentAmountConvertedUsd Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model CurrencyRate {
+  code String @id
+  rate Float
+}
+
+model Receipt {
+  id Int @id @default(autoincrement())
+
+  recipient   User   @relation(name: "buyReceipts", fields: [recipientId], references: [id])
+  recipientId String
+
+  creator   User   @relation(name: "sellReceipts", fields: [creatorId], references: [id])
+  creatorId String
+
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
+  badgeItemId String
+
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+  badgeTypeId String
+
+  stripeChargeId String
+
+  salePrice          Float
+  saleDonationAmount Float?
+  saleCurrency       Currency
+
+  convertedPrice    Float
+  convertedRate     Float
+  convertedCurrency Currency
+
+  cause   Cause? @relation(fields: [causeId], references: [id])
+  causeId Int?
+
+  transactionHash String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Stripe {
+  id    String @id
+  owner User   @relation(fields: [id], references: [id])
+
+  stripeId          String @unique // todo: should stripeId be unique here? 
+  lastFourCardDigit Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model BadgeItemLike {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  badgeItemId String
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, badgeItemId])
+}
+
+// todo: maybe like tables can be merged together
+model BadgeTypeLike {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  badgeTypeId String
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, badgeTypeId])
+}
+
+model BadgeItemView {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  badgeItemId String
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, badgeItemId])
+}
+
+model BadgeTypeView {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  badgeTypeId String
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, badgeTypeId])
+}
+
+// todo: are these statuses enough?
+enum FollowStatus {
+  Pending
+  Accepted
+  Declined
+  Unfollowed
+}
+
+model Follow {
+  userId     String
+  user    User         @relation(name: "followers", fields: [userId], references: [id])
+  followerId String
+  follower   User         @relation(name: "friends", fields: [followerId], references: [id])
+  status     FollowStatus
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now()) @updatedAt
+
+  @@id([userId, followerId])
 }

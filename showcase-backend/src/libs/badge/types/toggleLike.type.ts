@@ -1,6 +1,6 @@
 import { InputType, Field, createUnionType } from 'type-graphql'
 import { BadgeItemId, BadgeTypeId } from '../../../types/badge'
-import { LikeBadgeType, LikeBadge } from '@generated/type-graphql'
+import { BadgeTypeLike, BadgeItemLike } from '@generated/type-graphql'
 
 @InputType({ description: 'Data for counting likes' })
 export class ToggleLikeInput {
@@ -13,13 +13,13 @@ export class ToggleLikeInput {
 
 export const LikeBadgeUnion = createUnionType({
   name: "LikeBadgeUnion",
-  types: () => [LikeBadgeType, LikeBadge] as const,
+  types: () => [BadgeTypeLike, BadgeItemLike] as const,
   resolveType: value => {
     if ("badgeTypeId" in value) {
-      return LikeBadgeType; 
+      return BadgeTypeLike; 
     }
     if ("badgeItemId" in value) {
-      return LikeBadge; 
+      return BadgeItemLike; 
     }
     return undefined;
   },

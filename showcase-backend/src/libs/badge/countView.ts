@@ -9,21 +9,21 @@ import { BadgeItemId } from '../../types/badge'
 const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (marketplace) {
-    const view = await prisma.viewBadgeType.findUnique({
+    const view = await prisma.badgeTypeView.findUnique({
       where: {
-        profileId_badgeTypeId: {
-          profileId: uid,
+        userId_badgeTypeId: {
+          userId: uid,
           badgeTypeId: badgeId,
         },
       },
     })
     return !!view
   } else {
-    const view = await prisma.viewBadge.findUnique({
+    const view = await prisma.badgeItemView.findUnique({
       where: {
-        profileId_badgeItemId: {
+        userId_badgeItemId: {
           badgeItemId: badgeId,
-          profileId: uid,
+          userId: uid,
         },
       },
     })
@@ -34,17 +34,17 @@ const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
 const createViewRecord = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (marketplace) {
-    return await prisma.viewBadgeType.create({
+    return await prisma.badgeTypeView.create({
       data: {
         badgeTypeId: badgeId,
-        profileId: uid,
+        userId: uid,
       },
     })
   } else {
-    return await prisma.viewBadge.create({
+    return await prisma.badgeItemView.create({
       data: {
         badgeItemId: badgeId,
-        profileId: uid,
+        userId: uid,
       },
     })
   }

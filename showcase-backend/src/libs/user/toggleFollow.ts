@@ -11,9 +11,9 @@ interface FollowInput {
 const isUserAlreadyFollowed = async ({ uid, friendId }: FollowInput) => {
   const follow = await prisma.follow.findUnique({
     where: {
-      profileId_followerProfileId: {
-        profileId: friendId,
-        followerProfileId: uid,
+      userId_followerId: {
+        userId: friendId,
+        followerId: uid,
       },
     },
   })
@@ -23,9 +23,9 @@ const isUserAlreadyFollowed = async ({ uid, friendId }: FollowInput) => {
 const addFriend = async ({ uid, friendId }: FollowInput) => {
   const updatedFollow = await prisma.follow.update({
     where: {
-      profileId_followerProfileId: {
-        profileId: friendId,
-        followerProfileId: uid,
+      userId_followerId: {
+        userId: friendId,
+        followerId: uid,
       },
     },
     data: {
@@ -54,9 +54,9 @@ const addFriend = async ({ uid, friendId }: FollowInput) => {
 const removeFriend = async ({ uid, friendId }: { uid: Uid; friendId: Uid }) => {
   return await prisma.follow.update({
     where: {
-      profileId_followerProfileId: {
-        profileId: friendId,
-        followerProfileId: uid,
+      userId_followerId: {
+        userId: friendId,
+        followerId: uid,
       },
     },
     data: {

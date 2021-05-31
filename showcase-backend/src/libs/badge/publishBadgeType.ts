@@ -2,19 +2,20 @@
 import axios from 'axios'
 import { blockchain } from '../../config'
 import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
-import { Profile } from '@generated/type-graphql'
+import { Profile, User } from '@generated/type-graphql'
 import Boom from 'boom'
 import { prisma } from '../../services/prisma'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
-import { User } from '.prisma/client'
+
 
 interface InputWithUser extends PublishBadgeTypeInput {
+  user: User
   profile: Profile
 }
 
 // todo: does user musst have a crypto account?
-const validateInputs = async ({ profile, donationAmount, causeId }: Partial<InputWithUser>) => {
-  if (!profile || !profile.isCreator) {
+const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWithUser>) => {
+  if (!user || !user.isCreator) {
     throw Boom.preconditionFailed('You are not a verified creator')
   }
 
@@ -34,6 +35,7 @@ const validateInputs = async ({ profile, donationAmount, causeId }: Partial<Inpu
 
 const createTokenTypeOnBlockchain = async ({
   id,
+  user,
   profile,
   title,
   description,
@@ -52,7 +54,7 @@ const createTokenTypeOnBlockchain = async ({
     image,
     imagehash: imageHash, // todo: camelCase on blockchain server
     supply,
-    creatoraddress: profile?.cryptoWallet?.address,
+    creatoraddress: user?.cryptoWallet?.address,
 
     // todo: why are these commented out?
     //causeSite: foundDonationSite,
@@ -69,26 +71,25 @@ const createTokenTypeOnBlockchain = async ({
 }
 
 export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User) => {
-  const { id } = user
   const profile = await prisma.profile.findUnique({
     where: {
-      id,
+      id: user.id,
     },
   })
 
-  if (!profile) {
+  if (!user || !profile) {
     throw Boom.badData('Invalid user')
   }
 
-  await validateInputs({ ...input, profile })
+  await validateInputs({ ...input, user })
 
-  const tokenTypeBlockhainId = await createTokenTypeOnBlockchain({ ...input })
+  const tokenTypeBlockhainId = await createTokenTypeOnBlockchain({ ...input, profile, user })
 
   const badgeType = await prisma.badgeType.create({
     data: {
       ...input,
       uri: 'https://showcase.to/badge/' + input.id,
-      creatorProfileId: user.id,
+      creatorId: user.id,
       currency: profile?.currency,
       tokenTypeBlockhainId,
     },

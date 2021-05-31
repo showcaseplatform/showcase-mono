@@ -44,27 +44,11 @@ model User {
   phone   String   @unique
   profile Profile?
 
-  isBanned        Boolean         @default(false)
+  isCreator   Boolean @default(false)
+  kycVerified Boolean @default(false)
+  isBanned    Boolean @default(false)
+
   smsVerification SmsVerification @relation(fields: [phone], references: [phone])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-}
-
-// todo: is it neccesary to have separete id here? 👉 create profile with user.id
-model Profile {
-  id   String @id
-  user User   @relation(fields: [id], references: [id])
-
-  displayName String
-  username    String    @unique
-  bio         String?
-  email       String?   @unique
-  isCreator   Boolean   @default(false)
-  kycVerified Boolean   @default(false)
-  currency    Currency  @default(USD)
-  birthDate   DateTime?
-  avatar      String?
 
   badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
   badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
@@ -79,12 +63,33 @@ model Profile {
   buyReceipts  Receipt[] @relation("buyReceipts")
   sellReceipts Receipt[] @relation("sellReceipts")
 
-  likeBadge     LikeBadge[]
-  likeBadgeType LikeBadgeType[]
-  viewBadge     ViewBadge[]
-  viewBadgeType ViewBadgeType[]
-  friends       Follow[]        @relation("friends")
-  followers     Follow[]        @relation("followers")
+  badgeItemLikes BadgeItemLike[]
+  badgeTypeLikes BadgeTypeLike[]
+
+  badgeItemViews BadgeItemView[]
+  badgeTypeViews BadgeTypeView[]
+  friends        Follow[]        @relation("friends")
+  followers      Follow[]        @relation("followers")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+// todo: is it neccesary to have separete id here? 👉 create profile with user.id
+model Profile {
+  id   String @id
+  user User   @relation(fields: [id], references: [id])
+
+  displayName String
+  username    String  @unique
+  bio         String?
+  email       String? @unique
+
+  currency  Currency  @default(USD)
+  birthDate DateTime?
+  avatar    String?
+
+
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -101,12 +106,12 @@ enum Category {
 }
 
 model BadgeType {
-  id               String  @id
-  creator          Profile @relation(name: "badgeTypesCreated", fields: [creatorProfileId], references: [id])
-  creatorProfileId String
+  id        String @id
+  creator   User   @relation(name: "badgeTypesCreated", fields: [creatorId], references: [id])
+  creatorId String
 
-  resaller          Profile? @relation(name: "badgeTypesForResell", fields: [resallerProfileId], references: [id])
-  resallerProfileId String?
+  resaller   User?   @relation(name: "badgeTypesForResell", fields: [resallerId], references: [id])
+  resallerId String?
 
   tokenTypeBlockhainId String // todo: should this be unique? incase of resell it would be violated
   uri                  String // todo: should this be unique? incase of resell it would be violated
@@ -136,8 +141,8 @@ model BadgeType {
   badgeItems          BadgeItem[]
   receipts            Receipt[]
 
-  likes LikeBadgeType[]
-  views ViewBadgeType[]
+  likes BadgeTypeLike[]
+  views BadgeTypeView[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -149,10 +154,10 @@ model BadgeItem {
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String
 
-  creator          Profile @relation(name: "badgeOriginatedFrom", fields: [creatorProfileId], references: [id])
+  creator          User   @relation(name: "badgeOriginatedFrom", fields: [creatorProfileId], references: [id])
   creatorProfileId String
 
-  owner          Profile @relation(name: "badgeCurrentlyOwned", fields: [ownerProfileId], references: [id])
+  owner          User   @relation(name: "badgeCurrentlyOwned", fields: [ownerProfileId], references: [id])
   ownerProfileId String
 
   receipt Receipt?
@@ -165,8 +170,8 @@ model BadgeItem {
   removedFromShowcase Boolean @default(false)
   forSale             Boolean @default(false)
 
-  likes LikeBadge[]
-  views ViewBadge[]
+  likes BadgeItemLike[]
+  views BadgeItemView[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -189,8 +194,8 @@ model Cause {
 }
 
 model Crypto {
-  id                  String  @id
-  owner               Profile @relation(fields: [id], references: [id])
+  id                  String @id
+  owner               User   @relation(fields: [id], references: [id])
   address             String
   encryptedMnemonic   String
   encrytpedPrivateKey String
@@ -201,8 +206,8 @@ model Crypto {
 }
 
 model Balance {
-  id    String  @id
-  owner Profile @relation(fields: [id], references: [id])
+  id    String @id
+  owner User   @relation(fields: [id], references: [id])
 
   eur                          Float
   gbp                          Float
@@ -221,11 +226,11 @@ model CurrencyRate {
 model Receipt {
   id Int @id @default(autoincrement())
 
-  recipient          Profile @relation(name: "buyReceipts", fields: [recipientProfileId], references: [id])
-  recipientProfileId String
+  recipient   User   @relation(name: "buyReceipts", fields: [recipientId], references: [id])
+  recipientId String
 
-  creator          Profile @relation(name: "sellReceipts", fields: [creatorProfileId], references: [id])
-  creatorProfileId String
+  creator   User   @relation(name: "sellReceipts", fields: [creatorId], references: [id])
+  creatorId String
 
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
   badgeItemId String
@@ -253,8 +258,8 @@ model Receipt {
 }
 
 model Stripe {
-  id    String  @id
-  owner Profile @relation(fields: [id], references: [id])
+  id    String @id
+  owner User   @relation(fields: [id], references: [id])
 
   stripeId          String @unique // todo: should stripeId be unique here? 
   lastFourCardDigit Int
@@ -263,49 +268,49 @@ model Stripe {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model LikeBadge {
-  profileId   String
-  profile     Profile   @relation(fields: [profileId], references: [id])
+model BadgeItemLike {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
   badgeItemId String
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
 
   createdAt DateTime @default(now())
 
-  @@id([profileId, badgeItemId])
+  @@id([userId, badgeItemId])
 }
 
 // todo: maybe like tables can be merged together
-model LikeBadgeType {
-  profileId   String
-  profile     Profile   @relation(fields: [profileId], references: [id])
+model BadgeTypeLike {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
   badgeTypeId String
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
 
   createdAt DateTime @default(now())
 
-  @@id([profileId, badgeTypeId])
+  @@id([userId, badgeTypeId])
 }
 
-model ViewBadge {
-  profileId   String
-  profile     Profile   @relation(fields: [profileId], references: [id])
+model BadgeItemView {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
   badgeItemId String
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
 
   createdAt DateTime @default(now())
 
-  @@id([profileId, badgeItemId])
+  @@id([userId, badgeItemId])
 }
 
-model ViewBadgeType {
-  profileId   String
-  profile     Profile   @relation(fields: [profileId], references: [id])
+model BadgeTypeView {
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
   badgeTypeId String
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
 
   createdAt DateTime @default(now())
 
-  @@id([profileId, badgeTypeId])
+  @@id([userId, badgeTypeId])
 }
 
 // todo: are these statuses enough?
@@ -317,13 +322,13 @@ enum FollowStatus {
 }
 
 model Follow {
-  profileId         String
-  profile           Profile      @relation(name: "followers", fields: [profileId], references: [id])
-  followerProfileId String
-  follower          Profile      @relation(name: "friends", fields: [followerProfileId], references: [id])
-  status            FollowStatus
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @default(now()) @updatedAt
+  userId         String
+  profile        User         @relation(name: "followers", fields: [userId], references: [id])
+  followerId String
+  follower       User         @relation(name: "friends", fields: [followerId], references: [id])
+  status         FollowStatus
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
 
-  @@id([profileId, followerProfileId])
+  @@id([userId, followerId])
 }

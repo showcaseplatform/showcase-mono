@@ -7,9 +7,10 @@ import { prisma } from '../../services/prisma'
 import { BadgeType, Currency, User } from '.prisma/client'
 import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
 import { PurchaseBadgeInput } from './types/purchaseBadge.type'
+import { GraphQLError } from 'graphql'
 
 interface PurchaseTransactionInput {
-  profileId: string
+  userId: string
   badgeType: BadgeType
   newSoldAmount: number
   badgeItemId: string
@@ -24,7 +25,7 @@ interface PurchaseTransactionInput {
 }
 
 const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
-  const badgesOwned = await prisma.profile.findUnique({
+  const badgesOwned = await prisma.user.findUnique({
     where: {
       id: userId,
     },
@@ -37,9 +38,8 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
     },
   })
 
-  if (badgesOwned) {
-    // todo: replace boom with GraphQLError ?
-    throw Boom.preconditionFailed('You already purchased this badge')
+  if (badgesOwned?.badgeItemsOwned?.length && badgesOwned?.badgeItemsOwned?.length > 0) {
+    throw new GraphQLError('You already purchased this badge')
   }
 }
 
@@ -83,11 +83,12 @@ const mintNewBadgeOnBlockchain = async (cryptoWalletAddress: string, newBadgeTok
 }
 
 const getUserProfileWithFinancialInfo = async (id: Uid) => {
-  return await prisma.profile.findUnique({
+  return await prisma.user.findUnique({
     where: {
       id,
     },
     include: {
+      profile: true,
       cryptoWallet: true,
       stripeBalance: true,
       stripeInfo: true,
@@ -134,7 +135,7 @@ const chargeStripeAccount = async ({
 }
 
 const executeDBTransaction = async ({
-  profileId,
+  userId,
   badgeType,
   newSoldAmount,
   badgeItemId,
@@ -158,16 +159,16 @@ const executeDBTransaction = async ({
         badgeItems: {
           create: {
             id: badgeItemId,
-            creatorProfileId: badgeType.creatorProfileId,
-            ownerProfileId: profileId,
+            creatorProfileId: badgeType.creatorId,
+            ownerProfileId: userId,
             edition: newSoldAmount,
             purchaseDate: new Date(),
           },
         },
         receipts: {
           create: {
-            recipientProfileId: profileId,
-            creatorProfileId: badgeType.creatorProfileId,
+            recipientId: userId,
+            creatorId: badgeType.creatorId,
             badgeItemId,
             stripeChargeId: chargeId,
             salePrice: badgeType.price,
@@ -195,9 +196,9 @@ const executeDBTransaction = async ({
         },
       },
     }),
-    prisma.profile.update({
+    prisma.user.update({
       where: {
-        id: profileId,
+        id: userId,
       },
     data: {
         stripeBalance: {
@@ -221,36 +222,35 @@ const executeDBTransaction = async ({
   ])
 }
 
-export const purchaseBadge = async (input: PurchaseBadgeInput, user: User) => {
+export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const { badgeTypeId, currencyRate, displayedPrice } = input
-  const { id } = user
 
-  const profile = await getUserProfileWithFinancialInfo(id)
+  const user = await getUserProfileWithFinancialInfo(uid)
 
-  if (!profile || !profile.stripeBalance) {
+  if (!user || !user.stripeBalance) {
     throw Boom.badData('Profile missing')
   }
 
   if (
-    (!profile.kycVerified &&
-      profile.stripeBalance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
-    (profile.kycVerified &&
-      profile.stripeBalance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
+    (!user.kycVerified &&
+      user.stripeBalance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
+    (user.kycVerified &&
+      user.stripeBalance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
   ) {
     throw Boom.preconditionFailed(
       'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.'
     )
   }
   if (
-    !profile.cryptoWallet ||
-    !profile.cryptoWallet.address ||
-    !profile.stripeBalance?.id ||
-    !profile.stripeInfo?.stripeId
+    !user.cryptoWallet ||
+    !user.cryptoWallet.address ||
+    !user.stripeBalance?.id ||
+    !user.stripeInfo?.stripeId
   ) {
     throw Boom.preconditionFailed('No wallet or card')
   }
 
-  await checkIfBadgeAlreadyOwnedByUser(id, badgeTypeId)
+  await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
 
   const badgeType = await prisma.badgeType.findUnique({
     where: {
@@ -259,41 +259,47 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, user: User) => {
   })
 
   if (!badgeType) {
-    throw Boom.notFound('Invalid badge id', badgeTypeId)
+    throw new GraphQLError('Invalid badge id')
   }
 
   if (badgeType.sold === badgeType.supply) {
-    throw Boom.preconditionFailed('Out of stock')
+    throw new GraphQLError('Out of stock')
   }
 
   const currenciesData = await getCurrencyRates()
 
+  if(!user?.profile?.currency) {
+    throw new GraphQLError('User profile currency if missing')
+  }
+
+  const userCurrencyRate = currenciesData[user.profile.currency]
+
   const newSoldAmount = badgeType.sold + 1
   const newBadgeId = constructNewBadgeId(badgeType, newSoldAmount)
 
-  const multiplier = (1 / currenciesData[badgeType.currency]) * currenciesData[profile.currency]
+  const multiplier = (1 / currenciesData[badgeType.currency]) * userCurrencyRate
   const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
 
   if (calculatedPrice !== displayedPrice && badgeType.price !== 0) {
     throw Boom.preconditionFailed('Wrong price displayed')
   }
 
-  if (currenciesData[profile.currency] !== currencyRate) {
+  if (currenciesData[user.profile.currency] !== currencyRate) {
     throw Boom.preconditionFailed('Transaction currency conversion rate dont match!')
   }
 
   const { chargeId } = await chargeStripeAccount({
     amount: calculatedPrice,
-    currency: profile.currency,
+    currency: user.profile.currency,
     title: badgeType.title,
     badgeItemId: newBadgeId,
-    creatorProfileId: badgeType.creatorProfileId,
-    customerStripeId: profile.stripeInfo.stripeId,
+    creatorProfileId: badgeType.creatorId,
+    customerStripeId: user.stripeInfo.stripeId,
   })
 
   try {
     const { transactionHash } = await mintNewBadgeOnBlockchain(
-      profile.cryptoWallet.address,
+      user.cryptoWallet.address,
       newBadgeId
     )
     let payoutAmount = 0
@@ -315,7 +321,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, user: User) => {
     }
 
     await executeDBTransaction({
-      profileId: profile.id,
+      userId: uid,
       payoutAmount,
       causeFullAmount,
       badgeItemId: newBadgeId,
@@ -323,8 +329,8 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, user: User) => {
       chargeId,
       transactionHash,
       convertedPrice: calculatedPrice,
-      convertedCurrency: profile.currency,
-      convertedRate: currenciesData[profile.currency],
+      convertedCurrency: user.profile.currency,
+      convertedRate: userCurrencyRate,
       USDPrice,
       newSoldAmount,
     })

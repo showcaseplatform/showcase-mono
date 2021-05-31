@@ -75,7 +75,7 @@ const createResaleBadgeTypeAndUpdateBadge = async ({
         currency,
         price,
         resale: true,
-        resallerProfileId: uid,
+        resallerId: uid,
         supply: 1,
         shares: 0,
         soldout: false,

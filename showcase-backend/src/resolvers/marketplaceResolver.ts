@@ -30,7 +30,7 @@ export class MarketplaceResolver {
     @Ctx() ctx: any,
     @Arg('data') purchaseBadgeInput: PurchaseBadgeInput
   ): Promise<BadgeItem> {
-    return await purchaseBadge(purchaseBadgeInput, ctx.user)
+    return await purchaseBadge(purchaseBadgeInput, ctx.user.id)
   }
 }
 

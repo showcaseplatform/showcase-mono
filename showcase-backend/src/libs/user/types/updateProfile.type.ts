@@ -5,7 +5,7 @@ import {
   PROFILE_MAX_BIO_LENGTH,
   PROFILE_MAX_USERNAME_LENGTH,
   PROFILE_MAX_DISPLAY_NAME_LENGTH,
-} from '../../consts/businessRules'
+} from '../../../consts/businessRules'
 
 
 @InputType({ description: 'Data for updating profile info with custom validation' })

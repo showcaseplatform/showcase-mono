@@ -1,6 +1,6 @@
 import { InputType, Field, createUnionType, ObjectType } from 'type-graphql'
 import { BadgeItemId, BadgeTypeId } from '../../../types/badge'
-import { ViewBadgeType, ViewBadge } from '@generated/type-graphql'
+import { BadgeTypeView, BadgeItemView } from '@generated/type-graphql'
 
 @InputType({ description: 'Data for counting views' })
 export class CountViewInput {
@@ -19,13 +19,13 @@ export class ViewInfo {
 
 export const ViewBadgeUnion = createUnionType({
   name: "ViewBadgeUnion",
-  types: () => [ViewBadgeType, ViewBadge, ViewInfo] as const,
+  types: () => [BadgeTypeView, BadgeItemView, ViewInfo] as const,
   resolveType: value => {
     if ("badgeTypeId" in value) {
-      return ViewBadgeType; 
+      return BadgeTypeView; 
     }
     if ("badgeItemId" in value) {
-      return ViewBadge; 
+      return BadgeItemView; 
     } 
     return ViewInfo;
   },

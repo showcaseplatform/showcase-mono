@@ -5,21 +5,21 @@ import { Uid } from '../../types/user'
 export const checkIfBadgeAlreadyLiked = async (input: ToggleLikeInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (marketplace) {
-    const like = await prisma.likeBadgeType.findUnique({
+    const like = await prisma.badgeTypeLike.findUnique({
       where: {
-        profileId_badgeTypeId: {
-          profileId: uid,
+        userId_badgeTypeId: {
+          userId: uid,
           badgeTypeId: badgeId,
         },
       },
     })
     return !!like
   } else {
-    const like = await prisma.likeBadge.findUnique({
+    const like = await prisma.badgeItemLike.findUnique({
       where: {
-        profileId_badgeItemId: {
+        userId_badgeItemId: {
           badgeItemId: badgeId,
-          profileId: uid,
+          userId: uid,
         },
       },
     })
@@ -30,20 +30,20 @@ export const checkIfBadgeAlreadyLiked = async (input: ToggleLikeInput, uid: Uid)
 export const deleteLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (marketplace) {
-    return await prisma.likeBadgeType.delete({
+    return await prisma.badgeTypeLike.delete({
       where: {
-        profileId_badgeTypeId: {
+        userId_badgeTypeId: {
           badgeTypeId: badgeId,
-          profileId: uid,
+          userId: uid,
         },
       },
     })
   } else {
-    return await prisma.likeBadge.delete({
+    return await prisma.badgeItemLike.delete({
       where: {
-        profileId_badgeItemId: {
+        userId_badgeItemId: {
           badgeItemId: badgeId,
-          profileId: uid,
+          userId: uid,
         },
       },
     })
@@ -53,17 +53,17 @@ export const deleteLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
 export const createLikeRecord = async (input: ToggleLikeInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (marketplace) {
-    return await prisma.likeBadgeType.create({
+    return await prisma.badgeTypeLike.create({
       data: {
         badgeTypeId: badgeId,
-        profileId: uid,
+        userId: uid,
       },
     })
   } else {
-    return await prisma.likeBadge.create({
+    return await prisma.badgeItemLike.create({
       data: {
         badgeItemId: badgeId,
-        profileId: uid,
+        userId: uid,
       },
     })
   }

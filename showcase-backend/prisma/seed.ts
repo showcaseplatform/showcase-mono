@@ -1,4 +1,4 @@
-import { Category, Currency, PrismaClient } from '@prisma/client'
+import { Category, Currency, PrismaClient, NotificationType } from '@prisma/client'
 const prisma = new PrismaClient()
 const getRandomNum = () => {
   return Math.floor(Math.random() * 899999 + 100000)
@@ -15,7 +15,7 @@ const main = async () => {
     },
   })
 
-  const alice = await prisma.smsVerification.create({
+  const createAlice = await prisma.smsVerification.create({
     data: {
       phone: `+3670978${id}`,
       code: `111111`,
@@ -47,13 +47,21 @@ const main = async () => {
               category: Category.Art,
               uri: `https://showcase.to/badge/${id}`,
               currency: Currency.USD,
-              tokenTypeBlockhainId: id,
+              tokenTypeId: id,
               sold: 1,
               shares: 0,
               soldout: false,
               removedFromShowcase: false,
               causeId: carpathiaFoundation.id,
               donationAmount: 0.1,
+            },
+          },
+          notifications: {
+            create: {
+              type: NotificationType.NEW_MESSAGE_RECEIVED,
+              title: 'First message title',
+              message: 'First message title',
+              readAt: new Date(),
             },
           },
         },
@@ -63,16 +71,18 @@ const main = async () => {
 
   const aliceWithBadgeType = await prisma.user.findUnique({
     where: {
-      phone: alice.phone,
+      phone: createAlice.phone,
     },
     include: {
       badgeTypesCreated: true,
     },
   })
 
+  if (!aliceWithBadgeType) return
+  const bobPhone = `+3670978${id.substring(1)}1`
   const bob = await prisma.smsVerification.create({
     data: {
-      phone: `+3670978${id.substring(1)}1`,
+      phone: bobPhone,
       code: `222222`,
       attemptsEntered: 0,
       attemptsEnteredSinceValid: 0,
@@ -92,15 +102,45 @@ const main = async () => {
           },
           badgeItemsOwned: {
             create: {
-              id: `badgeToken_${getRandomNum()}`,
+              tokenId: `badgeToken_${getRandomNum()}`,
               badgeTypeId: aliceWithBadgeType?.badgeTypesCreated[0].id || ``,
-              creatorProfileId: aliceWithBadgeType?.id || ``,
+              creatorId: aliceWithBadgeType?.id || ``,
               edition: 1,
               purchaseDate: new Date(),
+              likes: {
+                create: {
+                  userId: aliceWithBadgeType.id,
+                },
+              },
             },
           },
         },
       },
+    },
+  })
+
+  const bobWithBadgeItem = await prisma.user.findUnique({
+    where: {
+      phone: bobPhone,
+    },
+    include: {
+      badgeItemsOwned: true
+    }
+  })
+
+  if(!bobWithBadgeItem) return
+
+  await prisma.receipt.create({
+    data: {
+      badgeTypeId: aliceWithBadgeType?.badgeTypesCreated[0].id || ``,
+      creatorId: aliceWithBadgeType?.id || ``,
+      recipientId: bobWithBadgeItem.id,
+      badgeItemId: bobWithBadgeItem.badgeItemsOwned[0].id || '',
+      convertedCurrency: Currency.EUR,
+      convertedRate: 1.2,
+      convertedPrice: 1.2,
+      transactionHash: `${getRandomNum()}`,
+      stripeChargeId: `${getRandomNum()}`,
     },
   })
 }

@@ -75,6 +75,7 @@ model User {
   badgeTypeViews BadgeTypeView[]
 
   notifications Notification[]
+  notificationToken String?
 
   friends   Follow[] @relation("friends")
   followers Follow[] @relation("followers")
@@ -239,20 +240,18 @@ model Receipt {
   recipient   User   @relation(name: "buyReceipts", fields: [recipientId], references: [id])
   recipientId String
 
+  // todo: not neccesary to store this here 
   creator   User   @relation(name: "sellReceipts", fields: [creatorId], references: [id])
   creatorId String
 
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
   badgeItemId String
 
+  // todo: not neccesary to store this here 
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String
 
   stripeChargeId String
-
-  salePrice          Float
-  saleDonationAmount Float?
-  saleCurrency       Currency
 
   convertedPrice    Float
   convertedRate     Float

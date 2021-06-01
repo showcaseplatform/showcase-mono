@@ -10,7 +10,7 @@ import cookieParser from 'cookie-parser'
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
 // Import routing
-import { MainController } from './controllers/main'
+// import { MainController } from './controllers/main'
 
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
@@ -30,7 +30,7 @@ app.use(cookieParser())
 app.use(express.json())
 
 // Setup REST api routes
-MainController(app)
+// MainController(app)
 
 // Add error handling
 app.use(globalErrorHandler)

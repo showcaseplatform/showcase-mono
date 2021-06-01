@@ -13,6 +13,7 @@ export const mockFindUniqueUser = (id: Uid) => prismaMock.user.findUnique.mockRe
   kycVerified: false,
   authId: `${getRandomNum()}`,
   phone: `3670978${getRandomNum()}`,
+  notificationToken: `${getRandomNum()}`,
   createdAt: new Date(),
   updatedAt: new Date(),
 })

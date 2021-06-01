@@ -58,6 +58,7 @@ async function bootstrap() {
     // typeDefs,
     schema,
     playground: true,
+    introspection: true,
     context: async ({ req }): Promise<any> => {
       // Get the user token from the headers.
       const token = req.headers.authorization || ''

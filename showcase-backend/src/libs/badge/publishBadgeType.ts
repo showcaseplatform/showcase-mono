@@ -3,9 +3,9 @@ import axios from 'axios'
 import { blockchain } from '../../config'
 import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
 import { Profile, User } from '@generated/type-graphql'
-import Boom from 'boom'
 import { prisma } from '../../services/prisma'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
+import { GraphQLError } from 'graphql'
 
 
 interface InputWithUser extends PublishBadgeTypeInput {
@@ -16,19 +16,19 @@ interface InputWithUser extends PublishBadgeTypeInput {
 // todo: does user musst have a crypto account?
 const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWithUser>) => {
   if (!user || !user.isCreator) {
-    throw Boom.preconditionFailed('You are not a verified creator')
+    throw new GraphQLError('You are not a verified creator')
   }
 
   if (causeId || donationAmount) {
     try {
-      if (!donationAmount) throw Boom.badData('Invalid donation amount')
+      if (!donationAmount) throw new GraphQLError('Invalid donation amount')
       await prisma.cause.findUnique({
         where: {
           id: causeId,
         },
       })
     } catch (e) {
-      Boom.badData('Invalid donation cause', e)
+       throw new GraphQLError('Invalid donation cause', e)
     }
   }
 }
@@ -66,7 +66,7 @@ const createTokenTypeOnBlockchain = async ({
   if (blockchainData.tokenType) {
     return blockchainData.tokenType
   } else {
-    throw Boom.internal('Blockchain error, missing tokenType from response', blockchainData)
+    throw new GraphQLError('Blockchain error, missing tokenType from response', blockchainData)
   }
 }
 
@@ -78,12 +78,12 @@ export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User)
   })
 
   if (!user || !profile) {
-    throw Boom.badData('Invalid user')
+    throw new GraphQLError('Invalid user')
   }
 
   await validateInputs({ ...input, user })
 
-  const tokenTypeBlockhainId = await createTokenTypeOnBlockchain({ ...input, profile, user })
+  const tokenTypeId = await createTokenTypeOnBlockchain({ ...input, profile, user })
 
   const badgeType = await prisma.badgeType.create({
     data: {
@@ -91,7 +91,7 @@ export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User)
       uri: 'https://showcase.to/badge/' + input.id,
       creatorId: user.id,
       currency: profile?.currency,
-      tokenTypeBlockhainId,
+      tokenTypeId,
     },
   })
 

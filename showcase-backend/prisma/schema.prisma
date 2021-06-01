@@ -121,8 +121,8 @@ model BadgeType {
   resaller   User?   @relation(name: "badgeTypesForResell", fields: [resallerId], references: [id])
   resallerId String?
 
-  tokenTypeBlockhainId String @unique
-  uri                  String @unique
+  tokenTypeId String @unique
+  uri         String @unique
 
   supply   Int
   price    Float
@@ -157,16 +157,18 @@ model BadgeType {
 }
 
 model BadgeItem {
-  id String @id
+  id String @id @default(uuid())
+
+  tokenId String // todo: is this uniqiue? is doesnt change after re-sell then yes
 
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String
 
-  creator          User   @relation(name: "badgeOriginatedFrom", fields: [creatorProfileId], references: [id])
-  creatorProfileId String
+  creator          User   @relation(name: "badgeOriginatedFrom", fields: [creatorId], references: [id])
+  creatorId String
 
-  owner          User   @relation(name: "badgeCurrentlyOwned", fields: [ownerProfileId], references: [id])
-  ownerProfileId String
+  owner          User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id])
+  ownerId String
 
   receipt Receipt?
 

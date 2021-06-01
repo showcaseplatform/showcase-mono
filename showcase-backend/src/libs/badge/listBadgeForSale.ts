@@ -134,7 +134,7 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
     },
   })
 
-  if (profile && badge && badge.ownerProfileId === uid) {
+  if (profile && badge && badge.ownerId === uid) {
     await addNonFungibleToEscrowWithSignatureRelay(input, uid)
     const { badgeType } = badge
     return await createResaleBadgeTypeAndUpdateBadge({

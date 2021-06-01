@@ -95,7 +95,7 @@ const checkBadgeOwnedOnBlockchain = async (badgeItemId: BadgeItemId): Promise<bo
 
   const data = {
     badgeid: badgeItemId,
-    badgeowner: badge.ownerProfileId,
+    badgeowner: badge.ownerId,
     token: blockchain.authToken,
   }
 

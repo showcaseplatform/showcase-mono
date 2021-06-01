@@ -15,6 +15,7 @@ import {
 // todo: validations are not tiggered
 @InputType({ description: 'Data for publishing a new badgeType' })
 export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
+  // todo: maybe this should be name clientID and id should be auto generated
   @Field()
   id: string
 

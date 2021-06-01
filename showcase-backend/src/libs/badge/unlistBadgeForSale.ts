@@ -16,7 +16,7 @@ export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Ui
   })
   
   // here we need to make sure user currently owns the badge because the removebadge is called from escrow
-  if (!badge || badge.ownerProfileId != uid) {
+  if (!badge || badge.ownerId != uid) {
     throw Boom.preconditionFailed('User doesnt match badge owner', { badge, uid })
   }
   const response = await axios.post(blockchain.server + '/removeBadgeFromEscrow', { badgeid: badgeItemId })

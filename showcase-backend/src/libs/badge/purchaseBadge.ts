@@ -13,7 +13,7 @@ interface PurchaseTransactionInput {
   userId: string
   badgeType: BadgeType
   newSoldAmount: number
-  badgeItemId: string
+  tokenId: string
   causeFullAmount: number
   payoutAmount: number
   transactionHash: string
@@ -57,13 +57,13 @@ const getCurrencyRates = async () => {
 
 // todo: why is it neccesary to construct this id? would be better to auto-gen badgeItem ids, and store this in a prop if neccesary
 const constructNewBadgeId = (badge: BadgeType, newSoldAmount: number) => {
-  let newLastDigits = (parseInt(badge.tokenTypeBlockhainId.slice(-10)) + newSoldAmount).toFixed(0)
+  let newLastDigits = (parseInt(badge.tokenTypeId.slice(-10)) + newSoldAmount).toFixed(0)
 
   while (newLastDigits.length < 10) {
     newLastDigits = '0' + newLastDigits
   }
 
-  return badge.tokenTypeBlockhainId.slice(0, -10) + newLastDigits
+  return badge.tokenTypeId.slice(0, -10) + newLastDigits
 }
 
 const mintNewBadgeOnBlockchain = async (cryptoWalletAddress: string, newBadgeTokenId: string) => {
@@ -138,7 +138,7 @@ const executeDBTransaction = async ({
   userId,
   badgeType,
   newSoldAmount,
-  badgeItemId,
+  tokenId,
   causeFullAmount,
   payoutAmount,
   transactionHash,
@@ -158,27 +158,27 @@ const executeDBTransaction = async ({
         soldout: newSoldAmount === badgeType.supply,
         badgeItems: {
           create: {
-            id: badgeItemId,
-            creatorProfileId: badgeType.creatorId,
-            ownerProfileId: userId,
+            tokenId,
+            creatorId: badgeType.creatorId,
+            ownerId: userId,
             edition: newSoldAmount,
             purchaseDate: new Date(),
-          },
-        },
-        receipts: {
-          create: {
-            recipientId: userId,
-            creatorId: badgeType.creatorId,
-            badgeItemId,
-            stripeChargeId: chargeId,
-            salePrice: badgeType.price,
-            saleCurrency: badgeType.currency,
-            saleDonationAmount: badgeType.donationAmount,
-            causeId: badgeType.causeId,
-            convertedPrice,
-            convertedCurrency,
-            convertedRate,
-            transactionHash,
+            receipt: {
+              create: {
+                recipientId: userId,
+                creatorId: badgeType.creatorId,
+                badgeTypeId:  badgeType.id,
+                stripeChargeId: chargeId,
+                salePrice: badgeType.price,
+                saleCurrency: badgeType.currency,
+                saleDonationAmount: badgeType.donationAmount,
+                causeId: badgeType.causeId,
+                convertedPrice,
+                convertedCurrency,
+                convertedRate,
+                transactionHash,
+              },
+            },
           },
         },
         cause: {
@@ -324,7 +324,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
       userId: uid,
       payoutAmount,
       causeFullAmount,
-      badgeItemId: newBadgeId,
+      tokenId: newBadgeId,
       badgeType,
       chargeId,
       transactionHash,

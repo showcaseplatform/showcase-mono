@@ -4,24 +4,13 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
-// Import services
-import { functions } from './services/firestore'
-
-// Import triggers
-import { badgeSaleWriteTrigger } from './triggers/badgeSaleWrite'
-import { userDeletionTrigger } from './triggers/userDeletion'
-import { onUserWriteTrigger } from './triggers/userWrite'
-import { badgeSaleDeletionTrigger } from './triggers/badgeSaleIndexDeletion'
-
 // Import jobs
-import { updateExchangeRatesJob } from './jobs/updateExchangeRates'
 
 // Import middlewares
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
 // Import routing
 import { MainController } from './controllers/main'
-import { checkExpoReceiptsJob } from './jobs/checkNotificationReceipts'
 
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
@@ -85,6 +74,7 @@ async function bootstrap() {
       return { prisma, user: authUser }
     },
   })
+  
   server.applyMiddleware({ app, path: '/graphql', cors: true })
 }
 
@@ -95,16 +85,3 @@ bootstrap()
   .finally(async () => {
     await prisma.$disconnect()
   })
-
-// // Api
-// export const api = functions.runWith({ timeoutSeconds: 30 }).https.onRequest(app)
-
-// // Jobs
-// export const updateExchangeRates = updateExchangeRatesJob
-// export const checkExpoReceipts = checkExpoReceiptsJob
-
-// // Triggers
-// export const onUserWrite = onUserWriteTrigger
-// export const onUserDeletion = userDeletionTrigger
-// export const onBadgeSaleWrite = badgeSaleWriteTrigger
-// export const onBadgeSaleDeletion = badgeSaleDeletionTrigger

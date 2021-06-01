@@ -16,6 +16,11 @@ generator typegraphql {
   // emitTranspiledCode = false
 }
 
+// TODO:
+// what datatype to use for String (postgres detault text) @db.<type>
+// ids: auto increment ID vs uidd
+// uidd for User badgeType and badgeItem
+
 enum Currency {
   USD
   EUR
@@ -68,8 +73,11 @@ model User {
 
   badgeItemViews BadgeItemView[]
   badgeTypeViews BadgeTypeView[]
-  friends        Follow[]        @relation("friends")
-  followers      Follow[]        @relation("followers")
+
+  notifications Notification[]
+
+  friends   Follow[] @relation("friends")
+  followers Follow[] @relation("followers")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -113,8 +121,8 @@ model BadgeType {
   resaller   User?   @relation(name: "badgeTypesForResell", fields: [resallerId], references: [id])
   resallerId String?
 
-  tokenTypeBlockhainId String // todo: should this be unique? incase of resell it would be violated
-  uri                  String // todo: should this be unique? incase of resell it would be violated
+  tokenTypeBlockhainId String @unique
+  uri                  String @unique
 
   supply   Int
   price    Float
@@ -128,8 +136,8 @@ model BadgeType {
   cause          Cause? @relation(fields: [causeId], references: [id])
   donationAmount Float? @default(0)
 
-  title       String   @db.VarChar(50) // todo: should we really limit this field?
-  description String?  @db.VarChar(240)
+  title       String
+  description String?
   category    Category @default(Art)
 
   shares Int @default(0)
@@ -279,7 +287,6 @@ model BadgeItemLike {
   @@id([userId, badgeItemId])
 }
 
-// todo: maybe like tables can be merged together
 model BadgeTypeLike {
   userId      String
   user        User      @relation(fields: [userId], references: [id])
@@ -323,7 +330,7 @@ enum FollowStatus {
 
 model Follow {
   userId     String
-  user    User         @relation(name: "followers", fields: [userId], references: [id])
+  user       User         @relation(name: "followers", fields: [userId], references: [id])
   followerId String
   follower   User         @relation(name: "friends", fields: [followerId], references: [id])
   status     FollowStatus
@@ -332,3 +339,58 @@ model Follow {
 
   @@id([userId, followerId])
 }
+
+enum NotificationType {
+  NEW_BADGE_PUBLISHED
+  NEW_FOLLOWER_ADDED
+  NEW_MESSAGE_RECEIVED
+  SOLD_BADGES_SUMMARY
+  MOST_VIEWED_BADGE
+}
+
+model Notification {
+  id          Int              @id @default(autoincrement())
+  recipientId String
+  recicpient  User             @relation(fields: [recipientId], references: [id])
+  type        NotificationType
+  title       String
+  message     String
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+}
+
+//todo: save notifcation receipts and expo-tickets
+
+// todo: decide where to store messages / how to implement chat
+// model ChatRoom {
+//   chatId    String
+//   userId    String
+//   user      User     @relation(fields: [userId], references: [id])
+//   chat      ChatThread     @relation(fields: [chatId], references: [id])
+//   createdAt DateTime @default(now())
+
+//   @@id([chatId, userId])
+// }
+
+// model ChatThread {
+//   id       String        @id
+//   room     ChatRoom?
+//   messages ChatMessage[]
+
+//   createdAt DateTime @default(now())
+// }
+
+// model ChatMessage {
+//   id      String    @id @default(uuid())
+//   fromId  String
+//   from    User      @relation(name: "sentMessages", fields: [fromId], references: [id])
+//   chatId  String
+//   chat    ChatThread      @relation(fields: [chatId], references: [id])
+//   message String
+//   sentAt  DateTime?
+//   readAt  DateTime?
+
+//   createdAt DateTime @default(now())
+// }
+
+// todo: add ChatMessageReads  table to track who read when a specific message

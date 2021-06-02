@@ -7,8 +7,8 @@ export class MarkerInfo {
   info: string;
 }
 
-export const MarkAsReaInfoUnion = createUnionType({
-  name: "MarkAsReaInfoUnion",
+export const MarkAsReadInfoUnion = createUnionType({
+  name: "MarkAsReadInfoUnion",
   types: () => [Notification, MarkerInfo] as const,
   resolveType: value => {
     if ("id" in value) {

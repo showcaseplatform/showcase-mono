@@ -6,10 +6,10 @@ import {
   removeNotifcationToken,
 } from '../libs/notification/updateNotifcationToken'
 import { NotificationToken } from '../types/user'
-import { MarkAsReaInfoUnion } from '../libs/notification/types/notificationMarker.type'
+import { MarkAsReadInfoUnion } from '../libs/notification/types/notificationMarker.type'
 @Resolver()
 export class NotificationResolver {
-  @Mutation(() => MarkAsReaInfoUnion)
+  @Mutation(() => MarkAsReadInfoUnion)
   async markAsRead(@Arg('notificationId') notificationId: string) {
     return await notificationMarker.markOneAsRead(notificationId)
   }

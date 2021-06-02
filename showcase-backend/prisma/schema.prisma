@@ -74,7 +74,7 @@ model User {
   badgeItemViews BadgeItemView[]
   badgeTypeViews BadgeTypeView[]
 
-  notifications Notification[]
+  notifications     Notification[]
   notificationToken String?
 
   friends   Follow[] @relation("friends")
@@ -165,10 +165,10 @@ model BadgeItem {
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String
 
-  creator          User   @relation(name: "badgeOriginatedFrom", fields: [creatorId], references: [id])
+  creator   User   @relation(name: "badgeOriginatedFrom", fields: [creatorId], references: [id])
   creatorId String
 
-  owner          User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id])
+  owner   User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id])
   ownerId String
 
   receipt Receipt?
@@ -240,14 +240,14 @@ model Receipt {
   recipient   User   @relation(name: "buyReceipts", fields: [recipientId], references: [id])
   recipientId String
 
-  // todo: not neccesary to store this here 
+  // todo: not neccesary to store this here
   creator   User   @relation(name: "sellReceipts", fields: [creatorId], references: [id])
   creatorId String
 
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
   badgeItemId String
 
-  // todo: not neccesary to store this here 
+  // todo: not neccesary to store this here
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String
 
@@ -350,7 +350,7 @@ enum NotificationType {
 }
 
 model Notification {
-  id          Int              @id @default(autoincrement())
+  id          String           @id @default(uuid())
   recipientId String
   recicpient  User             @relation(fields: [recipientId], references: [id])
   type        NotificationType
@@ -358,6 +358,31 @@ model Notification {
   message     String
   readAt      DateTime?
   createdAt   DateTime         @default(now())
+}
+
+enum ExpoStatus {
+  ok
+  error
+}
+enum ExpoError {
+  DeviceNotRegistered
+  InvalidCredentials
+  MessageTooBig
+  MessageRateExceeded
+}
+
+enum ExpoType {
+  ticket
+  receipt
+}
+
+model ExpoAdmin {
+  id Int @id @default(autoincrement())
+  type ExpoType
+  status ExpoStatus
+  expoId  String?
+  message String?
+  error ExpoError?
 }
 
 //todo: save notifcation receipts and expo-tickets

@@ -1,12 +1,4 @@
-import { FieldValue, firestore as db, Timestamp } from '../../services/firestore'
-import {
-  NotificationDocumentData,
-  NotificationInput,
-  NotificationName,
-  PushMessage,
-  NotificationLimitDoc,
-  NotificationType,
-} from '../../types/notificaton'
+import { NotificationLimitDoc, PushMessage, SendNotificationProps } from '../../types/notificaton'
 import { Uid, User } from '../../types/user'
 import {
   expo,
@@ -17,73 +9,71 @@ import {
   ExpoPushTicket,
 } from '../../services/expo'
 import moment from 'moment'
-import Boom from 'boom'
+import { ExpoAdmin, ExpoType, NotificationType } from '@prisma/client'
+import { prisma, PrismaClient } from '../../services/prisma'
+import Bluebird from 'bluebird'
+import { GraphQLError } from 'graphql'
 
 // todo: store these is db so it can be modifed easier
 // To limit number of push notication sent to a specific user, modify this
 const MAX_PUSH_SEND_NUMBER: NotificationLimitDoc = {
-  [NotificationName.NEW_BADGE_PUBLISHED]: 2,
-  [NotificationName.NEW_FOLLOWER_ADDED]: 100,
+  [NotificationType.NEW_BADGE_PUBLISHED]: 2,
+  [NotificationType.NEW_FOLLOWER_ADDED]: 100,
 }
 const MAX_PUSH_SEND_PERIOD_DAY = -1
 
 class NotificationCenter {
-  expo: Expo
+  private expo: Expo
+  private prisma: PrismaClient
 
   constructor() {
     this.expo = expo
+    this.prisma = prisma
   }
 
   // todo: create a func like: sendNotifcation = () => {}, which handles all notification send, also decides whether to call sendPushNoti...
 
-  sendPushNotificationBatch = async (inputMessages: NotificationInput[]) => {
-    await this.saveMessages(inputMessages, 'push')
-    const pushMessages = await this.validateInputMessages(inputMessages)
-    const filteredPushMessages = await this.filterPushMessages(pushMessages)
-    const tickets = await this.sendPushMessagesToExpo(filteredPushMessages)
-    await this.saveNotifcationTickets(tickets)
+  sendPushNotificationBatch = async (inputMessages: SendNotificationProps[]) => {
+    await this.saveMessages(inputMessages)
+    const pushMessages = await this.constructPushMessages(inputMessages)
+    const limitedPushMessages = await this.applyPushMessageLimits(pushMessages)
+    const tickets = await this.sendPushMessagesToExpo(limitedPushMessages)
+    await this.saveExpoAdminData(tickets, ExpoType.ticket)
   }
 
-  changeUnreadCount = async ({ uid, change }: { uid: Uid; change: number }) => {
-    await db
-      .collection('users')
-      .doc(uid)
-      .collection('notifications')
-      .doc('unRead')
-      .set({ count: FieldValue.increment(change) })
-  }
-
-  private filterPushMessages = async (messages: PushMessage[]) => {
-    return messages.filter(async ({ uid, name }) => {
-      const sendLimit = MAX_PUSH_SEND_NUMBER[name]
+  private applyPushMessageLimits = async (messages: PushMessage[]) => {
+    return await Bluebird.filter(messages, async ({ type, uid }) => {
+      const sendLimit = MAX_PUSH_SEND_NUMBER[type]
       if (!sendLimit) {
         return true
       }
       // todo: make it conditional, only when MAX_PUSH_SEND_PERIOD_DAY is set for notifcation
-      const periodStartTimestamp = Timestamp.fromDate(
-        moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()
-      )
-      // todo: create composite index for this
-      const notificationSnapshot = await db
-        .collection('users')
-        .doc(uid)
-        .collection('notifcations')
-        .where('createdDate', '>', periodStartTimestamp)
-        .where('name', '==', name)
-        .limit(sendLimit)
-        .get()
-      if (notificationSnapshot.size >= sendLimit) {
-        return false
-      } else {
-        return true
-      }
+      const periodStartDate = moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()
+      const notifcationAlreadySentInPeriod = await prisma.notification.findMany({
+        where: {
+          recipientId: uid,
+          type,
+          createdAt: {
+            gt: periodStartDate,
+          },
+        },
+      })
+
+      const isUnderLimit = sendLimit >= notifcationAlreadySentInPeriod.length
+      return isUnderLimit
     })
   }
 
   private getUserToken = async (uid: Uid) => {
-    const userDoc = await db.collection('users').doc(uid).get()
-    const { notificationToken = null } = userDoc.data() as User
-    return { notificationToken }
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: uid,
+      },
+      select: {
+        notificationToken: true,
+      },
+    })
+    return user?.notificationToken || null
   }
 
   private sendPushMessagesToExpo = async (messages: PushMessage[]) => {
@@ -93,123 +83,106 @@ class NotificationCenter {
     const chunks = expo.chunkPushNotifications(expoPushMessages)
     const tickets: ExpoPushTicket[] = []
 
-    // todo: bluebird.map lib instead nested await
     // Send the chunks to the Expo push notification service.
-    await Promise.all(
-      chunks.map(async (chunk) => {
-        const ticketChunk = await expo.sendPushNotificationsAsync(chunk)
-        tickets.push(...ticketChunk)
-      })
-    )
+    await Bluebird.map(chunks, async (chunk) => {
+      const ticketChunk = await this.expo.sendPushNotificationsAsync(chunk)
+      tickets.push(...ticketChunk)
+    })
 
     return tickets
   }
 
-  private validateInputMessages = async (inputMessages: NotificationInput[]) => {
-    let pushMessages: PushMessage[] = []
-
-    for (let message of inputMessages) {
-      const { name, uid, title, body, data } = message
-      const { notificationToken } = await this.getUserToken(uid)
-      if (Expo.isExpoPushToken(notificationToken)) {
-        pushMessages.push({ to: notificationToken, title, body, data, name, uid })
-      } else {
-        console.error(`Push token ${notificationToken} is not a valid Expo push token`)
+  private constructPushMessages = async (
+    inputMessages: SendNotificationProps[]
+  ): Promise<PushMessage[]> => {
+    return await Bluebird.map(
+      inputMessages,
+      async ({ title, type, recipientId, pushData, message }) => {
+        const notificationToken = await this.getUserToken(recipientId)
+        const pm: PushMessage = {
+          to: notificationToken || '',
+          type,
+          title,
+          uid: recipientId,
+          data: pushData || { message: 'test' },
+          body: message,
+        }
+        return pm
       }
-    }
-
-    return pushMessages
+    ).filter((m) => Expo.isExpoPushToken(m.to))
   }
 
-  private saveMessages = async (messages: NotificationInput[], type: NotificationType) => {
-    messages.forEach(async (message) => {
-      await this.saveNotificationData({ ...message, type })
+  private saveMessages = async (messages: SendNotificationProps[]) => {
+    const messagesWithoutPushData = messages
+      .map(({ pushData, ...rest }) => rest)
+      .filter((m) => m.recipientId && m.type)
+
+    await this.prisma.notification.createMany({
+      data: messagesWithoutPushData,
     })
   }
 
-  private saveNotificationData = async ({
-    name,
-    uid,
-    title = '',
-    body = '',
-    data = {},
-    type = 'normal',
-    read = false,
-    createdDate = new Date(),
-  }: NotificationDocumentData) => {
-    if (name && uid) {
-      const notificationDoc: NotificationDocumentData = {
-        name,
-        title,
-        body,
-        uid,
-        data,
-        read,
-        type,
-        createdDate,
-      }
-      await db.collection('users').doc(uid).collection('notifications').add(notificationDoc)
-      if (!read) {
-        await this.changeUnreadCount({ uid, change: 1 })
-      }
-    } else {
-      throw Boom.badData('Notifcation name and uid most be provided')
-    }
-  }
-
-  // todo: how to deal with error tickets?
+  // todo: figure out how to deal with error tickets, this should be called by a cronjob from
   searchForErrorsInTickets = async () => {
-    const tickets = await this.getNotifcationTickets()
-    if (tickets?.length === 0) throw 'There were no tickets found'
-
     // The receipts may contain error codes to which you must respond. In
     // particular, Apple or Google may block apps that continue to send
     // notifications to devices that have blocked notifications or have uninstalled
     // your app. Expo does not control this policy and sends back the feedback from
     // Apple and Google so you can handle it appropriately.
-    let receiptIds = []
-    for (let ticket of tickets) {
-      // NOTE: Not all tickets have IDs; for example, tickets for notifications
-      // that could not be enqueued will have error information and no receipt ID.
-      if ((ticket as ExpoPushSuccessTicket).id) {
-        receiptIds.push((ticket as ExpoPushSuccessTicket).id)
-      }
-    }
-    let receiptIdChunks = expo.chunkPushNotificationReceiptIds(receiptIds)
-    await Promise.all(
-      receiptIdChunks.map(async (chunk) => {
-        let receipts = await expo.getPushNotificationReceiptsAsync(chunk)
-        for (let receiptId in receipts) {
-          let { status, message, details } = receipts[receiptId] as ExpoPushErrorReceipt
-          if (status === 'error') {
-            console.error(`There was an error sending a notification: ${message}`)
-            if (details && details.hasOwnProperty('error')) {
-              // The error codes are listed in the Expo documentation:
-              // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
-              // You must handle the errors appropriately.
-              console.error(`The error code is ${details.error}`)
-              await this.saveErrorReceipt({ status, message, details })
-            }
+    const receiptIds = await this.getExpoAdminTicketIds()
+    if (receiptIds?.length === 0) throw new GraphQLError('There were no tickets found')
+
+    const receiptIdChunks = expo.chunkPushNotificationReceiptIds(receiptIds)
+    await Bluebird.map(receiptIdChunks, async (chunk) => {
+      const receipts = await expo.getPushNotificationReceiptsAsync(chunk)
+      const receiptDataToSave = []
+      for (let receiptId in receipts) {
+        const { status, message, details } = receipts[receiptId] as ExpoPushErrorReceipt
+        if (status === 'error') {
+          console.error(`There was an error sending a notification: ${message}`)
+          if (details && details?.error) {
+            // The error codes are listed in the Expo documentation:
+            // https://docs.expo.io/push-notifications/sending-notifications/#individual-errors
+            // You must handle the errors appropriately.
+            console.error(`The error code is ${details.error}`)
           }
+          receiptDataToSave.push({expoId: receiptId,  status, message, error: details?.error })
         }
-      })
-    )
+      }
+      await this.saveExpoAdminData(receiptDataToSave, ExpoType.receipt)
+    })
   }
 
-  private saveNotifcationTickets = async (tickets: ExpoPushTicket[]) => {
-    for (const ticket of tickets) {
-      await db.collection('expoTickets').add(ticket)
-    }
+  private saveExpoAdminData = async (
+    tickets: ExpoPushTicket[] | ExpoPushErrorReceipt[],
+    type: ExpoType
+  ) => {
+    const data = tickets.map((t: any) => {
+      return {
+        type,
+        status: t.status,
+        expoId: t?.id || null,
+        message: t?.message || null,
+        error: t?.details?.error || null,
+      }
+    })
+    await this.prisma.expoAdmin.createMany({
+      data,
+    })
   }
 
-  private saveErrorReceipt = async (receipt: ExpoPushErrorReceipt) => {
-    await db.collection('expoErrorReceipts').add(receipt)
-  }
-
-  private getNotifcationTickets = async (): Promise<ExpoPushTicket[]> => {
-    const snapshot = await db.collection('expoTickets').get()
-    if (snapshot.empty) throw 'expoTickets collection is empty'
-    return snapshot.docs.map((doc) => doc.data() as ExpoPushTicket)
+  private getExpoAdminTicketIds = async (): Promise<string[]> => {
+    // NOTE: Not all tickets have IDs; for example, tickets for notifications
+    // that could not be enqueued will have error information and no receipt ID.
+    const adminTickets = await this.prisma.expoAdmin.findMany({
+      where: {
+        type: ExpoType.ticket,
+        expoId: {
+          not: null,
+        },
+      },
+    })
+    return adminTickets.filter(t => !!t?.expoId).map(t => t.expoId as string)
   }
 }
 

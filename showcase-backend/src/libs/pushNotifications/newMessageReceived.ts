@@ -1,27 +1,24 @@
-import { NotificationName, PushNotifcationData } from '../../types/notificaton'
-import { Uid } from '../../types/user'
+import { NotificationType } from '@prisma/client'
+import { SendNotificationProps } from '../../types/notificaton'
 import { notificationCenter } from './notificationCenter'
 
-interface NewMessageReceivedInput {
-  uid: Uid
+interface NewMessageReceivedInput extends Omit<SendNotificationProps, 'title' | 'type'> {
   displayName: string
-  body: string
-  data: PushNotifcationData
 }
 
 export const sendNewMessageReceivedNotifcation = async ({
-  uid,
+  recipientId,
   displayName,
-  body,
-  data,
+  message,
+  pushData: data,
 }: NewMessageReceivedInput) => {
   await notificationCenter.sendPushNotificationBatch([
     {
-      name: NotificationName.NEW_MESSAGE_RECEIVED,
-      uid,
+      type: NotificationType.NEW_MESSAGE_RECEIVED,
+      recipientId,
       title: 'New Message from ' + (displayName || 'Unknown'),
-      body,
-      data,
+      message,
+      pushData: data,
     },
   ])
 }

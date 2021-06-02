@@ -22,6 +22,7 @@ import { SocialResolver } from './resolvers/socialResolver'
 import { getUserFromToken } from './libs/auth/getUserFromToken'
 import { TestResolver } from './resolvers/testResolver'
 import { AuthResolver } from './resolvers/authResolver'
+import { NotificationResolver } from './resolvers/notifcationResolver'
 
 // Set up express server
 const app = express()
@@ -48,6 +49,7 @@ async function bootstrap() {
       SocialResolver,
       AuthResolver,
       TestResolver,
+      NotificationResolver
     ],
     validate: true,
     // here provide all the types that are missing in schema

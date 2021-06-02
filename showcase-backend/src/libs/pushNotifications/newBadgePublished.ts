@@ -1,37 +1,42 @@
-import { firestore as db } from '../../services/firestore'
-import { NotificationInput, NotificationName } from '../../types/notificaton'
-import { Follower, Uid, User } from '../../types/user'
+import { NotificationType } from '.prisma/client'
+import { GraphQLError } from 'graphql'
+import prisma from '../../services/prisma'
+import { SendNotificationProps } from '../../types/notificaton'
+import { Uid } from '../../types/user'
 import { notificationCenter } from './notificationCenter'
 
 const getCreatorDetails = async (uid: Uid) => {
-  const userDoc = await db.collection('users').doc(uid).get()
-  const { displayName } = userDoc.data() as User
-  const followersSnapshot = await db.collection('users').doc(uid).collection('followers').get()
-  const followerUids: string[] = []
-
-  followersSnapshot.docs.map((doc) => {
-    const { uid } = doc.data() as Follower
-    uid && followerUids.push(uid)
+  const creatorProfile = await prisma.user.findUnique({
+    where: {
+      id: uid,
+    },
+    include: {
+      profile: true,
+      followers: true,
+    },
   })
-  return { displayName, followerUids }
+
+  if (!creatorProfile?.profile?.displayName)
+    throw new GraphQLError('Creator profile details werent found')
+
+  const followerUids = creatorProfile.followers.map(follow => follow.followerId)
+
+  return { displayName: creatorProfile.profile.displayName, followerUids }
 }
 
-const getMessagesForFollowers = async (publisherName: string, followerUids: Uid[]) => {
-  let inputMessages: NotificationInput[] = []
-  for (const uid in followerUids) {
-    const title = `${publisherName} just dropped a new badge! 👀`
-
-    inputMessages.push({
-      name: NotificationName.NEW_BADGE_PUBLISHED,
-      uid,
-      title,
-    })
-  }
-  return inputMessages
+const getMessagesForFollowers = (publisherName: string, followerUids: Uid[]): SendNotificationProps[] => {
+  return followerUids.map(uid => {
+    return {
+      type: NotificationType.NEW_BADGE_PUBLISHED,
+      recipientId: uid,
+      title: `${publisherName} just dropped a new badge! 👀`,
+      message: ''
+    }
+  })
 }
 
 export const sendNotificationToFollowersAboutNewBadge = async (creatorId: Uid) => {
   const { displayName, followerUids } = await getCreatorDetails(creatorId)
-  const messages = await getMessagesForFollowers(displayName, followerUids)
+  const messages = getMessagesForFollowers(displayName, followerUids)
   await notificationCenter.sendPushNotificationBatch(messages)
 }

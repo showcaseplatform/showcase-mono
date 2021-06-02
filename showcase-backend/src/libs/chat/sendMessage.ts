@@ -95,10 +95,10 @@ export const sendMessage = (req: any, res: any) => {
 
         // todo: this is async, would be better to refactor
         sendNewMessageReceivedNotifcation({
-          uid: userId,
+          recipientId: userId,
           displayName: user.displayName,
-          body: message,
-          data: newMessage,
+          message,
+          pushData: newMessage,
         })
 
         return res.json({ chatId })
@@ -178,10 +178,10 @@ export const sendMessage = (req: any, res: any) => {
 
         // todo: this is async, would be better to refactor
         sendNewMessageReceivedNotifcation({
-          uid: userId,
+          recipientId: userId,
           displayName: user.displayName,
-          body: message,
-          data: newMessage,
+          message,
+          pushData: newMessage,
         })
 
         return res.send('OK')

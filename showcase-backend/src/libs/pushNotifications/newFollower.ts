@@ -1,22 +1,21 @@
-import Boom from 'boom'
-import { NotificationName } from '../../types/notificaton'
+import { NotificationType } from '.prisma/client'
+import { GraphQLError } from 'graphql'
 import { Uid } from '../../types/user'
 import { notificationCenter } from './notificationCenter'
 
 export const sendNotificationToFollowedUser = async (username: string, followerUid: Uid) => {
   if (username) {
     const title = `@${username} followed you`
-    const body = ''
 
     await notificationCenter.sendPushNotificationBatch([
       {
-        name: NotificationName.NEW_FOLLOWER_ADDED,
-        uid: followerUid,
+        type: NotificationType.NEW_FOLLOWER_ADDED,
+        recipientId: followerUid,
         title,
-        body,
+        message: '',
       },
     ])
   } else {
-    throw Boom.badData('Send notifcation failed, username is missing')
+    throw new GraphQLError('Failed to send notifcation, username is missing')
   }
 }

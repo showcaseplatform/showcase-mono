@@ -61,7 +61,6 @@ const main = async () => {
               type: NotificationType.NEW_MESSAGE_RECEIVED,
               title: 'First message title',
               message: 'First message title',
-              readAt: new Date(),
             },
           },
         },

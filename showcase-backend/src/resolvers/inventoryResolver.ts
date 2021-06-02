@@ -2,7 +2,7 @@ import { Resolver, Ctx, Mutation, Arg } from 'type-graphql'
 
 import { toggleLike } from '../libs/badge/toggleLike'
 import { ToggleLikeInput, LikeBadgeUnion } from '../libs/badge/types/toggleLike.type'
-import { countView } from '../libs/badge/countView'
+import { countView } from '../libs/badge/countBadgeView'
 import { CountViewInput, ViewBadgeUnion } from '../libs/badge/types/countView.type'
 import { BadgeItem } from '@generated/type-graphql'
 import { listBadgeForSale } from '../libs/badge/listBadgeForSale'

@@ -1,21 +1,11 @@
-import { firestore } from 'firebase-admin';
+import { Notification, NotificationType } from '@prisma/client'
+import { SupportingDocumentContext } from 'twilio/lib/rest/numbers/v2/regulatoryCompliance/supportingDocument'
 import { Uid } from './user'
 
-// todo: rename this to notifcation type
-// add new notification type here
-export enum NotificationName {
-  NEW_BADGE_PUBLISHED = 'NEW_BADGE_PUBLISHED',
-  NEW_FOLLOWER_ADDED = 'NEW_FOLLOWER_ADDED',
-  NEW_MESSAGE_RECEIVED = 'NEW_MESSAGE_RECEIVED',
-  SOLD_BADGES_SUMMARY = 'SOLD_BADGES_SUMMARY',
-  MOST_VIEWED_BADGE = 'MOST_VIEWED_BADGE',
-}
-
-// todo: this should be calculated on the notfication type (see above)
-export type NotificationType = 'push' | 'normal'
-
 export type NotifcationToken = string
-export interface PushNotifcationData {
+
+// we don't want to save this to db, but needed to send push notifcations
+export interface PushData {
   to?: NotifcationToken
   sent?: Date
   read?: boolean
@@ -24,35 +14,26 @@ export interface PushNotifcationData {
   users?: Uid[]
   badgeId?: string
 }
-export interface NotifcationBase {
-  title?: string
-  body?: string
-  data?: PushNotifcationData | undefined 
+
+export type SendNotificationProps = {
+  type: NotificationType
+  title: string
+  message: string
+  recipientId: Uid
+  pushData?: PushData
 }
 
-export interface NotificationInput extends NotifcationBase {
-  name: NotificationName
-  uid: Uid
-}
-
-export interface PushMessage extends NotificationInput {
+export interface PushMessage {
   to: NotifcationToken
-}
-export interface NotificationDocumentData extends NotificationInput {
-  read?: boolean
-  type?: NotificationType
-  createdDate?: Date
-}
-export interface NotificationDocument extends NotificationDocumentData {
-  id: string
-}
-
-export interface UnreadDocumentData {
-  count: number
+  title: string
+  body: string
+  uid: Uid
+  type: NotificationType
+  data: PushData
 }
 
 type LimitRecord<K extends keyof any, T> = {
-  [P in K]?: T;
-};
+  [P in K]?: T
+}
 
-export type NotificationLimitDoc = LimitRecord<NotificationName, number>
+export type NotificationLimitDoc = LimitRecord<NotificationType, number>

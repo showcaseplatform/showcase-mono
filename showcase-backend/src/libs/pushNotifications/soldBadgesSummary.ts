@@ -3,7 +3,8 @@ import moment from 'moment'
 import { IReceipt } from '../../types/receipt'
 import { Uid } from '../../types/user'
 import { notificationCenter } from './notificationCenter'
-import { NotificationInput, NotificationName } from '../../types/notificaton'
+import { NotificationType } from '.prisma/client'
+import { SendNotificationProps } from '../../types/notificaton'
 
 // todo: currently this notification is not used
 interface IBadgesSoldRecordValue {
@@ -44,20 +45,21 @@ const getSummaryOfSoldBadgesByCreators = (
 }
 
 const getMessagesForCreators = async (dictionary: Record<Uid, IBadgesSoldRecordValue>) => {
-  let inputMessages: NotificationInput[] = []
+  let inputMessages: SendNotificationProps[] = []
   for (const [uid, value] of Object.entries(dictionary)) {
     const title = `Weekly recap:`
-    const body = `You sold ${value.count} badges this week for a total of ${
+    const message = `You sold ${value.count} badges this week for a total of ${
       value.USD ? '$' + value.USD + ' ' : ''
     }  ${value.EUR ? '€' + value.EUR + ' ' : ''} ${value.GBP ? '£' + value.GBP + ' ' : ''}`
 
     inputMessages.push({
-      name: NotificationName.SOLD_BADGES_SUMMARY,
-      uid,
+      type: NotificationType.SOLD_BADGES_SUMMARY,
+      recipientId: uid,
       title,
-      body,
+      message,
     })
   }
+
   return inputMessages
 }
 

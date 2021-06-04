@@ -48,6 +48,7 @@ export const createNewUser = async ({
           currency
         },
       },
+      balance: {}
     },
   })
 }

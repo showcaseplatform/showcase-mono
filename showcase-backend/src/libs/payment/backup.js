@@ -1,16 +1,16 @@
-const crypto = require('crypto')
+import { createHash, createDecipheriv } from 'crypto'
 
-module.exports = (req, res) => {
+export const backupMnemonicPhrase = (req, res) => {
   const { user } = req
 
   const { password } = req.body
 
   const algorithm = 'aes256'
 
-  const encryptionKeyHash = crypto.createHash('sha256').update(password).digest()
+  const encryptionKeyHash = createHash('sha256').update(password).digest()
 
   //const decipherPrivateKey = crypto.createDecipheriv(algorithm, encryptionKeyHash, ivPrivateKey);
-  const decipherMnemonic = crypto.createDecipheriv(
+  const decipherMnemonic = createDecipheriv(
     algorithm,
     encryptionKeyHash,
     user.crypto.ivMnemonic

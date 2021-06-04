@@ -90,7 +90,7 @@ const getUserProfileWithFinancialInfo = async (id: Uid) => {
     include: {
       profile: true,
       cryptoWallet: true,
-      stripeBalance: true,
+      balance: true,
       stripeInfo: true,
     },
   })
@@ -198,7 +198,7 @@ const executeDBTransaction = async ({
         id: userId,
       },
     data: {
-        stripeBalance: {
+        balance: {
           update: {
             eur: {
               increment: badgeType.currency === Currency.EUR ? payoutAmount : 0,
@@ -224,15 +224,15 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
 
   const user = await getUserProfileWithFinancialInfo(uid)
 
-  if (!user || !user.stripeBalance) {
+  if (!user || !user.balance) {
     throw Boom.badData('Profile missing')
   }
 
   if (
     (!user.kycVerified &&
-      user.stripeBalance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
+      user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
     (user.kycVerified &&
-      user.stripeBalance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
+      user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
   ) {
     throw Boom.preconditionFailed(
       'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.'
@@ -241,7 +241,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   if (
     !user.cryptoWallet ||
     !user.cryptoWallet.address ||
-    !user.stripeBalance?.id ||
+    !user.balance?.id ||
     !user.stripeInfo?.stripeId
   ) {
     throw Boom.preconditionFailed('No wallet or card')

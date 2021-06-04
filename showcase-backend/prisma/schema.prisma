@@ -18,7 +18,7 @@ generator typegraphql {
 
 // TODO:
 // what datatype to use for String (postgres detault text) @db.<type>
-// ids: auto increment ID vs uidd
+// ids: auto increment ID vs uidd vs cuid
 // uidd for User badgeType and badgeItem
 
 enum Currency {
@@ -61,9 +61,10 @@ model User {
   badgeItemsOwned          BadgeItem[] @relation("badgeCurrentlyOwned")
   badgeItemsOriginatedFrom BadgeItem[] @relation("badgeOriginatedFrom")
 
-  cryptoWallet  Crypto?
-  stripeBalance Balance?
-  stripeInfo    Stripe?
+  cryptoWallet Crypto?
+  stripeInfo   Stripe?
+  balance      Balance?
+  transferwise Transferwise?
 
   buyReceipts  Receipt[] @relation("buyReceipts")
   sellReceipts Receipt[] @relation("sellReceipts")
@@ -209,21 +210,22 @@ model Crypto {
   owner               User   @relation(fields: [id], references: [id])
   address             String
   encryptedMnemonic   String
-  encrytpedPrivateKey String
+  encryptedPrivateKey String
   ivMnemonic          String
   ivPrivateKey        String
   passwordHint        String
   publicKey           String
 }
 
+// todo: use this table once requesting info from receipts cost too much resources
 model Balance {
   id    String @id
   owner User   @relation(fields: [id], references: [id])
 
-  eur                          Float
-  gbp                          Float
-  usd                          Float
-  totalSpentAmountConvertedUsd Float
+  eur                          Float @default(0)
+  gbp                          Float @default(0)
+  usd                          Float @default(0)
+  totalSpentAmountConvertedUsd Float @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -266,12 +268,28 @@ model Receipt {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
+// todo: is it possible to add multiple bank card to an account?
 model Stripe {
   id    String @id
   owner User   @relation(fields: [id], references: [id])
 
   stripeId          String @unique // todo: should stripeId be unique here? 
-  lastFourCardDigit Int
+  lastFourCardDigit String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Transferwise {
+  id    String @id
+  owner User   @relation(fields: [id], references: [id])
+
+  idUSD            String?
+  accountNumberUSD String?
+  idGBP            String?
+  accountNumberGBP String?
+  idEUR            String?
+  accountNumberEUR String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -364,6 +382,7 @@ enum ExpoStatus {
   ok
   error
 }
+
 enum ExpoError {
   DeviceNotRegistered
   InvalidCredentials
@@ -377,12 +396,12 @@ enum ExpoType {
 }
 
 model ExpoAdmin {
-  id Int @id @default(autoincrement())
-  type ExpoType
-  status ExpoStatus
+  id      Int        @id @default(autoincrement())
+  type    ExpoType
+  status  ExpoStatus
   expoId  String?
   message String?
-  error ExpoError?
+  error   ExpoError?
 }
 
 //todo: save notifcation receipts and expo-tickets

@@ -1,50 +1,56 @@
-import { firestore as db } from '../../services/firestore'
 import moment from 'moment'
-import { IReceipt } from '../../types/receipt'
 import { Uid } from '../../types/user'
 import { notificationCenter } from './notificationCenter'
 import { NotificationType } from '.prisma/client'
 import { SendNotificationProps } from '../../types/notificaton'
+import prisma from '../../services/prisma'
+import { BadgeType, Receipt } from '@prisma/client'
+
 
 // todo: currently this notification is not used
-interface IBadgesSoldRecordValue {
+interface BadgesSoldRecordValue {
   USD: number
   GBP: number
   EUR: number
   count: number
 }
 
-const getAllReceiptsFromLastWeek = async (db: FirebaseFirestore.Firestore) => {
+const getAllReceiptsFromLastWeek = async () => {
   const periodStartDate = moment().add(-7, 'days').toDate()
-  console.log({ periodStartDate })
-  const receiptsSnapshot = await db
-    .collection('receipts')
-    .where('created', '>', periodStartDate)
-    .get()
-  if (receiptsSnapshot.empty) return []
-  return (receiptsSnapshot.docs as unknown) as IReceipt[]
+  return await prisma.receipt.findMany({
+    where: {
+      createdAt: {
+        gt: periodStartDate
+      }
+    },
+    include: {
+      badgeType: true
+    }
+  })
 }
 
 const getSummaryOfSoldBadgesByCreators = (
-  receipts: IReceipt[]
-): Record<Uid, IBadgesSoldRecordValue> => {
+  receipts: (Receipt & {
+    badgeType: BadgeType;
+})[]
+): Record<Uid, BadgesSoldRecordValue> => {
   return receipts.reduce((acc, curr) => {
-    if (acc[curr.creator]) {
-      if (acc[curr.creator][curr.saleCurrency]) {
-        acc[curr.creator][curr.saleCurrency] += curr.salePrice
+    if (acc[curr.creatorId]) {
+      if (acc[curr.creatorId][curr.badgeType.currency]) {
+        acc[curr.creatorId][curr.badgeType.currency] += curr.badgeType.price
       } else {
-        acc[curr.creator][curr.saleCurrency] = curr.salePrice
+        acc[curr.creatorId][curr.badgeType.currency] = curr.badgeType.price
       }
-      acc[curr.creator].count += 1
+      acc[curr.creatorId].count += 1
     } else {
-      acc[curr.creator] = { [curr.saleCurrency]: curr.salePrice }
-      acc[curr.creator].count = 1
+      acc[curr.creatorId] = { [curr.badgeType.currency]: curr.badgeType.price }
+      acc[curr.creatorId].count = 1
     }
     return acc
   }, {} as any)
 }
 
-const getMessagesForCreators = async (dictionary: Record<Uid, IBadgesSoldRecordValue>) => {
+const getMessagesForCreators = async (dictionary: Record<Uid, BadgesSoldRecordValue>) => {
   let inputMessages: SendNotificationProps[] = []
   for (const [uid, value] of Object.entries(dictionary)) {
     const title = `Weekly recap:`
@@ -64,7 +70,7 @@ const getMessagesForCreators = async (dictionary: Record<Uid, IBadgesSoldRecordV
 }
 
 export const sendSoldBadgesSummary = async () => {
-  const receipts = await getAllReceiptsFromLastWeek(db)
+  const receipts = await getAllReceiptsFromLastWeek()
   const soldBagesSummary = getSummaryOfSoldBadgesByCreators(receipts)
   const inputMessages = await getMessagesForCreators(soldBagesSummary)
   await notificationCenter.sendPushNotificationBatch(inputMessages)

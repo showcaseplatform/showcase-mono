@@ -4,7 +4,7 @@ import { AddCardInput } from './types/addCard.type'
 import { User } from '@generated/type-graphql'
 import { GraphQLError } from 'graphql'
 
-export const addCard = async (input: AddCardInput, user: User) => {
+export const createStripeCustomer = async (input: AddCardInput, user: User) => {
   const { stripeToken, lastfour } = input
   const profile = await prisma.profile.findUnique({
     where: {

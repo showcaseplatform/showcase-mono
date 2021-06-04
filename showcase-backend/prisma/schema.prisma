@@ -65,6 +65,7 @@ model User {
   stripeInfo   Stripe?
   balance      Balance?
   transferwise Transferwise?
+  withdrawals  Withdrawal[]
 
   buyReceipts  Receipt[] @relation("buyReceipts")
   sellReceipts Receipt[] @relation("sellReceipts")
@@ -191,9 +192,9 @@ model BadgeItem {
 
 model Cause {
   id                    Int         @id @default(autoincrement())
-  balanceEur            Float       @default(0)
-  balanceGpb            Float       @default(0)
-  balanceUsd            Float       @default(0)
+  balanceEUR            Float       @default(0)
+  balanceGBP            Float       @default(0)
+  balanceUSD            Float       @default(0)
   numberOfContributions Float       @default(0)
   image                 String
   name                  String
@@ -222,9 +223,9 @@ model Balance {
   id    String @id
   owner User   @relation(fields: [id], references: [id])
 
-  eur                          Float @default(0)
-  gbp                          Float @default(0)
-  usd                          Float @default(0)
+  EUR                          Float @default(0)
+  GBP                          Float @default(0)
+  USD                          Float @default(0)
   totalSpentAmountConvertedUsd Float @default(0)
 
   createdAt DateTime @default(now())
@@ -293,6 +294,23 @@ model Transferwise {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Withdrawal {
+  id                    Int       @id @default(autoincrement())
+  ownerId               String
+  owner                 User      @relation(fields: [ownerId], references: [id])
+  customerTransactionId String
+  transactionId         String?
+  quote                 String
+  targetAccount         String
+  amount                Float
+  currency              Currency
+  success               Boolean?
+  error                 String?
+  eta                   DateTime?
+  createdAt             DateTime  @default(now())
+
 }
 
 model BadgeItemLike {

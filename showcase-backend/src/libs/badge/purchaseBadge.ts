@@ -167,7 +167,7 @@ const executeDBTransaction = async ({
               create: {
                 recipientId: userId,
                 creatorId: badgeType.creatorId,
-                badgeTypeId:  badgeType.id,
+                badgeTypeId: badgeType.id,
                 stripeChargeId: chargeId,
                 causeId: badgeType.causeId,
                 convertedPrice,
@@ -180,14 +180,8 @@ const executeDBTransaction = async ({
         },
         cause: {
           update: {
-            balanceEur: {
-              increment: badgeType.currency === Currency.EUR ? causeFullAmount : 0,
-            },
-            balanceUsd: {
-              increment: badgeType.currency === Currency.USD ? causeFullAmount : 0,
-            },
-            balanceGpb: {
-              increment: badgeType.currency === Currency.GBP ? causeFullAmount : 0,
+            [`balance${badgeType.currency}`]: {
+              increment: causeFullAmount || 0,
             },
           },
         },
@@ -197,17 +191,11 @@ const executeDBTransaction = async ({
       where: {
         id: userId,
       },
-    data: {
+      data: {
         balance: {
           update: {
-            eur: {
-              increment: badgeType.currency === Currency.EUR ? payoutAmount : 0,
-            },
-            usd: {
-              increment: badgeType.currency === Currency.USD ? payoutAmount : 0,
-            },
-            gbp: {
-              increment: badgeType.currency === Currency.GBP ? payoutAmount : 0,
+            [badgeType.currency]: {
+              increment: payoutAmount || 0,
             },
             totalSpentAmountConvertedUsd: {
               increment: USDPrice,
@@ -229,10 +217,8 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   }
 
   if (
-    (!user.kycVerified &&
-      user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
-    (user.kycVerified &&
-      user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
+    (!user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
+    (user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
   ) {
     throw Boom.preconditionFailed(
       'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.'
@@ -265,7 +251,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
 
   const currenciesData = await getCurrencyRates()
 
-  if(!user?.profile?.currency) {
+  if (!user?.profile?.currency) {
     throw new GraphQLError('User profile currency if missing')
   }
 

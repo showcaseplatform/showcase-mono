@@ -28,4 +28,7 @@ export const PROFILE_MAX_USERNAME_LENGTH = 28
 export const PROFILE_MAX_DISPLAY_NAME_LENGTH = 36
 export const PROFILE_MIN_USER_AGE = 18
 
-
+// Withdraw money from transferwise
+export const WITHDRAW_DEFAULT_LIMIT = 500
+export const WITHDRAW_KYC_LIMIT = 2000
+export const WITHDRAW_MIN_AMOUNT = 20

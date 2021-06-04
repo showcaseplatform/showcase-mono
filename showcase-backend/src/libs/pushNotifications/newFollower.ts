@@ -1,4 +1,4 @@
-import { NotificationType } from '.prisma/client'
+import { NotificationType } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 import { Uid } from '../../types/user'
 import { notificationCenter } from './notificationCenter'

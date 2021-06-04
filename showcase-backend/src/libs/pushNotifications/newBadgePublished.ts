@@ -1,4 +1,4 @@
-import { NotificationType } from '.prisma/client'
+import { NotificationType } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 import prisma from '../../services/prisma'
 import { SendNotificationProps } from '../../types/notificaton'

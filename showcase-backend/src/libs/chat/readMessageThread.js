@@ -1,6 +1,7 @@
 /* eslint-disable promise/no-nesting */
 import { firestore as db } from '../../services/firestore'
 
+// todo: refactor: marks all messages in a chat as read 
 export const readMessageThread =  (req, res) => {
   const { user } = req
   const { userId, chatId } = req.body

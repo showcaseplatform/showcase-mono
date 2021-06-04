@@ -1,5 +1,4 @@
-import { Notification, NotificationType } from '@prisma/client'
-import { SupportingDocumentContext } from 'twilio/lib/rest/numbers/v2/regulatoryCompliance/supportingDocument'
+import { NotificationType } from '@prisma/client'
 import { Uid } from './user'
 
 export type NotifcationToken = string

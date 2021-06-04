@@ -31,10 +31,15 @@ const updateUserBalance = async (
   })
 }
 
+const headers = {
+    Authorization: `Bearer ${transferWise.token}`,
+}
+
 const validateUserFinancialInfo = async (
   { currency, amount }: WithdrawFromTransferwiseInput,
   user: User
 ) => {
+  // todo: maybe re-calculate balance at this point? 
   const userBalance = await prisma.balance.findUnique({
     where: {
       id: user.id,
@@ -84,9 +89,7 @@ const getTransferwiseQuoteId = async ({ currency, amount }: WithdrawFromTransfer
       targetAmount: amount,
       type: 'BALANCE_PAYOUT',
     },
-    headers: {
-      Authorization: `Bearer ${transferWise.token}`,
-    },
+    headers
   })
 
   if (quoteResponse?.data?.id) {
@@ -124,9 +127,7 @@ const executeTransfer = async ({ quote, customerTransactionId, targetAccount }: 
         sourceOfFundsOther: 'Showcase badge sales',
       },
     },
-    headers: {
-      Authorization: `Bearer ${transferWise.token}`,
-    },
+    headers
   })
 
   if (transferResponse?.data?.id) {
@@ -150,9 +151,7 @@ const checkIfTransactionCompleted = async (transactionId: string) => {
     data: {
       type: 'BALANCE',
     },
-    headers: {
-      Authorization: `Bearer ${transferWise.token}`,
-    },
+    headers
   })
 
   if (fundResponse?.data?.status != 'COMPLETED') {
@@ -166,9 +165,7 @@ const getEstimatedDeliveryDate = async (transactionId: string) => {
   const etaResponse = await axios({
     method: 'get',
     url: 'https://api.sandbox.transferwise.tech/v1/delivery-estimates/' + transactionId,
-    headers: {
-      Authorization: `Bearer ${transferWise.token}`,
-    },
+    headers
   })
 
   if (etaResponse?.data?.estimatedDeliveryDate) {

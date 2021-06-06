@@ -1,4 +1,4 @@
-import { Currency } from '.prisma/client'
+import { Currency } from '@generated/type-graphql'
 import { Min, Max } from 'class-validator'
 import { InputType, Field, Float, } from 'type-graphql'
 import { WITHDRAW_KYC_LIMIT, WITHDRAW_MIN_AMOUNT } from '../../../consts/businessRules'

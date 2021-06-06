@@ -1,15 +1,14 @@
 import { NotificationLimitDoc, PushMessage, SendNotificationProps } from '../../types/notificaton'
-import { Uid, User } from '../../types/user'
+import { Uid } from '../../types/user'
 import {
   expo,
   Expo,
   ExpoPushErrorReceipt,
   ExpoPushMessage,
-  ExpoPushSuccessTicket,
   ExpoPushTicket,
 } from '../../services/expo'
 import moment from 'moment'
-import { ExpoAdmin, ExpoType, NotificationType } from '@prisma/client'
+import { ExpoType, NotificationType } from '@prisma/client'
 import { prisma, PrismaClient } from '../../services/prisma'
 import Bluebird from 'bluebird'
 import { GraphQLError } from 'graphql'

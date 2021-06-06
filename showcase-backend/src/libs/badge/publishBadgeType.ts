@@ -6,6 +6,7 @@ import { Profile, User } from '@generated/type-graphql'
 import { prisma } from '../../services/prisma'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { GraphQLError } from 'graphql'
+import { UserType } from '.prisma/client'
 
 
 interface InputWithUser extends PublishBadgeTypeInput {
@@ -15,7 +16,7 @@ interface InputWithUser extends PublishBadgeTypeInput {
 
 // todo: does user musst have a crypto account?
 const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWithUser>) => {
-  if (!user || !user.isCreator) {
+  if (!user || user.userType != UserType.creator) {
     throw new GraphQLError('You are not a verified creator')
   }
 

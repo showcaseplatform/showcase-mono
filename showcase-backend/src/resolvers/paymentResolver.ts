@@ -1,40 +1,51 @@
-import { Resolver, Ctx, Mutation, Arg } from 'type-graphql'
-import { AddCardInput } from '../libs/payment/types/addCard.type'
+import { Resolver, Ctx, Mutation, Arg, Authorized } from 'type-graphql'
+import { CreateStripeCustomerInput } from '../libs/payment/types/createStripeCustomer.type'
 import { createStripeCustomer } from '../libs/payment/createStripeCustomer'
 import { CreateCryptoWalletInput } from '../libs/payment/types/createCryptoWallet.type'
 import { createCryptoWallet } from '../libs/payment/createCryptoWallet'
 import { createTransferwiseAccount } from '../libs/payment/createTransferwiseAccount'
-import { PayoutAccountInput } from '../libs/payment/types/payoutAccount.type'
+import {
+  EURAccount,
+  GBPAccount,
+  USDAccount,
+} from '../libs/payment/types/payoutAccount.type'
 import { withdrawFromTransferwise } from '../libs/payment/withdrawFromTransferwise'
 import { WithdrawFromTransferwiseInput } from '../libs/payment/types/withdrawFromTransferwise.type'
+import { UserType } from '@prisma/client'
 
 @Resolver()
 export class PaymentResolver {
-
+  @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => String)
-  async createStripeCustomer(@Arg('data') input: AddCardInput, @Ctx() ctx: any) {
+  async createStripeCustomer(@Arg('data') input: CreateStripeCustomerInput, @Ctx() ctx: any) {
     return await createStripeCustomer(input, ctx.user)
   }
 
+  @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => String)
   async createCryptoWallet(@Arg('data') input: CreateCryptoWalletInput, @Ctx() ctx: any) {
     return await createCryptoWallet(input, ctx.user)
   }
 
+  @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => String)
-  async createTransferwiseAccount(@Arg('data') input: PayoutAccountInput, @Ctx() ctx: any) {
+  async createTransferwiseAccount(
+    @Ctx() ctx: any,
+    @Arg('inputUSD', { nullable: true }) inputUSD?: USDAccount,
+    @Arg('inputEUR', { nullable: true }) inputEUR?: EURAccount,
+    @Arg('inputGBP', { nullable: true }) inputGBP?: GBPAccount
+  ) {
+    const input = inputUSD || inputEUR || inputGBP
+    if (input === undefined) return 'Please provide an input data'
     return await createTransferwiseAccount(input, ctx.user)
   }
 
+  @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => String)
-  async withdrawFromTransferwise(@Arg('data') input: WithdrawFromTransferwiseInput, @Ctx() ctx: any) {
+  async withdrawFromTransferwise(
+    @Arg('data') input: WithdrawFromTransferwiseInput,
+    @Ctx() ctx: any
+  ) {
     return await withdrawFromTransferwise(input, ctx.user)
   }
-
-
-
-
-  
-
-
 }

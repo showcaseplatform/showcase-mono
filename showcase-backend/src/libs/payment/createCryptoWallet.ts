@@ -1,7 +1,7 @@
 import bip39 from 'bip39'
 // todo: is ok to import dev depenency here like this?
-import '@machinomy/types-ethereumjs-wallet'
-import hdkey from 'ethereumjs-wallet/hdkey'
+// import '@machinomy/types-ethereumjs-wallet'
+// import hdkey from 'ethereumjs-wallet/hdkey'
 import crypto from 'crypto'
 import { User } from '@generated/type-graphql'
 import { CreateCryptoWalletInput } from './types/createCryptoWallet.type'

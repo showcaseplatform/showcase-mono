@@ -2,7 +2,7 @@ import { InputType, Field, } from 'type-graphql'
 import { Length } from 'class-validator'
 
 @InputType({ description: 'Input data to connect user with stripe' })
-export class AddCardInput {
+export class CreateStripeCustomerInput {
   @Field()
   stripeToken: string
 

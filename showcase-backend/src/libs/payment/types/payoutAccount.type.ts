@@ -1,8 +1,7 @@
 import { Currency } from '@generated/type-graphql'
 import { InputType, Field } from 'type-graphql'
-
-@InputType({ description: 'Input data to create crypto account' })
-export class PayoutAccountInput {
+@InputType({ description: 'Input data to create transferwise account' })
+export class TransferwiseAccountBaseInput {
   @Field()
   currency: Currency
 
@@ -11,28 +10,36 @@ export class PayoutAccountInput {
 
   @Field()
   accountNumber: string
+}
 
-  @Field({ nullable: true })
-  routingNumber?: string
+@InputType()
+export class EURAccount extends TransferwiseAccountBaseInput {
+  @Field()
+  iban: string
+}
+@InputType()
+export class USDAccount extends TransferwiseAccountBaseInput {
+  @Field()
+  routingNumber: string
 
-  @Field({ nullable: true })
-  accountType?: string
+  @Field()
+  accountType: string
 
-  @Field({ nullable: true })
-  city?: string
+  @Field()
+  city: string
 
-  @Field({ nullable: true })
-  firstLine?: string
+  @Field()
+  firstLine: string
 
-  @Field({ nullable: true })
-  postCode?: string
+  @Field()
+  postCode: string
 
-  @Field({ nullable: true })
-  country?: string
+  @Field()
+  country: string
+}
+@InputType()
+export class GBPAccount extends TransferwiseAccountBaseInput {
 
-  @Field({ nullable: true })
-  iban?: string
-
-  @Field({ nullable: true })
-  sortCode?: string
+  @Field()
+  sortCode: string
 }

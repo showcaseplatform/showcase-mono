@@ -3,20 +3,24 @@ import {
   Ctx,
   Mutation,
   Arg,
+  Authorized
 } from 'type-graphql'
 import {
   BadgeType,
-  BadgeItem
+  BadgeItem,
 } from '@generated/type-graphql'
 
 import { publishBadgeType } from '../libs/badge/publishBadgeType'
 import { PublishBadgeTypeInput } from '../libs/badge/types/publishBadgeType.type'
 import { PurchaseBadgeInput } from '../libs/badge/types/purchaseBadge.type'
 import { purchaseBadge } from '../libs/badge/purchaseBadge'
+import { UserType } from '.prisma/client'
 
 
 @Resolver()
 export class MarketplaceResolver {
+
+  @Authorized(UserType.creator)
   @Mutation((_returns) => BadgeType)
   async publishBadgeType(
     @Ctx() ctx: any,
@@ -25,6 +29,7 @@ export class MarketplaceResolver {
     return await publishBadgeType(publishBadgeTypeInput, ctx.user)
   }
 
+  @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => BadgeItem)
   async purchaseBadge(
     @Ctx() ctx: any,

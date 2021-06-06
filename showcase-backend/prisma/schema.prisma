@@ -27,6 +27,11 @@ enum Currency {
   GBP
 }
 
+enum UserType {
+  basic
+  creator
+}
+
 model SmsVerification {
   phone                     String   @id
   user                      User?
@@ -49,9 +54,9 @@ model User {
   phone   String   @unique
   profile Profile?
 
-  isCreator   Boolean @default(false)
-  kycVerified Boolean @default(false)
-  isBanned    Boolean @default(false)
+  userType    UserType @default(basic)
+  kycVerified Boolean  @default(false) // todo: maybe this should be a userType aswell?
+  isBanned    Boolean  @default(false)
 
   smsVerification SmsVerification @relation(fields: [phone], references: [phone])
 
@@ -81,6 +86,9 @@ model User {
 
   friends   Follow[] @relation("friends")
   followers Follow[] @relation("followers")
+
+  chats        ChatParticipant[]
+  sentChatMessages ChatMessage[] @relation("sentMessages")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -422,38 +430,38 @@ model ExpoAdmin {
   error   ExpoError?
 }
 
-//todo: save notifcation receipts and expo-tickets
-
 // todo: decide where to store messages / how to implement chat
-// model ChatRoom {
-//   chatId    String
-//   userId    String
-//   user      User     @relation(fields: [userId], references: [id])
-//   chat      ChatThread     @relation(fields: [chatId], references: [id])
-//   createdAt DateTime @default(now())
+model Chat {
+  id           String            @id @default(uuid())
+  participants ChatParticipant[]
+  messages     ChatMessage[]
 
-//   @@id([chatId, userId])
-// }
+  createdAt DateTime @default(now())
+}
 
-// model ChatThread {
-//   id       String        @id
-//   room     ChatRoom?
-//   messages ChatMessage[]
+model ChatParticipant {
+  chatId String
+  chat Chat @relation(fields: [chatId], references: [id])
 
-//   createdAt DateTime @default(now())
-// }
+  userId String
+  user User @relation(fields: [userId], references: [id])
 
-// model ChatMessage {
-//   id      String    @id @default(uuid())
-//   fromId  String
-//   from    User      @relation(name: "sentMessages", fields: [fromId], references: [id])
-//   chatId  String
-//   chat    ChatThread      @relation(fields: [chatId], references: [id])
-//   message String
-//   sentAt  DateTime?
-//   readAt  DateTime?
+  createdAt DateTime @default(now())
 
-//   createdAt DateTime @default(now())
-// }
+  @@id([chatId, userId])
+}
+
+model ChatMessage {
+  id      String    @id @default(uuid())
+  fromId  String
+  from    User      @relation(name: "sentMessages", fields: [fromId], references: [id])
+  chatId  String
+  chat    Chat      @relation(fields: [chatId], references: [id])
+  message String
+  sentAt  DateTime?
+  readAt  DateTime?
+
+  createdAt DateTime @default(now())
+}
 
 // todo: add ChatMessageReads  table to track who read when a specific message

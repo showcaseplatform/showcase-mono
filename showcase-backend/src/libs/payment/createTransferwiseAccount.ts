@@ -3,7 +3,7 @@ import axios from 'axios'
 import { Transferwise, Currency, User } from '@generated/type-graphql'
 import prisma from '../../services/prisma'
 import { GraphQLError } from 'graphql'
-import { PayoutAccountInput } from './types/payoutAccount.type'
+import { EURAccount, GBPAccount, USDAccount } from './types/payoutAccount.type'
 
 
 const sendDataToTransferwise = async (inputData: any) => {
@@ -68,7 +68,7 @@ const createRecipientUSD = async (
     country,
     firstLine,
     postCode,
-  }: PayoutAccountInput
+  }: USDAccount
 ) => {
   const tranferwiseData = {
     currency,
@@ -92,7 +92,7 @@ const createRecipientUSD = async (
 }
 
 const createRecipientGBP = async (
-  { currency, accountHolderName, accountNumber, sortCode }: PayoutAccountInput
+  { currency, accountHolderName, accountNumber, sortCode }: GBPAccount
 ) => {
   const tranferwiseData = {
     currency,
@@ -108,7 +108,7 @@ const createRecipientGBP = async (
 }
 
 const createRecipientEUR = async (
-  { currency, accountHolderName, accountNumber, iban }: PayoutAccountInput
+  { currency, accountHolderName, accountNumber, iban }: EURAccount
 ) => {
   const tranferwiseData = {
     currency,
@@ -123,16 +123,16 @@ const createRecipientEUR = async (
   return { idEUR: id, accountNumberEUR: accountNumber }
 }
 
-export const createTransferwiseAccount = async (input: PayoutAccountInput, user: User) => {
+export const createTransferwiseAccount = async (input: EURAccount | GBPAccount | USDAccount, user: User) => {
   const { currency } = input
   let accountData: Partial<Transferwise>
 
   if (currency === Currency.USD) {
-    accountData = await createRecipientUSD(input)
+    accountData = await createRecipientUSD(input as USDAccount)
   } else if (currency === Currency.GBP) {
-    accountData = await createRecipientGBP(input)
+    accountData = await createRecipientGBP(input as GBPAccount)
   } else if (currency === Currency.EUR) {
-    accountData = await createRecipientEUR(input)
+    accountData = await createRecipientEUR(input as EURAccount)
   } else {
     throw new GraphQLError('Invalid currency')
   }

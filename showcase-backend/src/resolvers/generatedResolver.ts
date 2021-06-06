@@ -80,6 +80,22 @@ import {
   FindManyNotificationResolver,
   AggregateNotificationResolver,
   GroupByNotificationResolver,
+  BadgeItemViewRelationsResolver,
+  BadgeTypeViewRelationsResolver,
+  FollowRelationsResolver,
+  NotificationRelationsResolver,
+  FindUniqueChatResolver,
+  FindFirstChatResolver,
+  FindManyChatResolver,
+  AggregateChatResolver,
+  GroupByChatResolver,
+  ChatRelationsResolver,
+  FindUniqueChatMessageResolver,
+  FindFirstChatMessageResolver,
+  FindManyChatMessageResolver,
+  AggregateChatMessageResolver,
+  GroupByChatMessageResolver,
+  ChatMessageRelationsResolver,
 } from '@generated/type-graphql'
 import { UserType } from '@prisma/client'
 
@@ -125,6 +141,12 @@ const resolversEnhanceMap: ResolversEnhanceMap = {
     _all: [Authorized(UserType.basic, UserType.creator)],
   },
   Notification: {
+    _all: [Authorized(UserType.basic, UserType.creator)],
+  },
+  Chat: {
+    _all: [Authorized(UserType.basic, UserType.creator)],
+  },
+  ChatMessage: {
     _all: [Authorized(UserType.basic, UserType.creator)],
   },
 }
@@ -207,6 +229,7 @@ const badgeItemLikeResolvers = [
   FindManyBadgeItemLikeResolver,
   AggregateBadgeItemLikeResolver,
   GroupByBadgeItemLikeResolver,
+  BadgeItemRelationsResolver,
 ]
 
 const badgeTypeLikeResolvers = [
@@ -215,6 +238,7 @@ const badgeTypeLikeResolvers = [
   FindManyBadgeTypeLikeResolver,
   AggregateBadgeTypeLikeResolver,
   GroupByBadgeTypeLikeResolver,
+  BadgeTypeRelationsResolver,
 ]
 
 const badgeItemViewResolvers = [
@@ -223,6 +247,7 @@ const badgeItemViewResolvers = [
   FindManyBadgeItemViewResolver,
   AggregateBadgeItemViewResolver,
   GroupByBadgeItemViewResolver,
+  BadgeItemViewRelationsResolver
 ]
 
 const badgeTypeViewResolvers = [
@@ -231,6 +256,7 @@ const badgeTypeViewResolvers = [
   FindManyBadgeTypeViewResolver,
   AggregateBadgeTypeViewResolver,
   GroupByBadgeTypeViewResolver,
+  BadgeTypeViewRelationsResolver,
 ]
 
 const followResolvers = [
@@ -239,6 +265,7 @@ const followResolvers = [
   FindManyFollowResolver,
   AggregateFollowResolver,
   GroupByFollowResolver,
+  FollowRelationsResolver,
 ]
 
 const notificationResolvers = [
@@ -247,6 +274,25 @@ const notificationResolvers = [
   FindManyNotificationResolver,
   AggregateNotificationResolver,
   GroupByNotificationResolver,
+  NotificationRelationsResolver,
+]
+
+const chatResolvers = [
+  FindUniqueChatResolver,
+  FindFirstChatResolver,
+  FindManyChatResolver,
+  AggregateChatResolver,
+  GroupByChatResolver,
+  ChatRelationsResolver,
+]
+
+const chatMessageResolvers = [
+  FindUniqueChatMessageResolver,
+  FindFirstChatMessageResolver,
+  FindManyChatMessageResolver,
+  AggregateChatMessageResolver,
+  GroupByChatMessageResolver,
+  ChatMessageRelationsResolver,
 ]
 
 export const generatedResolvers = [
@@ -263,5 +309,7 @@ export const generatedResolvers = [
   ...badgeItemViewResolvers,
   ...badgeTypeViewResolvers,
   ...followResolvers,
-  ...notificationResolvers
+  ...notificationResolvers,
+  ...chatResolvers,
+  ...chatMessageResolvers
 ]

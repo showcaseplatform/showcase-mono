@@ -1,4 +1,4 @@
-import { NotificationLimitDoc, PushMessage, SendNotificationProps } from '../../types/notificaton'
+import { NotificationLimit, PushMessage, SendNotificationProps } from '../../types/notificaton'
 import { Uid } from '../../types/user'
 import {
   expo,
@@ -15,7 +15,7 @@ import { GraphQLError } from 'graphql'
 
 // todo: store these is db so it can be modifed easier
 // To limit number of push notication sent to a specific user, modify this
-const MAX_PUSH_SEND_NUMBER: NotificationLimitDoc = {
+const MAX_PUSH_SEND_NUMBER: NotificationLimit = {
   [NotificationType.NEW_BADGE_PUBLISHED]: 2,
   [NotificationType.NEW_FOLLOWER_ADDED]: 100,
 }

@@ -12,8 +12,9 @@ import { authChecker } from '../libs/auth/authChecker'
 import { buildSchema, NonEmptyArray } from 'type-graphql'
 import { prisma, PrismaClient } from './prisma'
 import { User } from '@prisma/client'
+import { ChatResolver } from '../resolvers/chatResolver'
 
-interface MyContext {
+export interface MyContext {
   prisma: PrismaClient
   user: User | null
 }
@@ -23,7 +24,7 @@ export class MyApollo {
   async init() {
     const schema = await buildSchema({
       resolvers: [
-        ...(generatedResolvers as unknown as NonEmptyArray<Function>),
+        ...(generatedResolvers as unknown as NonEmptyArray<Function>), //todo: find nicer solution
         MarketplaceResolver,
         InventoryResolver,
         SocialResolver,
@@ -31,6 +32,7 @@ export class MyApollo {
         TestResolver,
         NotificationResolver,
         PaymentResolver,
+        ChatResolver
       ],
       validate: true,
       authChecker,

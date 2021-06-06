@@ -12,6 +12,7 @@ import {
 import { withdrawFromTransferwise } from '../libs/payment/withdrawFromTransferwise'
 import { WithdrawFromTransferwiseInput } from '../libs/payment/types/withdrawFromTransferwise.type'
 import { UserType } from '@prisma/client'
+import { GraphQLError } from 'graphql'
 
 @Resolver()
 export class PaymentResolver {
@@ -36,7 +37,7 @@ export class PaymentResolver {
     @Arg('inputGBP', { nullable: true }) inputGBP?: GBPAccount
   ) {
     const input = inputUSD || inputEUR || inputGBP
-    if (input === undefined) return 'Please provide an input data'
+    if (!input) throw new GraphQLError('Please provide an input data')
     return await createTransferwiseAccount(input, ctx.user)
   }
 

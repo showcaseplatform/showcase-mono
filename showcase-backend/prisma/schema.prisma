@@ -87,8 +87,9 @@ model User {
   friends   Follow[] @relation("friends")
   followers Follow[] @relation("followers")
 
-  chats        ChatParticipant[]
-  sentChatMessages ChatMessage[] @relation("sentMessages")
+  chats            ChatParticipant[]
+  sentChatMessages ChatMessage[]     @relation("sentMessages")
+  chatMessageReads ChatMessageRead[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -436,15 +437,17 @@ model Chat {
   participants ChatParticipant[]
   messages     ChatMessage[]
 
-  createdAt DateTime @default(now())
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
 }
 
+// todo: should we add a chatname attr?
 model ChatParticipant {
   chatId String
-  chat Chat @relation(fields: [chatId], references: [id])
+  chat   Chat   @relation(fields: [chatId], references: [id])
 
   userId String
-  user User @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 
@@ -452,16 +455,27 @@ model ChatParticipant {
 }
 
 model ChatMessage {
-  id      String    @id @default(uuid())
+  id      String @id @default(uuid())
   fromId  String
-  from    User      @relation(name: "sentMessages", fields: [fromId], references: [id])
+  from    User   @relation(name: "sentMessages", fields: [fromId], references: [id])
   chatId  String
-  chat    Chat      @relation(fields: [chatId], references: [id])
+  chat    Chat   @relation(fields: [chatId], references: [id])
   message String
-  sentAt  DateTime?
-  readAt  DateTime?
+
+  reads ChatMessageRead[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ChatMessageRead {
+  id Int @id @default(autoincrement())
+
+  messageId String
+  message   ChatMessage @relation(fields: [messageId], references: [id])
+
+  readById String
+  readBy   User   @relation(fields: [readById], references: [id])
 
   createdAt DateTime @default(now())
 }
-
-// todo: add ChatMessageReads  table to track who read when a specific message

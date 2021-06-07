@@ -101,12 +101,18 @@ var config = convict({
       env: 'EXPO_ACCESS_TOKEN'
     }
   },
-  authy: {
-    key: {
-      doc: 'Api key for authy-client lib',
+  openExchange: {
+    appId: {
+      doc: 'App id for openexchangerates.org',
       format: String,
       default: '',
-      env: 'AUTHY_KEY'
+      env: 'OPEN_EXCHANGE_RATES_APP_ID'
+    },
+    url: {
+      doc: 'Url for openexchangerates.org',
+      format: String,
+      default: '',
+      env: 'OPEN_EXCHANGE_RATES_URL'
     }
   }
 })

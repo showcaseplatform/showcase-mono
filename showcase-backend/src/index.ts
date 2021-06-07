@@ -12,6 +12,7 @@ import { MainController } from './controllers/mainController'
 
 import { prisma } from './services/prisma'
 import { MyApollo } from './services/apollo'
+import { ShowcaseCron } from './jobs'
 
 const main = async () => {
   // Set up express server
@@ -31,10 +32,15 @@ const main = async () => {
 
   apolloServer.applyMiddleware({ app: expressApp, path, cors: true })
 
+  const cronJobs = new ShowcaseCron()
+  cronJobs.init()
+
   // todo: check if type-gql error handler middleware is better
   // Add error handling
   expressApp.use(globalErrorHandler)
 }
+
+
 
 main()
   .catch((error) => {

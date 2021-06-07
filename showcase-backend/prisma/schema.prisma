@@ -242,8 +242,13 @@ model Balance {
 }
 
 model CurrencyRate {
-  code String @id
-  rate Float
+  id Int @id @default(autoincrement())
+
+  EUR Float
+  GBP Float
+  USD Float @default(1)
+
+  createdAt DateTime @default(now())
 }
 
 model Receipt {

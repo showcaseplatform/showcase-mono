@@ -4,10 +4,11 @@ import { stripe } from '../../services/stripe'
 import { Uid } from '../../types/user'
 import Boom from 'boom'
 import { prisma } from '../../services/prisma'
-import { BadgeType, Currency, User } from '.prisma/client'
+import { BadgeType, Currency } from '.prisma/client'
 import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
 import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
+import { CurrencyRateLib } from '../currencyRate/currencyRate'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -40,18 +41,6 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
 
   if (badgesOwned?.badgeItemsOwned?.length && badgesOwned?.badgeItemsOwned?.length > 0) {
     throw new GraphQLError('You already purchased this badge')
-  }
-}
-
-const getCurrencyRates = async () => {
-  const currencyRates = await prisma.currencyRate.findMany()
-  if (currencyRates.length > 0) {
-    return currencyRates.reduce((acc, curr) => {
-      acc[curr.code as Currency] = curr.rate
-      return acc
-    }, {} as Record<Currency, number>)
-  } else {
-    throw Boom.notFound('Empty currencies')
   }
 }
 
@@ -249,7 +238,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
     throw new GraphQLError('Out of stock')
   }
 
-  const currenciesData = await getCurrencyRates()
+  const currenciesData = await CurrencyRateLib.getLatestExchangeRates()
 
   if (!user?.profile?.currency) {
     throw new GraphQLError('User profile currency if missing')

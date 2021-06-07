@@ -1,38 +1,38 @@
-const { functions, firestore: db } = require('../services/firestore')
-const axios = require('axios')
+// const { functions, firestore: db } = require('../services/firestore')
+// const axios = require('axios')
 
-const updateCurrencyRates = async (db, rates) => {
-  try {
-    await db.collection('currencyrates').doc('rates').set(rates)
-    console.log('Updated currency rates data')
-    return true
-  } catch (error) {
-    console.log('ERR UPDATING CURRENCY', error)
-    return true
-  }
-}
+// const updateCurrencyRates = async (db, rates) => {
+//   try {
+//     await db.collection('currencyrates').doc('rates').set(rates)
+//     console.log('Updated currency rates data')
+//     return true
+//   } catch (error) {
+//     console.log('ERR UPDATING CURRENCY', error)
+//     return true
+//   }
+// }
 
-const updateExchangeRatesHandler = async (client, db, context) => {
-  console.log('CALLED SCHEDULED FUNCTION')
-  try {
-    const response = await client.get(
-      'https://openexchangerates.org/api/latest.json?app_id=c5e771e507934e40a423df403e54d0ae'
-    )
-    if (response.data.rates) {
-      await updateCurrencyRates(db, response.data.rates)
-    } else {
-      console.error('ERROR cannot get currency prices')
-      return true
-    }
-  } catch (error) {
-    console.error('ERROR cannot get currency prices 1', error)
-    return true
-  }
-}
+// const updateExchangeRatesHandler = async (client, db, context) => {
+//   console.log('CALLED SCHEDULED FUNCTION')
+//   try {
+//     const response = await client.get(
+//       'https://openexchangerates.org/api/latest.json?app_id=c5e771e507934e40a423df403e54d0ae'
+//     )
+//     if (response.data.rates) {
+//       await updateCurrencyRates(db, response.data.rates)
+//     } else {
+//       console.error('ERROR cannot get currency prices')
+//       return true
+//     }
+//   } catch (error) {
+//     console.error('ERROR cannot get currency prices 1', error)
+//     return true
+//   }
+// }
 
-exports.updateExchangeRatesJob = functions.pubsub.schedule('30 16 * * *').onRun((context) => {
-  return updateExchangeRatesHandler(axios, db, context)
-})
+// exports.updateExchangeRatesJob = functions.pubsub.schedule('30 16 * * *').onRun((context) => {
+//   return updateExchangeRatesHandler(axios, db, context)
+// })
 
 // FUNCTION BEFORE REFACTORING:
 

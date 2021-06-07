@@ -7,7 +7,7 @@ export class CurrencyRateLib {
   static async getLatestExchangeRates() {
     const currencyRates = await prisma.currencyRate.findFirst({
       orderBy: {
-        id: 'desc',
+        createdAt: 'desc',
       },
       take: 1,
     })

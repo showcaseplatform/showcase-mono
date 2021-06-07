@@ -7,6 +7,15 @@ const getRandomNum = () => {
 const main = async () => {
   const id = getRandomNum().toString()
 
+  
+  const currencyRates = await prisma.currencyRate.create({
+    data: {
+      EUR: 0.822265,
+      GBP: 0.707141,
+      USD: 1,
+    },
+  })
+
   const carpathiaFoundation = await prisma.cause.create({
     data: {
       name: `Carpathia Foundation`,
@@ -136,12 +145,13 @@ const main = async () => {
       recipientId: bobWithBadgeItem.id,
       badgeItemId: bobWithBadgeItem.badgeItemsOwned[0].id || '',
       convertedCurrency: Currency.EUR,
-      convertedRate: 1.2,
-      convertedPrice: 1.2,
+      convertedRate: currencyRates.EUR,
+      convertedPrice: aliceWithBadgeType?.badgeTypesCreated[0].price * currencyRates.EUR,
       transactionHash: `${getRandomNum()}`,
       stripeChargeId: `${getRandomNum()}`,
     },
   })
+
 }
 
 main()

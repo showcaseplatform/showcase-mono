@@ -48,6 +48,8 @@ const validateUserFinancialInfo = async (
 
   if (!userBalance) throw new GraphQLError('User doesnt have a balance')
 
+
+  // todo: unit test this
   const recentWithdrawals = await prisma.withdrawal.findMany({
     where: {
       ownerId: user.id,
@@ -57,7 +59,7 @@ const validateUserFinancialInfo = async (
       },
     },
     orderBy: {
-      createdAt: 'asc',
+      createdAt: 'desc',
     },
   })
 

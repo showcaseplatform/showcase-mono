@@ -45,7 +45,7 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
 }
 
 // todo: why is it neccesary to construct this id? would be better to auto-gen badgeItem ids, and store this in a prop if neccesary
-const constructNewBadgeId = (badge: BadgeType, newSoldAmount: number) => {
+const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   let newLastDigits = (parseInt(badge.tokenTypeId.slice(-10)) + newSoldAmount).toFixed(0)
 
   while (newLastDigits.length < 10) {
@@ -123,7 +123,7 @@ const chargeStripeAccount = async ({
   return { chargeId: charge.id }
 }
 
-const executeDBTransaction = async ({
+const purchaseBadgeTransaction = async ({
   userId,
   badgeType,
   newSoldAmount,
@@ -137,7 +137,7 @@ const executeDBTransaction = async ({
   convertedRate,
   USDPrice,
 }: PurchaseTransactionInput) => {
-  await prisma.$transaction([
+  return await prisma.$transaction([
     prisma.badgeType.update({
       where: {
         id: badgeType.id,
@@ -173,6 +173,18 @@ const executeDBTransaction = async ({
               increment: causeFullAmount || 0,
             },
           },
+        },
+      },
+      include: {
+        badgeItems: {
+          where: {
+            ownerId: userId,
+            tokenId,
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1
         },
       },
     }),
@@ -247,7 +259,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const userCurrencyRate = currenciesData[user.profile.currency]
 
   const newSoldAmount = badgeType.sold + 1
-  const newBadgeId = constructNewBadgeId(badgeType, newSoldAmount)
+  const newBadgeTokenId = constructNewBadgeTokenId(badgeType, newSoldAmount)
 
   const multiplier = (1 / currenciesData[badgeType.currency]) * userCurrencyRate
   const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
@@ -264,7 +276,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
     amount: calculatedPrice,
     currency: user.profile.currency,
     title: badgeType.title,
-    badgeItemId: newBadgeId,
+    badgeItemId: newBadgeTokenId,
     creatorProfileId: badgeType.creatorId,
     customerStripeId: user.stripeInfo.stripeId,
   })
@@ -272,7 +284,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   try {
     const { transactionHash } = await mintNewBadgeOnBlockchain(
       user.cryptoWallet.address,
-      newBadgeId
+      newBadgeTokenId
     )
     let payoutAmount = 0
     let causeFullAmount = 0
@@ -292,11 +304,11 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
       payoutAmount = totalPrice * feeMultiplier
     }
 
-    await executeDBTransaction({
+    const [updatedBadgeType, _] = await purchaseBadgeTransaction({
       userId: uid,
       payoutAmount,
       causeFullAmount,
-      tokenId: newBadgeId,
+      tokenId: newBadgeTokenId,
       badgeType,
       chargeId,
       transactionHash,
@@ -307,16 +319,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
       newSoldAmount,
     })
 
-    const badgeItem = await prisma.badgeItem.findUnique({
-      where: {
-        id: newBadgeId,
-      },
-    })
-    if (badgeItem) {
-      return badgeItem
-    } else {
-      throw new GraphQLError('Couldnt create badgeItem')
-    }
+    return updatedBadgeType.badgeItems[0]
   } catch (error) {
     await stripe.refunds.create({ charge: chargeId })
     throw new GraphQLError('Purchase failed to execute,')

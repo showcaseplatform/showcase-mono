@@ -24,7 +24,7 @@ const createNewChat = async (fromId: Uid, message: string, participantId: Uid) =
     include: {
       messages: {
         orderBy: {
-          createdAt: 'asc',
+          createdAt: 'desc',
         },
         take: 1,
       },

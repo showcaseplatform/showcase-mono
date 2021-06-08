@@ -1,49 +1,24 @@
-<h1> SHOWCASE BACKEND</h1>
+# Showcase - backend
 
-# Before starting
+## Getting started
 
-## Install firebase CLI
+Make sure to install:
+- yarn
+- Docker
 
-npm install -g firebase-tools
+## Local development
 
-# Select dev or prod firebase project
+- Create `.env` file based on the contents of `.env.example`
+- Run `yarn`
+- Source your new .env file: `source .env`
+- Seed DB with `yarn prisma:seed`
+- Run dev server: `yarn start:dev`
 
-firebase use dev / prod
 
-# Start server with access to deployed dev environment
+## Modify database schema / add new migrations
 
-npm install
-npm build
-npm run serve
-
-# Start server with local firestore/auth/functions emulators
-
-npm install
-npm run start-emulators
-
-# Command to export prod firestore db
-
-npm install -g node-firestore-import-export
-firestore-export -a ./showcase-app-key.json -b ./seed.json -p
-
-# Command to import dev firestore db
-
-firestore-import -a ./showcase-dev-key.json -b ./seed.json
-
-# Set up local firebase environment variable:
-
-## Windows:
-
-$env:GOOGLE_APPLICATION_CREDENTIALS=".showcase-dev-key.json"
-
-## Linux / macOS:
-
-export GOOGLE_APPLICATION_CREDENTIALS="./service-account-file.json"
-
-# Deploy all function
-
-firebase deploy --only functions
-
-# Deploy single function
-
-firebase deploy --only functions:<function-name>
+- Step1: Modify entities as needed
+- Step 2 (optional): To make sure that db state is synced with current migrations
+- Step 3 (optional): generate the new schema types for prisma client `yarn prisma:generate`
+- Step 4 (optional): for local development you can push the changes to db without migration `yarn prisma:push`
+- Step 5 generate and apply migration : `yarn prisma:migrate`

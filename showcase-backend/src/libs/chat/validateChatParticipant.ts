@@ -11,7 +11,18 @@ export const validateChatParticipant = async (chatId: string, userId: Uid) => {
       },
     },
   })
+
   if (!chatParticipant) {
     throw new GraphQLError('User is not participant in chat')
   }
+}
+
+export const isChatParticipant = async(chatId: string, userId: Uid) => {
+ try {
+   await validateChatParticipant(chatId, userId)
+   console.log('isChatParticipant', true)
+   return true
+ } catch (_) {
+   return false
+ }
 }

@@ -19,7 +19,9 @@ generator typegraphql {
 // TODO:
 // what datatype to use for String (postgres detault text) @db.<type>
 // ids: auto increment ID vs uidd vs cuid
+// use cuid to better support  support horizontal scaling and sequential lookup performance.
 // uidd for User badgeType and badgeItem
+// add indexes with @@index
 
 enum Currency {
   USD
@@ -373,9 +375,9 @@ model BadgeTypeView {
 
 // todo: are these statuses enough?
 enum FollowStatus {
-  Pending
+  // Pending
   Accepted
-  Declined
+  // Declined
   Unfollowed
 }
 

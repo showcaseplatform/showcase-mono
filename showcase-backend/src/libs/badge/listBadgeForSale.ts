@@ -19,7 +19,7 @@ interface BlockChainPostData {
 }
 
 const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleInput, uid: Uid) => {
-  const { sig, message, badgeItemId} = input
+  const { sig, message, badgeItemId } = input
 
   const cryptoWallet = await prisma.crypto.findUnique({
     where: {
@@ -135,7 +135,9 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
   })
 
   if (profile && badge && badge.ownerId === uid) {
-    await addNonFungibleToEscrowWithSignatureRelay(input, uid)
+    // todo: remove blockchain.enabled once server is ready
+    blockchain.enabled && (await addNonFungibleToEscrowWithSignatureRelay(input, uid))
+    
     const { badgeType } = badge
     return await createResaleBadgeTypeAndUpdateBadge({
       badgeItemId,

@@ -2,7 +2,7 @@ import { UserType } from '@prisma/client'
 import { Uid } from '../types/user'
 import { prismaMock } from './prismaMock'
 
-const getRandomNum = () => {
+export const  getRandomNum = () => {
   return Math.floor(Math.random() * 899999 + 100000)
 }
 

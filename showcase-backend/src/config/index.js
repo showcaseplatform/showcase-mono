@@ -45,6 +45,12 @@ var config = convict({
       default: '',
       env: 'BLOCKCHAIN_AUTH_TOKEN',
     },
+    enabled: {
+      doc: 'Flag to attach / remove blockchain functionalities',
+      format: Boolean,
+      default: '',
+      env: 'BLOCKCHAIN_ENABLED',
+    },
   },
   // todo: twilio got replaced with authy-client
   twilio: {

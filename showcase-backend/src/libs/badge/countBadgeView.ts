@@ -50,7 +50,13 @@ const createViewRecord = async (input: CountViewInput, uid: Uid) => {
   }
 }
 
-const removeBadgeFromShowCase = async ({ badgeItemId, uid }: { badgeItemId: BadgeItemId; uid: Uid }) => {
+const removeBadgeFromShowCase = async ({
+  badgeItemId,
+  uid,
+}: {
+  badgeItemId: BadgeItemId
+  uid: Uid
+}) => {
   await prisma.user.update({
     where: {
       id: uid,
@@ -117,17 +123,19 @@ const randomBadgeInspection = (marketplace: boolean): boolean => {
 
 export const countView = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
-  if (randomBadgeInspection(marketplace)) {
+
+  // todo: remove blockchain.enabled once server is ready
+  if (blockchain.enabled && randomBadgeInspection(marketplace)) {
     console.log('👁️‍🗨️ Random badge inspection triggered 👁️‍🗨️')
     const isOwner = await checkBadgeOwnedOnBlockchain(badgeId)
-    !isOwner && (await removeBadgeFromShowCase({badgeItemId: badgeId, uid}))
+    !isOwner && (await removeBadgeFromShowCase({ badgeItemId: badgeId, uid }))
   }
 
   const isAlreadyViewed = await checkIfBadgeAlreadyViewed(input, uid)
   if (!isAlreadyViewed) {
     return await createViewRecord(input, uid)
   } else {
-    return { info: "Already viewed"} as ViewInfo
+    return { info: 'Already viewed' } as ViewInfo
   }
 }
 

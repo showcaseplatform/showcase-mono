@@ -8,7 +8,6 @@ import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { GraphQLError } from 'graphql'
 import { UserType } from '.prisma/client'
 
-
 interface InputWithUser extends PublishBadgeTypeInput {
   user: User
   profile: Profile
@@ -29,7 +28,7 @@ const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWi
         },
       })
     } catch (e) {
-       throw new GraphQLError('Invalid donation cause', e)
+      throw new GraphQLError('Invalid donation cause', e)
     }
   }
 }
@@ -84,7 +83,10 @@ export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User)
 
   await validateInputs({ ...input, user })
 
-  const tokenTypeId = await createTokenTypeOnBlockchain({ ...input, profile, user })
+  // todo: remove blockchain.enabled once server is ready
+  const tokenTypeId = blockchain.enabled
+    ? await createTokenTypeOnBlockchain({ ...input, profile, user })
+    : input.id
 
   const badgeType = await prisma.badgeType.create({
     data: {

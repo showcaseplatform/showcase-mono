@@ -9,6 +9,7 @@ import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/busi
 import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
+import { getRandomNum } from '../../test/testHelpers'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -182,9 +183,9 @@ const purchaseBadgeTransaction = async ({
             tokenId,
           },
           orderBy: {
-            createdAt: 'desc'
+            createdAt: 'desc',
           },
-          take: 1
+          take: 1,
         },
       },
     }),
@@ -282,10 +283,11 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   })
 
   try {
-    const { transactionHash } = await mintNewBadgeOnBlockchain(
-      user.cryptoWallet.address,
-      newBadgeTokenId
-    )
+    // todo: remove blockchain.enabled once server is ready
+    const { transactionHash } = blockchain.enabled
+      ? await mintNewBadgeOnBlockchain(user.cryptoWallet.address, newBadgeTokenId)
+      : { transactionHash: 'fake_hash' + getRandomNum() }
+
     let payoutAmount = 0
     let causeFullAmount = 0
     let USDPrice = 0

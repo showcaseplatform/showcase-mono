@@ -2,7 +2,7 @@ import { Resolver, Ctx, Mutation, Arg, Field, ObjectType } from 'type-graphql'
 
 import axios from 'axios'
 import { Uid } from '../types/user'
-import { auth } from '../services/firestore'
+import { auth } from '../services/firebase'
 
 @ObjectType()
 class CustomToken {

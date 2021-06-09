@@ -1,4 +1,4 @@
-import { auth } from '../../services/firestore'
+import { auth } from '../../services/firebase'
 import prisma from '../../services/prisma'
 import Boom from 'boom'
 import { VerifyPhoneCodeInput, VerifyPhoneCodeResponse } from './types/verifyPhoneCode.type'

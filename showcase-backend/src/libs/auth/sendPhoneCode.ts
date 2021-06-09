@@ -1,5 +1,5 @@
 import validator from 'validator'
-import { auth } from '../../services/firestore'
+import { auth } from '../../services/firebase'
 import { twilio as twilioConfig } from '../../config'
 import { twilio } from '../../services/twilio'
 import Boom from 'boom'

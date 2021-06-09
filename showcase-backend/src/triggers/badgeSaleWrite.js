@@ -1,5 +1,5 @@
 const { client: algoliaClient } = require('../services/algolia')
-const { functions } = require('../services/firestore')
+const { functions } = require('../services/firebase')
 
 
 const badgeSaleWriteHandler = (client, data, context) => {

@@ -2,7 +2,7 @@
 /* eslint-disable promise/no-nesting */
 const { expo } = require('../config')
 const TestController = require('express').Router()
-const { firestore: db, auth } = require('../services/firestore')
+const { firestore: db, auth } = require('../services/firebase')
 const axios = require('axios')
 
 const API_KEY = 'AIzaSyCYBkt1m7Km3M7zQPzL_XlpSVPLG7uOVpo'

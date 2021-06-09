@@ -1,4 +1,4 @@
-import { auth } from '../../services/firestore'
+import { auth } from '../../services/firebase'
 import prisma from '../../services/prisma'
 
 export const getUserFromToken = async (token: string) => {

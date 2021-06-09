@@ -1,4 +1,4 @@
-const { functions } = require('../services/firestore')
+const { functions } = require('../services/firebase')
 const { client: algoliaClient } = require('../services/algolia')
 
 // Update the search index every time a blog post is written.

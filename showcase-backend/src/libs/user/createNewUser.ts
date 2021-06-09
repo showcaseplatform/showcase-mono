@@ -1,6 +1,6 @@
 import { v5 as uuidv5 } from 'uuid'
 import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
-import { auth } from '../../services/firestore'
+import { auth } from '../../services/firebase'
 import prisma from '../../services/prisma'
 import randomWords from 'random-words'
 import { Currency } from '@generated/type-graphql'

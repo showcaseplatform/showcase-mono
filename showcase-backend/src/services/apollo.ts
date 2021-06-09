@@ -1,5 +1,4 @@
 import { ApolloServer } from 'apollo-server-express'
-import { getUserFromToken } from '../libs/auth/getUserFromToken'
 import { AuthResolver } from '../resolvers/authResolver'
 import { generatedResolvers } from '../resolvers/generatedResolver'
 import { InventoryResolver } from '../resolvers/inventoryResolver'
@@ -8,7 +7,6 @@ import { NotificationResolver } from '../resolvers/notifcationResolver'
 import { PaymentResolver } from '../resolvers/paymentResolver'
 import { SocialResolver } from '../resolvers/socialResolver'
 import { TestResolver } from '../resolvers/testResolver'
-import { authChecker } from '../libs/auth/authChecker'
 import { buildSchema, NonEmptyArray } from 'type-graphql'
 import { prisma, PrismaClient } from './prisma'
 import { User } from '@prisma/client'
@@ -16,6 +14,7 @@ import { ChatResolver } from '../resolvers/chatResolver'
 import { GraphQLError } from 'graphql'
 import { Express } from 'express'
 import { Server } from 'http'
+import { AuthLib } from '../libs/auth/authLib'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -44,7 +43,7 @@ export class MyApollo {
         ChatResolver,
       ],
       validate: true,
-      authChecker,
+      authChecker: AuthLib.authChecker,
       // here provide all the types that are missing in schema
       //   orphanedTypes: [FirstObject],
       // todo: add redisPubSub for production subscriptions
@@ -62,7 +61,7 @@ export class MyApollo {
           const token = req?.headers?.authorization || ''
 
           // Try to retrieve a user with the token
-          let authUser = await getUserFromToken(token)
+          let authUser = await AuthLib.getUserByToken(token)
 
           // Only for testing purposes
           if (!authUser && token === 'test') {
@@ -82,7 +81,7 @@ export class MyApollo {
             throw new GraphQLError('Authorization token is missing!')
           }
 
-          let user = await getUserFromToken(token)
+          let user = await AuthLib.getUserByToken(token)
 
           // Only for testing purposes
           if (!user && token === 'test') {

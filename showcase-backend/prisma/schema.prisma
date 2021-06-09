@@ -36,7 +36,7 @@ enum UserType {
 
 model SmsVerification {
   phone                     String   @id
-  user                      User?    @relation(fields: [phone], references: [phone])
+  user                      User?
   code                      String
   codesSent                 Int
   codesSentSinceValid       Int
@@ -55,7 +55,7 @@ model User {
   authId String @unique
 
   phone           String?          @unique
-  smsVerification SmsVerification?
+  smsVerification SmsVerification? @relation(fields: [phone], references: [phone])
 
   userType    UserType @default(basic)
   kycVerified Boolean  @default(false) // todo: maybe this should be a userType aswell?

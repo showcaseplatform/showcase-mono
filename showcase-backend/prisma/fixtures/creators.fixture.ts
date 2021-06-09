@@ -12,7 +12,6 @@ const createUserWithFakeBadgeTypes = async (prisma: PrismaClient, id: string) =>
     data: {
       id,
       authId: id,
-      phone: faker.phone.phoneNumber(),
       userType: UserType.creator,
       profile: {
         create: {
@@ -60,7 +59,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
     data: {
       id,
       authId: id,
-      phone: faker.phone.phoneNumber(),
       userType: UserType.creator,
       profile: {
         create: {

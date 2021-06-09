@@ -36,7 +36,7 @@ enum UserType {
 
 model SmsVerification {
   phone                     String   @id
-  user                      User?
+  user                      User?    @relation(fields: [phone], references: [phone])
   code                      String
   codesSent                 Int
   codesSentSinceValid       Int
@@ -52,15 +52,16 @@ model SmsVerification {
 model User {
   id String @id @default(uuid())
 
-  authId  String   @unique
-  phone   String   @unique
-  profile Profile?
+  authId String @unique
+
+  phone           String?          @unique
+  smsVerification SmsVerification?
 
   userType    UserType @default(basic)
   kycVerified Boolean  @default(false) // todo: maybe this should be a userType aswell?
   isBanned    Boolean  @default(false)
 
-  smsVerification SmsVerification @relation(fields: [phone], references: [phone])
+  profile Profile?
 
   badgeTypesCreated   BadgeType[] @relation("badgeTypesCreated")
   badgeTypesForResell BadgeType[] @relation("badgeTypesForResell")
@@ -118,13 +119,18 @@ model Profile {
 }
 
 enum Category {
-  Art
-  Music
-  Photo
-  Misc
-  Podcast
-  Animals
-  Style
+  causes
+  art
+  music
+  gaming
+  style
+  sports
+  animals
+  podcasts
+  vlogs
+  travel
+  culinary
+  technology
 }
 
 model BadgeType {
@@ -152,7 +158,7 @@ model BadgeType {
 
   title       String
   description String?
-  category    Category @default(Art)
+  category    Category @default(art)
 
   shares Int @default(0)
 
@@ -206,7 +212,7 @@ model Cause {
   balanceEUR            Float       @default(0)
   balanceGBP            Float       @default(0)
   balanceUSD            Float       @default(0)
-  numberOfContributions Float       @default(0)
+  numberOfContributions Int         @default(0)
   image                 String
   name                  String
   site                  String

@@ -32,7 +32,7 @@ test('findOrCreateUser should return user if user already exists', async () => {
     }
   })
 
-  const returnedUser = await checkIfNewUser(user.phone)
+  const returnedUser = await checkIfNewUser(phone)
   expect(returnedUser).toHaveProperty('phone', phone)
   expect(returnedUser).toHaveProperty('id', user.id)
 })

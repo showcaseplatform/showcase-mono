@@ -6,15 +6,16 @@ import { GraphQLError } from 'graphql'
 
 export const createStripeCustomer = async (input: CreateStripeCustomerInput, user: User) => {
   const { stripeToken, lastfour } = input
+
   const profile = await prisma.profile.findUnique({
     where: {
       id: user.id,
     },
   })
-  if (!profile || !profile.email) throw new GraphQLError('User profile is missing email')
+
+  if (!profile || !profile.email || !user.phone) throw new GraphQLError('User profile is missing email or phone')
 
   const stripeCustomer = await stripe.customers.create({
-    source: stripeToken,
     metadata: {
       uid: user.id,
       phone: user.phone,
@@ -22,6 +23,7 @@ export const createStripeCustomer = async (input: CreateStripeCustomerInput, use
       displayName: profile.displayName,
       email: profile.email,
     },
+    source: stripeToken,
     phone: user.phone,
   })
 

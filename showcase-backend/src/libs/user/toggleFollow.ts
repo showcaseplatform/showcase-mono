@@ -1,40 +1,30 @@
 import { FollowStatus } from '.prisma/client'
-import { ToggleFollowInput } from './types/toggleFollow.type'
+import { GraphQLError } from 'graphql'
 import prisma from '../../services/prisma'
 import { Uid } from '../../types/user'
+import { upsertNewFollow } from '../database/follow.repo'
 
 interface FollowInput {
   uid: Uid
-  friendId: Uid
+  followUserId: Uid
 }
 
-const isUserAlreadyFollowed = async ({ uid, friendId }: FollowInput) => {
+const isUserAlreadyFollowed = async ({ uid, followUserId }: FollowInput) => {
   const follow = await prisma.follow.findUnique({
     where: {
       userId_followerId: {
-        userId: friendId,
+        userId: followUserId,
         followerId: uid,
       },
     },
   })
-  return !!follow && follow.status != FollowStatus.Unfollowed
+  return !!follow && follow.status === FollowStatus.Accepted
 }
 
-const addFriend = async ({ uid, friendId }: FollowInput) => {
-  const updatedFollow = await prisma.follow.update({
-    where: {
-      userId_followerId: {
-        userId: friendId,
-        followerId: uid,
-      },
-    },
-    data: {
-      // todo: currently pending state is not used, request get insatly accepted
-      status: FollowStatus.Accepted,
-    },
-  })
+const addFriend = async ({ uid, followUserId }: FollowInput) => {
+  const updatedFollow = await upsertNewFollow(uid, followUserId)
 
-  const profile= await prisma.profile.findUnique({
+  const profile = await prisma.profile.findUnique({
     where: {
       id: uid,
     },
@@ -45,17 +35,17 @@ const addFriend = async ({ uid, friendId }: FollowInput) => {
 
   if (profile?.username) {
     // todo: notifcation is turned off temporarly
-    // await sendNotificationToFollowedUser(profile?.username, friendId)
+    // await sendNotificationToFollowedUser(profile?.username, followUserId)
   }
 
   return updatedFollow
 }
 
-const removeFriend = async ({ uid, friendId }: { uid: Uid; friendId: Uid }) => {
+const removeFollower = async ({ uid, followUserId }: { uid: Uid; followUserId: Uid }) => {
   return await prisma.follow.update({
     where: {
       userId_followerId: {
-        userId: friendId,
+        userId: followUserId,
         followerId: uid,
       },
     },
@@ -65,12 +55,12 @@ const removeFriend = async ({ uid, friendId }: { uid: Uid; friendId: Uid }) => {
   })
 }
 
-export const toggleFollow = async (input: ToggleFollowInput, uid: Uid) => {
-  const { friendId } = input
-  const isAlreadyFollowed = await isUserAlreadyFollowed({ uid, friendId })
+export const toggleFollow = async (followUserId: string, uid: Uid) => {
+  if (followUserId === uid) throw new GraphQLError('Followed user id matches your id')
+  const isAlreadyFollowed = await isUserAlreadyFollowed({ uid, followUserId })
   if (isAlreadyFollowed) {
-    return await removeFriend({ uid, friendId })
+    return await removeFollower({ uid, followUserId })
   } else {
-    return await addFriend({ uid, friendId })
+    return await addFriend({ uid, followUserId })
   }
 }

@@ -84,8 +84,9 @@ model User {
   badgeItemViews BadgeItemView[]
   badgeTypeViews BadgeTypeView[]
 
-  notifications     Notification[]
-  notificationToken String?
+  notifications        Notification[]
+  notificationToken    String?
+  NotificationSettings NotificationSettings[]
 
   friends   Follow[] @relation("friends")
   followers Follow[] @relation("followers")
@@ -111,8 +112,6 @@ model Profile {
   currency  Currency  @default(USD)
   birthDate DateTime?
   avatar    String?
-
-
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -416,6 +415,19 @@ model Notification {
   message     String
   readAt      DateTime?
   createdAt   DateTime         @default(now())
+}
+
+model NotificationSettings {
+  id   String 
+  user User   @relation(fields: [id], references: [id])
+
+  type NotificationType
+
+  allowEmailSending Boolean @default(false)
+  allowSmsSending   Boolean @default(false)
+  allowPushSending  Boolean @default(false)
+
+  @@id([id, type])
 }
 
 enum ExpoStatus {

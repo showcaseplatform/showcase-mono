@@ -12,6 +12,7 @@ import { ExpoType, NotificationType } from '@prisma/client'
 import { prisma, PrismaClient } from '../../services/prisma'
 import Bluebird from 'bluebird'
 import { GraphQLError } from 'graphql'
+import { findUserNotificationsFromTypeInPeriod } from '../database/notification.repo'
 
 // todo: store these is db so it can be modifed easier
 // To limit number of push notication sent to a specific user, modify this
@@ -48,17 +49,9 @@ class NotificationCenter {
       }
       // todo: make it conditional, only when MAX_PUSH_SEND_PERIOD_DAY is set for notifcation
       const periodStartDate = moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()
-      const notifcationAlreadySentInPeriod = await prisma.notification.findMany({
-        where: {
-          recipientId: uid,
-          type,
-          createdAt: {
-            gt: periodStartDate,
-          },
-        },
-      })
+      const notifcationsAlreadySentInPeriod = await findUserNotificationsFromTypeInPeriod(uid, type, periodStartDate)
 
-      const isUnderLimit = sendLimit >= notifcationAlreadySentInPeriod.length
+      const isUnderLimit = sendLimit >= notifcationsAlreadySentInPeriod.length
       return isUnderLimit
     })
   }

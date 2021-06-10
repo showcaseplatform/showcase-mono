@@ -15,6 +15,7 @@ import { GraphQLError } from 'graphql'
 import { Express } from 'express'
 import { Server } from 'http'
 import { AuthLib } from '../libs/auth/authLib'
+import { NotificationSettingsResolver } from '../resolvers/notificationSettings.resolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -41,6 +42,7 @@ export class MyApollo {
         NotificationResolver,
         PaymentResolver,
         ChatResolver,
+        NotificationSettingsResolver
       ],
       validate: true,
       authChecker: AuthLib.authChecker,

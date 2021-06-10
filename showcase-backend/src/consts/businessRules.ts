@@ -11,7 +11,7 @@ export const SPEND_LIMIT_DEFAULT = 1000
 export const SPEND_LIMIT_KYC_VERIFIED = SPEND_LIMIT_DEFAULT * 10
 
 // Badge type
-export const BADGE_TYPE_MIN_SALE_PRICE = 0.01
+export const BADGE_TYPE_MIN_SALE_PRICE = 0
 export const BADGE_TYPE_MAX_SALE_PRICE = 200
 export const BADGE_TYPE_MIN_SUPPLY = 1
 export const BADGE_TYPE_MAX_SUPPLY = 1000000

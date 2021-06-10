@@ -1,5 +1,5 @@
 import { InputType, Field, Int, Float } from 'type-graphql'
-import { BadgeTypeCreateInput, Category } from '@generated/type-graphql'
+import { BadgeTypeCreateInput, Category, Currency } from '@generated/type-graphql'
 import { Min, Max, MaxLength } from 'class-validator'
 import {
   BADGE_TYPE_MIN_SALE_PRICE,
@@ -27,6 +27,11 @@ export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
   @Min(BADGE_TYPE_MIN_SALE_PRICE)
   @Max(BADGE_TYPE_MAX_SALE_PRICE)
   price: number
+
+  @Field((_type) => Currency, { nullable: true })
+  @Min(BADGE_TYPE_MIN_SALE_PRICE)
+  @Max(BADGE_TYPE_MAX_SALE_PRICE)
+  currency: Currency
 
   @Field((_type) => Int)
   @Min(BADGE_TYPE_MIN_SUPPLY)

@@ -93,7 +93,7 @@ export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User)
       ...input,
       uri: 'https://showcase.to/badge/' + input.id,
       creatorId: user.id,
-      currency: profile?.currency,
+      currency: input.currency || profile.currency,
       tokenTypeId,
     },
   })

@@ -37,7 +37,6 @@ enum UserType {
 model SmsVerification {
   phone                     String   @id
   user                      User?
-  code                      String
   codesSent                 Int
   codesSentSinceValid       Int
   attemptsEntered           Int

@@ -6,7 +6,6 @@ import { MarketplaceResolver } from '../resolvers/marketplaceResolver'
 import { NotificationResolver } from '../resolvers/notifcationResolver'
 import { PaymentResolver } from '../resolvers/paymentResolver'
 import { SocialResolver } from '../resolvers/socialResolver'
-import { TestResolver } from '../resolvers/testResolver'
 import { buildSchema, NonEmptyArray } from 'type-graphql'
 import { prisma, PrismaClient } from './prisma'
 import { User } from '@prisma/client'
@@ -41,7 +40,6 @@ export class MyApollo {
         InventoryResolver,
         SocialResolver,
         AuthResolver,
-        TestResolver,
         NotificationResolver,
         PaymentResolver,
         ChatResolver,

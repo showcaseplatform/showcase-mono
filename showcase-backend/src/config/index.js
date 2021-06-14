@@ -72,6 +72,12 @@ var config = convict({
       default: '',
       env: 'TWILIO_FROM',
     },
+    enabled: {
+      doc: 'Feature flag to disable twilio verification check',
+      format: Boolean,
+      default: '',
+      env: 'TWILIO_ENABLED',
+    },
   },
   algolia: {
     id: {

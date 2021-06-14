@@ -7,9 +7,9 @@ enum JwtErrorMessages {
 }
 
 interface JwtVerify {
-    phone: string
-    iat: number
-    epx: number
+  phone: string
+  iat: number
+  epx: number
 }
 
 class JwtClient {
@@ -21,8 +21,12 @@ class JwtClient {
   }
 
   verifyToken(token: string) {
-    // resolves or throws error:
-    return verify(token, this.getPrivateKey()) as JwtVerify
+    try {
+      return verify(token, this.getPrivateKey()) as JwtVerify
+    } catch (error) {
+      console.error('Invalid jwt token', { error })
+      throw new GraphQLError(error.message)
+    }
   }
 
   getPrivateKey(): string {

@@ -19,7 +19,7 @@ export class AuthLib {
         return null
       }
     } catch (error) {
-      console.error('Cannot get user by token: ', { token })
+      console.error('Cannot get user by token: ', { token }, { error })
       return null
     }
   }

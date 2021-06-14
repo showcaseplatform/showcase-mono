@@ -1,34 +1,17 @@
 import { Currency, UserType } from '@prisma/client'
-import { auth } from 'firebase-admin'
 import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
 import { prisma } from '../../services/prisma'
-import { v5 as uuidv5 } from 'uuid'
 import { createRandomNames } from '../../utils/createRandomNames'
-
-const UUID_NAMESPAOCE = 'b01abb38-c109-4b71-9136-a2aa73ddde27' // todo: maybe outsource to config
-
+import { jwtClient } from '../../services/jsonWebToken'
+import { findUserByPhone } from '../database/user.repo'
 export class AuthLib {
-  static isPhoneRegistered = async (phone: string) => {
-    try {
-      await auth().getUserByPhoneNumber(phone)
-      return true
-    } catch (error) {
-      if (error.code === 'auth/user-not-found') {
-        return false
-      }
-      throw error
-    }
-  }
-
   static getUserByToken = async (token: string) => {
     try {
       if (!token) return null
-      const { uid } = await auth().verifyIdToken(token.replace('Bearer ', ''))
-      const user = await prisma.user.findUnique({
-        where: {
-          authId: uid,
-        },
-      })
+
+      const { phone } = jwtClient.verifyToken(token.replace('Bearer ', ''))
+
+      const user = await findUserByPhone(phone)
 
       if (user && user.isBanned != true) {
         return user
@@ -36,6 +19,7 @@ export class AuthLib {
         return null
       }
     } catch (error) {
+      console.error('Cannot get user by token: ', { token })
       return null
     }
   }
@@ -51,14 +35,7 @@ export class AuthLib {
     return true
   }
 
-  static createNewUser = async ({ phone, areaCode }: { phone: string; areaCode: string }) => {
-    const customUserId = uuidv5(phone, UUID_NAMESPAOCE)
-
-    const { uid } = await auth().createUser({
-      phoneNumber: phone,
-      uid: customUserId,
-    })
-
+  static createNewUser = async (phone: string, areaCode: string) => {
     let currency: Currency = Currency.USD //default USD
 
     if (areaCode === '44') {
@@ -71,7 +48,6 @@ export class AuthLib {
     return await prisma.user.create({
       data: {
         phone,
-        authId: uid,
         profile: {
           create: {
             displayName,
@@ -82,24 +58,5 @@ export class AuthLib {
         balance: {},
       },
     })
-  }
-
-
-  static findOrCreateNewUser = async ({ phone, areaCode }: { phone: string; areaCode: string }) => {
-    try {
-      const { uid } = await auth().getUserByPhoneNumber(phone)
-      return { authId: uid, isNewUser: false }
-    } catch (error) {
-      if (error.code === 'auth/user-not-found') {
-        const { authId } = await AuthLib.createNewUser({ phone, areaCode })
-
-        return { authId, isNewUser: true }
-      }
-      throw error
-    }
-  }
-
-  static getCustomToken = async (authId: string) => {
-    return await auth().createCustomToken(authId)
   }
 }

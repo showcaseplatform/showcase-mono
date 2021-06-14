@@ -2,7 +2,6 @@ import { PrismaClient } from '.prisma/client';
 
 export const cleanDb = async (prisma: PrismaClient) => {
     // add data models WITHOUT dependecies here
-    await prisma.smsVerification.deleteMany()
     await prisma.profile.deleteMany()
     await prisma.badgeItem.deleteMany()
     await prisma.crypto.deleteMany()
@@ -17,11 +16,13 @@ export const cleanDb = async (prisma: PrismaClient) => {
     await prisma.badgeTypeLike.deleteMany()
     await prisma.badgeTypeView.deleteMany()
     await prisma.follow.deleteMany()
-    await prisma.notification.deleteMany()
     await prisma.expoAdmin.deleteMany()
     await prisma.chatParticipant.deleteMany()
     await prisma.chatMessage.deleteMany()
     await prisma.chatMessageRead.deleteMany()
+    await prisma.chatMessageRead.deleteMany()
+    await prisma.notificationSettings.deleteMany()
+    await prisma.notification.deleteMany()
     
     //add data models WITH dependecies here
     await prisma.cause.deleteMany()

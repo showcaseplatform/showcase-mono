@@ -120,6 +120,14 @@ var config = convict({
       default: '',
       env: 'OPEN_EXCHANGE_RATES_URL'
     }
+  },
+  jwt: {
+    privateKey: {
+      doc: 'Jwt private key',
+      format: String,
+      default: '',
+      env: 'JWT_PRIVATE_KEY'
+    },
   }
 })
 

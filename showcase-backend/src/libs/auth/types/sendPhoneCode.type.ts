@@ -12,8 +12,5 @@ export class SendPhoneCodeInput {
 @ObjectType()
 export class SendPhoneCodeResponse {
   @Field()
-  isNewUser: boolean;
-  
-  @Field()
-  valid: boolean;
+  success: boolean;
 }

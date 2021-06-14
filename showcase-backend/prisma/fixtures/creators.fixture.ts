@@ -2,6 +2,10 @@ import { UserType, Category, Currency, PrismaClient } from '.prisma/client'
 import faker from 'faker'
 import { BadgeTypeCreateWithoutCreatorInput } from '@generated/type-graphql'
 
+const generateRandomNumbers = () => {
+  return Math.floor(Math.random() * 100 * 10000).toString()
+}
+
 export const addCreatorsFixture = async (prisma: PrismaClient) => {
   await createUserWithBadgeTypes(prisma, 'fixture-creator-1')
   await createUserWithFakeBadgeTypes(prisma, 'fake-creator-2')
@@ -11,7 +15,7 @@ const createUserWithFakeBadgeTypes = async (prisma: PrismaClient, id: string) =>
   await prisma.user.create({
     data: {
       id,
-      authId: id,
+      phone: '+36709' + generateRandomNumbers(),
       userType: UserType.creator,
       profile: {
         create: {
@@ -58,7 +62,7 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
   await prisma.user.create({
     data: {
       id,
-      authId: id,
+      phone: '+36709' + generateRandomNumbers(),
       userType: UserType.creator,
       profile: {
         create: {

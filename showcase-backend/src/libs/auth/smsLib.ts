@@ -1,26 +1,16 @@
 import validator from 'validator'
 import { SendPhoneCodeInput, SendPhoneCodeResponse } from './types/sendPhoneCode.type'
 import { myTwilio } from '../../services/twilio'
-import moment from 'moment'
-import {
-  AUTH_CODE_EXPIRATION,
-  AUTH_MAX_CODE_SEND,
-  AUTH_MAX_ENTER_ATTEMP,
-} from '../../consts/businessRules'
 import { AuthLib } from './authLib'
 import { GraphQLError } from 'graphql'
 import { VerifyPhoneCodeInput, VerifyPhoneCodeResponse } from './types/verifyPhoneCode.type'
 
-import { SmsVerificationCreateInput } from '@generated/type-graphql'
-import {
-  findUniqueVerification,
-  incrementVerificationCount,
-  resetVerification,
-  upsertVerification,
-} from '../database/smsVerification.repo'
-interface SmsInput {
-  phone: string
-  code: string
+import { jwtClient } from '../../services/jsonWebToken'
+import { findUserByPhone } from '../database/user.repo'
+
+enum ErrorMessages {
+  MissingVerificationCode = 'Missing parameter: code',
+  InvalidPhoneNumber = 'Invalid phone number',
 }
 
 class SmsLib {
@@ -29,9 +19,8 @@ class SmsLib {
     areaCode,
   }: SendPhoneCodeInput): Promise<SendPhoneCodeResponse> => {
     const validPhone = await this.validatePhoneNumber({ areaCode, phone })
-    const isNewUser = !(await AuthLib.isPhoneRegistered(validPhone))
-    const { valid } = await this.sendSmsAndUpdateVerification(validPhone)
-    return { isNewUser, valid }
+    await myTwilio.sendVerificationToken(validPhone)
+    return { success: true }
   }
 
   verifyPhoneCode = async ({
@@ -40,61 +29,20 @@ class SmsLib {
     areaCode,
   }: VerifyPhoneCodeInput): Promise<VerifyPhoneCodeResponse> => {
     const validPhone = await this.validatePhoneNumber({ areaCode, phone })
-    await this.validateCode({ phone: validPhone, code })
-    const { authId, isNewUser } = await AuthLib.findOrCreateNewUser({ phone: validPhone, areaCode })
-    const token = await AuthLib.getCustomToken(authId)
-    return { token, isNewUser }
-  }
 
-  validateCode = async ({ phone, code }: SmsInput) => {
-    try {
-      await this.customVerificationValidation(phone)
-      await myTwilio.checkVerificationToken(phone, code)
-      await resetVerification(phone)
-    } catch (error) {
-      await incrementVerificationCount(phone)
-      throw new GraphQLError(error)
-    }
-  }
-
-  sendSmsAndUpdateVerification = async (phone: string) => {
-    const verificationData: SmsVerificationCreateInput = {
-      phone,
-      expiration: this.generateExpirationDate(),
-      valid: true,
-      codesSent: 1,
-      codesSentSinceValid: 1,
-      attemptsEnteredSinceValid: 0,
-      attemptsEntered: 0,
+    if (!code) {
+      throw new GraphQLError(ErrorMessages.MissingVerificationCode)
     }
 
-    await this.checkIfCodeSentLimitExceeded(phone)
-    await myTwilio.sendVerificationToken(phone)
+    await myTwilio.checkVerificationToken(validPhone, code)
 
-    return await upsertVerification(verificationData)
-  }
+    let user = await findUserByPhone(validPhone)
+    const isNewUser = user ? false : true
 
-  checkIfCodeSentLimitExceeded = async (phone: string) => {
-    const existingVerification = await findUniqueVerification(phone)
+    isNewUser && (user = await AuthLib.createNewUser(validPhone, areaCode))
 
-    if (!existingVerification) return
-
-    const { codesSent, attemptsEnteredSinceValid } = existingVerification
-    if (codesSent > AUTH_MAX_CODE_SEND || attemptsEnteredSinceValid > AUTH_MAX_ENTER_ATTEMP) {
-      throw new GraphQLError('Too many attempts with this number')
-    }
-  }
-
-  customVerificationValidation = async (phone: string) => {
-    const verification = await findUniqueVerification(phone)
-
-    if (!verification) {
-      throw new GraphQLError('No verification code sent to that number!')
-    } else if (!verification.valid) {
-      throw new GraphQLError('Code already used!')
-    } else if (new Date() > verification.expiration) {
-      throw new GraphQLError('Code expired!')
-    }
+    const token = jwtClient.generateToken(validPhone)
+    return { token, isNewUser, user }
   }
 
   validatePhoneNumber = ({ areaCode, phone }: SendPhoneCodeInput): Promise<string> => {
@@ -103,15 +51,10 @@ class SmsLib {
       if (phone && areaCode && validator.isMobilePhone(phoneNumber)) {
         resolve(phoneNumber)
       } else {
-        reject('Invalid mobile phone number format')
+        reject(ErrorMessages.InvalidPhoneNumber)
       }
     })
   }
-
-  generateExpirationDate = (): Date => {
-    return moment().add(AUTH_CODE_EXPIRATION, 'seconds').toDate()
-  }
 }
 
-const smsLib = new SmsLib()
-export { smsLib }
+export const smsLib = new SmsLib()

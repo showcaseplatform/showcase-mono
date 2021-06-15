@@ -5,36 +5,10 @@ import {
   findUserNotificationSettings,
   upsertNotifcationSettings,
 } from '../database/notificationSettings.repo'
+import { notificationSettingDefaults } from './default'
 import { NotificationSettingsInput } from './types/notificationSettings.type'
 
-type NotificationSettingDefault = {
-  type: NotificationType
-  userType: UserType
-  allowPushSending?: boolean
-  allowEmailSending?: boolean
-  allowSmsSending?: boolean
-}
-
-// todo: add more default settings
-export const notificationSettingDefaults: NotificationSettingDefault[] = [
-  {
-    type: NotificationType.NEW_MESSAGE_RECEIVED,
-    allowEmailSending: false,
-    allowSmsSending: false,
-    allowPushSending: true,
-    userType: UserType.basic,
-  },
-  {
-    type: NotificationType.NEW_MESSAGE_RECEIVED,
-    allowEmailSending: false,
-    allowSmsSending: false,
-    allowPushSending: true,
-    userType: UserType.creator,
-  },
-]
-
 class NotificationSettingsLib {
-  // todo: todo apply these settings on notifcations
   async getNotificationSettings(user: User) {
     const userSavedSettings = await findUserNotificationSettings(user.id)
     const defaultNotificationTypesForUser = notificationSettingDefaults
@@ -47,8 +21,6 @@ class NotificationSettingsLib {
         const currentSetting = {} as NotificationSettings
         currentSetting.id = user.id
         currentSetting.type = notificationDefault.type
-        currentSetting.allowEmailSending = !!notificationDefault.allowEmailSending
-        currentSetting.allowSmsSending = !!notificationDefault.allowSmsSending
         currentSetting.allowPushSending = !!notificationDefault.allowPushSending
         return currentSetting
       })
@@ -71,13 +43,6 @@ class NotificationSettingsLib {
       settings.id = user.id
       settings.type = newSettings.type
     }
-
-    settings.allowEmailSending = checkValue(
-      newSettings.allowEmailSending,
-      settings.allowEmailSending
-    )
-
-    settings.allowSmsSending = checkValue(newSettings.allowSmsSending, settings.allowSmsSending)
 
     settings.allowPushSending = checkValue(newSettings.allowPushSending, settings.allowPushSending)
 

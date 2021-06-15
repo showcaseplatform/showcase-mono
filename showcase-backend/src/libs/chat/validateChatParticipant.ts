@@ -20,7 +20,6 @@ export const validateChatParticipant = async (chatId: string, userId: Uid) => {
 export const isChatParticipant = async(chatId: string, userId: Uid) => {
  try {
    await validateChatParticipant(chatId, userId)
-   console.log('isChatParticipant', true)
    return true
  } catch (_) {
    return false

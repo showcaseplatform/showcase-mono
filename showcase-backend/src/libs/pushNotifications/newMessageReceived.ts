@@ -1,6 +1,6 @@
 import { NotificationType } from '@prisma/client'
 import { SendNotificationProps } from '../../types/notificaton'
-import { notificationCenter } from './notificationCenter'
+import { notificationSender } from '../notification/notificationSenderLib'
 
 interface NewMessageReceivedInput extends Omit<SendNotificationProps, 'title' | 'type'> {
   displayName: string
@@ -19,7 +19,7 @@ export const sendNewMessageReceivedNotifcations = async (input: NewMessageReceiv
       }
     })
 
-    await notificationCenter.sendPushNotificationBatch(messages)
+    await notificationSender.send(messages)
   } catch (error) {
     // make it fail silently
     console.error('sendNewMessageReceivedNotifcation failed: ', { error })

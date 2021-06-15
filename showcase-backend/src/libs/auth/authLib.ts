@@ -3,15 +3,15 @@ import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
 import { prisma } from '../../services/prisma'
 import { createRandomNames } from '../../utils/createRandomNames'
 import { jwtClient } from '../../services/jsonWebToken'
-import { findUserByPhone } from '../database/user.repo'
+import { findUserById } from '../database/user.repo'
 export class AuthLib {
   static getUserByToken = async (token: string) => {
     try {
       if (!token) return null
 
-      const { phone } = jwtClient.verifyToken(token.replace('Bearer ', ''))
+      const { id } = jwtClient.verifyToken(token.replace('Bearer ', ''))
 
-      const user = await findUserByPhone(phone)
+      const user = await findUserById(id)
 
       if (user && user.isBanned != true) {
         return user

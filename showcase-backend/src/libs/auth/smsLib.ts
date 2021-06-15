@@ -44,9 +44,11 @@ class SmsLib {
     let user = await findUserByPhone(validPhone)
     const isNewUser = user ? false : true
 
-    isNewUser && (user = await AuthLib.createNewUser(validPhone, areaCode))
+    if(!user) {
+      user = await AuthLib.createNewUser(validPhone, areaCode)
+    }
 
-    const token = jwtClient.generateToken(validPhone)
+    const token = jwtClient.generateToken(user.id)
     return { token, isNewUser, user }
   }
 

@@ -16,8 +16,8 @@ const createNewChat = async (fromId: Uid, message: string, participantId: Uid) =
         },
       },
       participants: {
-        create: {
-          userId: participantId,
+        createMany: {
+          data: [{ userId: participantId }, { userId: fromId }],
         },
       },
     },
@@ -94,8 +94,7 @@ export const sendMessage = async (
     })
 
     // no await here!
-    senderProfile &&
-      sendNewMessageReceivedNotifcations(notificationMessages)
+    senderProfile && sendNewMessageReceivedNotifcations(notificationMessages)
   }
 
   return newMessage

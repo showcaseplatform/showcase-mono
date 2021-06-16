@@ -11,11 +11,10 @@ interface JwtVerify {
   iat: number
   epx: number
 }
-
 class JwtClient {
   generateToken(id: string, options?: SignOptions) {
     return sign({ id }, this.getPrivateKey(), {
-      expiresIn: '90 days', // todo: should expire sooner in prod
+      expiresIn: jwt.expiresIn,
       ...options,
     })
   }
@@ -28,7 +27,7 @@ class JwtClient {
       throw new GraphQLError(error.message)
     }
   }
- 
+
   getPrivateKey(): string {
     const privateKey = jwt.privateKey
     if (!privateKey) {

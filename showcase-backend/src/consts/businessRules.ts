@@ -1,11 +1,4 @@
 
-
-// todo: later we can add a time length for the "ban" if too many attempts
-// Authentication
-export const AUTH_MAX_CODE_SEND = 20
-export const AUTH_MAX_ENTER_ATTEMP = 8
-export const AUTH_CODE_EXPIRATION = 90000 // Expires in 90 sec
-
 // Marketplace
 export const SPEND_LIMIT_DEFAULT = 1000
 export const SPEND_LIMIT_KYC_VERIFIED = SPEND_LIMIT_DEFAULT * 10

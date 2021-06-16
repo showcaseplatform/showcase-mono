@@ -6,7 +6,6 @@ import { MarketplaceResolver } from '../resolvers/marketplaceResolver'
 import { NotificationResolver } from '../resolvers/notifcationResolver'
 import { PaymentResolver } from '../resolvers/paymentResolver'
 import { SocialResolver } from '../resolvers/socialResolver'
-import { TestResolver } from '../resolvers/testResolver'
 import { buildSchema, NonEmptyArray } from 'type-graphql'
 import { prisma, PrismaClient } from './prisma'
 import { User } from '@prisma/client'
@@ -20,6 +19,9 @@ import { SearchResolver } from '../resolvers/search.resolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
+}
+export interface MyAuthContext extends MyContext {
+  user: User
 }
 
 export class MyApollo {
@@ -39,7 +41,6 @@ export class MyApollo {
         InventoryResolver,
         SocialResolver,
         AuthResolver,
-        TestResolver,
         NotificationResolver,
         PaymentResolver,
         ChatResolver,
@@ -65,15 +66,16 @@ export class MyApollo {
           const token = req?.headers?.authorization || ''
 
           // Try to retrieve a user with the token
-          let authUser = await AuthLib.getUserByToken(token)
+          let user: User | null = await AuthLib.getUserByToken(token)
+
 
           // Only for testing purposes
-          if (!authUser && token === 'test') {
+          if (!user && token === 'test') {
             const users = await prisma.user.findMany()
-            authUser = users[0]
+            user = users[0]
           }
-
-          return { prisma, user: authUser }
+          
+          return { prisma, user }
         }
       },
       subscriptions: {
@@ -85,7 +87,7 @@ export class MyApollo {
             throw new GraphQLError('Authorization token is missing!')
           }
 
-          let user = await AuthLib.getUserByToken(token)
+          let user: User | null = await AuthLib.getUserByToken(token)
 
           // Only for testing purposes
           if (!user && token === 'test') {

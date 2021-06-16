@@ -73,6 +73,7 @@ var config = convict({
       env: 'TWILIO_FROM',
     },
   },
+  // todo: remove algolia completely 
   algolia: {
     id: {
       doc: 'Algolia ID',
@@ -86,7 +87,6 @@ var config = convict({
       default: '',
       env: 'ALGOLIA_ADMIN_KEY',
     },
-    // todo: currently searchKey not used anywhere
     searchKey: {
       doc: 'Algolia search key',
       format: String,
@@ -120,12 +120,25 @@ var config = convict({
       default: '',
       env: 'OPEN_EXCHANGE_RATES_URL'
     }
+  },
+  jwt: {
+    privateKey: {
+      doc: 'Jwt private key',
+      format: String,
+      default: '',
+      env: 'JWT_PRIVATE_KEY'
+    },
+    expiresIn: {
+      doc: 'Jwt token expiration date',
+      format: String,
+      default: '7 days',
+    },
   }
 })
 
 // Load environment dependent configuration
-// const env = config.get('env');
-// config.loadFile('./config/' + env + '.json');
+const env = config.get('env');
+config.loadFile('./src/config/' + env + '.json');
 
 // throws error if config does not conform to schema
 config.validate({ allowed: 'strict' })

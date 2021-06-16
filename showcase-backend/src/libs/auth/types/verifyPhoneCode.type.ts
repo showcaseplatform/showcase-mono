@@ -1,4 +1,5 @@
-import { InputType, Field, ObjectType } from 'type-graphql';
+import { User } from '@generated/type-graphql'
+import { InputType, Field, ObjectType } from 'type-graphql'
 
 @InputType({ description: 'Data for sending sms phone code' })
 export class VerifyPhoneCodeInput {
@@ -15,8 +16,11 @@ export class VerifyPhoneCodeInput {
 @ObjectType()
 export class VerifyPhoneCodeResponse {
   @Field()
-  isNewUser: boolean;
-  
+  isNewUser: boolean
+
   @Field()
   token: string
+
+  @Field((_) => User)
+  user: User
 }

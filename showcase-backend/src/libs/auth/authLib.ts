@@ -65,7 +65,9 @@ export class AuthLib {
             currency,
           },
         },
-        balance: {},
+        balance: {
+          create: {}
+        },
       },
     })
   }

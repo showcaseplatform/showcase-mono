@@ -4,6 +4,8 @@ import {
   ResolversEnhanceMap,
   applyResolversEnhanceMap,
   applyModelsEnhanceMap,
+  applyRelationResolversEnhanceMap,
+  applyInputTypesEnhanceMap,
   FindUniqueUserResolver,
   FindFirstUserResolver,
   FindManyUserResolver,
@@ -34,18 +36,6 @@ import {
   AggregateCauseResolver,
   GroupByCauseResolver,
   CauseRelationsResolver,
-  FindUniqueStripeResolver,
-  FindFirstStripeResolver,
-  FindManyStripeResolver,
-  AggregateStripeResolver,
-  GroupByStripeResolver,
-  StripeRelationsResolver,
-  FindUniqueBalanceResolver,
-  FindFirstBalanceResolver,
-  FindManyBalanceResolver,
-  AggregateBalanceResolver,
-  GroupByBalanceResolver,
-  BalanceRelationsResolver,
   FindUniqueCurrencyRateResolver,
   FindFirstCurrencyRateResolver,
   FindManyCurrencyRateResolver,
@@ -99,7 +89,7 @@ import {
   ChatMessageRelationsResolver,
 } from '@generated/type-graphql'
 import { UserType } from '@prisma/client'
-import { IsOwnUser } from '../libs/auth/middlewares'
+import { IsOwnUser, FallbackToContextUser } from '../libs/auth/middlewares'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {
@@ -155,13 +145,43 @@ const resolversEnhanceMap: ResolversEnhanceMap = {
 
 applyResolversEnhanceMap(resolversEnhanceMap)
 
-// for relationship fields: applyRelationResolversEnhanceMap()
+
 applyModelsEnhanceMap({
+  User: {
+    fields: {
+      phone: [
+        UseMiddleware(IsOwnUser),
+      ]
+    }
+  },
   Profile: {
     fields: {
       email: [
         UseMiddleware(IsOwnUser),
       ],
+    },
+  },
+});
+
+applyRelationResolversEnhanceMap({
+  User: {
+    balance: [
+      UseMiddleware(IsOwnUser)
+    ],
+    cryptoWallet: [
+      UseMiddleware(IsOwnUser)
+    ],
+    transferwise: [
+      UseMiddleware(IsOwnUser)
+    ]
+  }
+})
+
+applyInputTypesEnhanceMap({
+  // todo: make it work :)
+  UserWhereUniqueInput: {
+    fields: {
+      id: [UseMiddleware(FallbackToContextUser)]
     },
   },
 });
@@ -208,24 +228,6 @@ const causeResolvers = [
   AggregateCauseResolver,
   GroupByCauseResolver,
   CauseRelationsResolver,
-]
-
-const stripeResolvers = [
-  FindUniqueStripeResolver,
-  FindFirstStripeResolver,
-  FindManyStripeResolver,
-  AggregateStripeResolver,
-  GroupByStripeResolver,
-  StripeRelationsResolver,
-]
-
-const balanceResolvers = [
-  FindUniqueBalanceResolver,
-  FindFirstBalanceResolver,
-  FindManyBalanceResolver,
-  AggregateBalanceResolver,
-  GroupByBalanceResolver,
-  BalanceRelationsResolver,
 ]
 
 const currencyRateResolvers = [
@@ -314,8 +316,6 @@ export const generatedResolvers = [
   ...badgeTypeResolvers,
   ...badgeItemResolvers,
   ...causeResolvers,
-  ...stripeResolvers,
-  ...balanceResolvers,
   ...currencyRateResolvers,
   ...badgeItemLikeResolvers,
   ...badgeTypeLikeResolvers,

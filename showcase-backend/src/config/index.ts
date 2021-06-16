@@ -19,7 +19,6 @@ type ConfigType = {
     account: string
     token: string
     from: string
-    enabled: boolean
   }
   algolia: {
     id: string
@@ -36,6 +35,7 @@ type ConfigType = {
   }
   jwt: {
     privateKey: string
+    expiresIn: string
   }
 }
 
@@ -172,8 +172,7 @@ const config = convict<ConfigType>({
 })
 
 // Load environment dependent configuration
-const envFile = config.get('env')
-config.loadFile('./src/config/' + envFile + '.json')
+config.loadFile('./src/config/' + config.get('env') + '.json')
 
 // throws error if config does not conform to schema
 config.validate({ allowed: 'strict' })

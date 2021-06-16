@@ -2,27 +2,21 @@ import { prisma } from '../../services/prisma'
 import { Uid } from '../../types/user'
 
 export const friendsCount = async (id: Uid) => {
-  const followAggregate = await prisma.follow.aggregate({
+  const followCount = await prisma.follow.count({
     where: {
       followerId: id,
-    },
-    count: {
-      userId: true,
-    },
+    }
   })
 
-  return followAggregate.count.userId || 0
+  return followCount || 0
 }
 
 export const followersCount = async (id: Uid) => {
-  const followAggregate = await prisma.follow.aggregate({
+  const followCount = await prisma.follow.count({
     where: {
       userId: id,
-    },
-    count: {
-      userId: true,
-    },
+    }
   })
 
-  return followAggregate.count.userId || 0
+  return followCount || 0
 }

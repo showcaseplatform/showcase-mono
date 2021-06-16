@@ -1,13 +1,13 @@
 import { NotificationType } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 import { Uid } from '../../types/user'
-import { notificationCenter } from './notificationCenter'
+import { notificationSender } from '../notification/notificationSenderLib'
 
 export const sendNotificationToFollowedUser = async (username: string, followerUid: Uid) => {
   if (username) {
     const title = `@${username} followed you`
 
-    await notificationCenter.sendPushNotificationBatch([
+    await notificationSender.send([
       {
         type: NotificationType.NEW_FOLLOWER_ADDED,
         recipientId: followerUid,

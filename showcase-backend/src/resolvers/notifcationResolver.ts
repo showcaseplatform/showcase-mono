@@ -1,4 +1,4 @@
-import { Arg, Authorized, Ctx, Mutation, Resolver } from 'type-graphql'
+import { Arg, Authorized, Ctx, Mutation, Resolver, Root, Subscription } from 'type-graphql'
 import { notificationMarker} from '../libs/notification/notificationMarker'
 import { Notification, User } from '@generated/type-graphql'
 import {
@@ -8,6 +8,9 @@ import {
 import { NotificationToken } from '../types/user'
 import { MarkAsReadInfoUnion } from '../libs/notification/types/notificationMarker.type'
 import { UserType } from '@prisma/client'
+import { NEW_NOTIFCATION } from '../services/pubSub'
+import { NotificationSubscriptionPayload } from '../libs/notification/types/notificationSubscriptionPayload.type'
+
 @Resolver()
 export class NotificationResolver {
   @Authorized(UserType.basic, UserType.creator)
@@ -32,5 +35,16 @@ export class NotificationResolver {
   @Mutation(() => User)
   async addNotifcationToken(@Arg('notificationToken') notificationToken: NotificationToken, @Ctx() ctx: any) {
     return await addNotifcationToken(notificationToken, ctx.user.id)
+  }
+
+  @Authorized(UserType.basic, UserType.creator)
+  @Subscription({
+    topics: NEW_NOTIFCATION,
+    filter: async ({ context, payload }: { context: { user: User }; payload: NotificationSubscriptionPayload }) => {
+      return payload.recipientId === context.user.id
+    },
+  })
+  newNotification(@Root() payload: NotificationSubscriptionPayload): NotificationSubscriptionPayload {
+    return { ...payload }
   }
 }

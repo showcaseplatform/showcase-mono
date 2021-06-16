@@ -40,7 +40,7 @@ export const createStripeCustomer = async (input: CreateStripeCustomerInput, use
     },
     create: {
       ...stripeDataToSave,
-      id:  user.id,
+      userId:  user.id,
     },
     update: {
       ...stripeDataToSave

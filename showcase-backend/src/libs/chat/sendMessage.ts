@@ -6,12 +6,12 @@ import { Uid } from '../../types/user'
 import { validateChatParticipant } from './validateChatParticipant'
 import { NewChatMessageInput, ExistingChatMessageInput } from './types/sendMessage.type'
 
-const createNewChat = async (fromId: Uid, message: string, participantId: Uid) => {
+const createNewChat = async (fromUserId: Uid, message: string, participantId: Uid) => {
   const newChatWithMessage = await prisma.chat.create({
     data: {
       messages: {
         create: {
-          fromId,
+          fromUserId,
           message,
         },
       },
@@ -44,12 +44,12 @@ const getChatParticipantIds = async (chatId: string): Promise<Uid[]> => {
   return participants.map((m) => m.userId)
 }
 
-const addNewMessageToChat = async (fromId: Uid, message: string, chatId: string) => {
-  await validateChatParticipant(chatId, fromId)
+const addNewMessageToChat = async (fromUserId: Uid, message: string, chatId: string) => {
+  await validateChatParticipant(chatId, fromUserId)
   return await prisma.chatMessage.create({
     data: {
       chatId,
-      fromId,
+      fromUserId,
       message,
     },
   })

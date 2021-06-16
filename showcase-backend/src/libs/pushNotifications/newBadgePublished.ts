@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql'
 import prisma from '../../services/prisma'
 import { SendNotificationProps } from '../../types/notificaton'
 import { Uid } from '../../types/user'
-import { notificationCenter } from './notificationCenter'
+import { notificationSender } from '../notification/notificationSenderLib'
 
 const getCreatorDetails = async (uid: Uid) => {
   const creatorProfile = await prisma.user.findUnique({
@@ -38,5 +38,5 @@ const getMessagesForFollowers = (publisherName: string, followerUids: Uid[]): Se
 export const sendNotificationToFollowersAboutNewBadge = async (creatorId: Uid) => {
   const { displayName, followerUids } = await getCreatorDetails(creatorId)
   const messages = getMessagesForFollowers(displayName, followerUids)
-  await notificationCenter.sendPushNotificationBatch(messages)
+  await notificationSender.send(messages)
 }

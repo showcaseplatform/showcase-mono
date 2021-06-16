@@ -15,6 +15,9 @@ import { Express } from 'express'
 import { Server } from 'http'
 import { AuthLib } from '../libs/auth/authLib'
 import { NotificationSettingsResolver } from '../resolvers/notificationSettings.resolver'
+import { myPubSub } from './pubSub'
+import { SearchResolver } from '../resolvers/search.resolver'
+import { customUserResolver } from '../resolvers/customUserResolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -43,13 +46,15 @@ export class MyApollo {
         NotificationResolver,
         PaymentResolver,
         ChatResolver,
-        NotificationSettingsResolver
+        NotificationSettingsResolver,
+        SearchResolver,
+        customUserResolver,
       ],
       validate: true,
       authChecker: AuthLib.authChecker,
       // here provide all the types that are missing in schema
       //   orphanedTypes: [FirstObject],
-      // todo: add redisPubSub for production subscriptions
+      pubSub: myPubSub  // todo: replace with redisPubSub for production subscriptions
     })
 
     const apolloServer = new ApolloServer({

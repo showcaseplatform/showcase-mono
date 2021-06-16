@@ -4,7 +4,7 @@ import prisma from '../../services/prisma'
 import { Uid } from '../../types/user'
 import { MarkerInfo } from './types/notificationMarker.type'
 
-class NotificationMarker {
+class NotificationMarkerLib {
   private prisma: PrismaClient
 
   constructor() {
@@ -58,4 +58,4 @@ class NotificationMarker {
   }
 }
 
-export const notificationMarker = new NotificationMarker()
+export const notificationMarker = new NotificationMarkerLib()

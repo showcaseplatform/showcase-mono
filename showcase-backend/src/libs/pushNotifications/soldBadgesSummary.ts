@@ -1,6 +1,6 @@
 import moment from 'moment'
 import { Uid } from '../../types/user'
-import { notificationCenter } from './notificationCenter'
+import { notificationSender } from '../notification/notificationSenderLib'
 import { NotificationType } from '.prisma/client'
 import { SendNotificationProps } from '../../types/notificaton'
 import prisma from '../../services/prisma'
@@ -73,5 +73,5 @@ export const sendSoldBadgesSummary = async () => {
   const receipts = await getAllReceiptsFromLastWeek()
   const soldBagesSummary = getSummaryOfSoldBadgesByCreators(receipts)
   const inputMessages = await getMessagesForCreators(soldBagesSummary)
-  await notificationCenter.sendPushNotificationBatch(inputMessages)
+  await notificationSender.send(inputMessages)
 }

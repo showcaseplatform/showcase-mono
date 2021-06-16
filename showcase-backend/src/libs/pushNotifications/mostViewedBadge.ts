@@ -93,6 +93,6 @@
 //   const badgeId = await getMostViewedBadgeId()
 //   const uids = await getAllUserUids()
 //   const messages = getMessagesForAll({ uids, badgeId })
-//   await notificationCenter.sendPushNotificationBatch(messages)
+//   await notificationCenter.sendNotifications(messages)
 //   await resetMostViewedBadgeCount()
 // }

@@ -107,13 +107,8 @@ const config = convict<ConfigType>({
       default: '',
       env: 'TWILIO_FROM',
     },
-    enabled: {
-      doc: 'Feature flag to disable twilio verification check',
-      format: Boolean,
-      default: false,
-      env: 'TWILIO_ENABLED',
-    },
   },
+  // todo: remove algolia completely
   algolia: {
     id: {
       doc: 'Algolia ID',
@@ -127,7 +122,6 @@ const config = convict<ConfigType>({
       default: '',
       env: 'ALGOLIA_ADMIN_KEY',
     },
-    // todo: currently searchKey not used anywhere
     searchKey: {
       doc: 'Algolia search key',
       format: String,
@@ -169,12 +163,17 @@ const config = convict<ConfigType>({
       default: '',
       env: 'JWT_PRIVATE_KEY',
     },
+    expiresIn: {
+      doc: 'Jwt token expiration date',
+      format: String,
+      default: '7 days',
+    },
   },
 })
 
 // Load environment dependent configuration
-// const env = config.get('env');
-// config.loadFile('./config/' + env + '.json');
+const envFile = config.get('env')
+config.loadFile('./src/config/' + envFile + '.json')
 
 // throws error if config does not conform to schema
 config.validate({ allowed: 'strict' })

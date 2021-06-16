@@ -1,10 +1,7 @@
 import { UserType } from '@prisma/client'
 import { Uid } from '../types/user'
+import { getRandomNum } from '../utils/randoms'
 import { prismaMock } from './prismaMock'
-
-export const getRandomNum = () => {
-  return Math.floor(Math.random() * 899999 + 100000)
-}
 
 export const mockFindUniqueUser = (id: Uid) =>
   prismaMock.user.findUnique.mockResolvedValue({

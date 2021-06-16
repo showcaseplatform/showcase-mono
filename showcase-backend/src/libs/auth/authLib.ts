@@ -1,7 +1,7 @@
 import { Currency, UserType } from '@prisma/client'
 import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
 import prisma from '../../services/prisma'
-import { createRandomNames } from '../../utils/createRandomNames'
+import { createRandomNames } from '../../utils/randoms'
 import { jwtClient } from '../../services/jsonWebToken'
 import { findUserByPhone } from '../database/user.repo'
 

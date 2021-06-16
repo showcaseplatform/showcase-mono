@@ -7,15 +7,14 @@ enum JwtErrorMessages {
 }
 
 interface JwtVerify {
-  phone: string
+  id: string
   iat: number
   epx: number
 }
-
 class JwtClient {
-  generateToken(phone: string, options?: SignOptions) {
-    return sign({ phone }, this.getPrivateKey(), {
-      expiresIn: '90 days', // todo: should expire sooner in prod
+  generateToken(id: string, options?: SignOptions) {
+    return sign({ id }, this.getPrivateKey(), {
+      expiresIn: jwt.expiresIn,
       ...options,
     })
   }

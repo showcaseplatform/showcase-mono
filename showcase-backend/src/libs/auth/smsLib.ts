@@ -6,7 +6,7 @@ import { GraphQLError } from 'graphql'
 import { VerifyPhoneCodeInput, VerifyPhoneCodeResponse } from './types/verifyPhoneCode.type'
 import { jwtClient } from '../../services/jsonWebToken'
 import { findUserByPhone } from '../database/user.repo'
-import { twilio } from '../../config'
+import { env } from '../../config'
 
 enum ErrorMessages {
   MissingVerificationCode = 'Missing parameter: code',
@@ -34,19 +34,21 @@ class SmsLib {
       throw new GraphQLError(ErrorMessages.MissingVerificationCode)
     }
 
-    //todo: only for testing, remove this on prod
-    if (!twilio.enabled && code === '000000') {
-      console.log('Code verification check skipped!')
+    if (env === 'development' && code === '000000') {
+      console.log('❗❗ Code verification check skipped ❗❗')
     } else {
       await myTwilio.checkVerificationToken(validPhone, code)
     }
 
+    let isNewUser = false
     let user = await findUserByPhone(validPhone)
-    const isNewUser = user ? false : true
 
-    isNewUser && (user = await AuthLib.createNewUser(validPhone, areaCode))
+    if(!user) {
+      isNewUser = true
+      user = await AuthLib.createNewUser(validPhone, areaCode)
+    }
 
-    const token = jwtClient.generateToken(validPhone)
+    const token = jwtClient.generateToken(user.id)
     return { token, isNewUser, user }
   }
 

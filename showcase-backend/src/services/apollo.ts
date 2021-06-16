@@ -16,7 +16,7 @@ import { Server } from 'http'
 import { AuthLib } from '../libs/auth/authLib'
 import { NotificationSettingsResolver } from '../resolvers/notificationSettings.resolver'
 import { myPubSub } from './pubSub'
-
+import { SearchResolver } from '../resolvers/search.resolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -45,7 +45,8 @@ export class MyApollo {
         NotificationResolver,
         PaymentResolver,
         ChatResolver,
-        NotificationSettingsResolver
+        NotificationSettingsResolver,
+        SearchResolver
       ],
       validate: true,
       authChecker: AuthLib.authChecker,

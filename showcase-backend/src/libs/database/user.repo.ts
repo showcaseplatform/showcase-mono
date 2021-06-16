@@ -1,5 +1,4 @@
 import prisma from '../../services/prisma'
-import { Uid } from '../../types/user'
 
 export const findUserByPhone = async (phone: string) => {
   return await prisma.user.findUnique({
@@ -8,7 +7,8 @@ export const findUserByPhone = async (phone: string) => {
     },
   })
 }
-export const findUserById= async (id: Uid) => {
+
+export const findUserById = async (id: string) => {
   return await prisma.user.findUnique({
     where: {
       id,

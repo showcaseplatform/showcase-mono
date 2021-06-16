@@ -22,5 +22,5 @@ export class VerifyPhoneCodeResponse {
   token: string
 
   @Field((_) => User)
-  user: User | null
+  user: User
 }

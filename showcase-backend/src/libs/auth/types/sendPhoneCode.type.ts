@@ -1,5 +1,6 @@
 import { InputType, Field, ObjectType } from 'type-graphql'
 
+
 @InputType({ description: 'Data for sending sms phone code' })
 export class SendPhoneCodeInput {
   @Field()

@@ -4,6 +4,17 @@ import { prisma } from '../../services/prisma'
 import { createRandomNames } from '../../utils/createRandomNames'
 import { jwtClient } from '../../services/jsonWebToken'
 import { findUserById } from '../database/user.repo'
+import { ArgsDictionary } from 'type-graphql'
+import { MyContext } from '../../services/apollo'
+import { GraphQLError } from 'graphql'
+interface MethodDecorator {
+  args: ArgsDictionary
+  context: MyContext
+}
+
+export enum AuthError {
+  isOwnUser = "Not user's profile",
+}
 export class AuthLib {
   static getUserByToken = async (token: string) => {
     try {
@@ -57,5 +68,11 @@ export class AuthLib {
         balance: {},
       },
     })
+  }
+
+  static async isOwnUser({ args, context }: MethodDecorator, next: Function) {
+    const { userId } = args
+    const isAllowed = userId === context.user?.id
+    return isAllowed ? next() : new GraphQLError(AuthError.isOwnUser)
   }
 }

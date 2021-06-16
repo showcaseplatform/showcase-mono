@@ -1,6 +1,9 @@
-import { Authorized } from 'type-graphql'
+import { Authorized, UseMiddleware } from 'type-graphql'
 
 import {
+  ResolversEnhanceMap,
+  applyResolversEnhanceMap,
+  applyModelsEnhanceMap,
   FindUniqueUserResolver,
   FindFirstUserResolver,
   FindManyUserResolver,
@@ -13,8 +16,6 @@ import {
   AggregateProfileResolver,
   GroupByProfileResolver,
   ProfileRelationsResolver,
-  ResolversEnhanceMap,
-  applyResolversEnhanceMap,
   FindFirstBadgeTypeResolver,
   FindManyBadgeTypeResolver,
   AggregateBadgeTypeResolver,
@@ -98,6 +99,7 @@ import {
   ChatMessageRelationsResolver,
 } from '@generated/type-graphql'
 import { UserType } from '@prisma/client'
+import { IsOwnUser } from '../libs/auth/middlewares'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {
@@ -152,6 +154,17 @@ const resolversEnhanceMap: ResolversEnhanceMap = {
 }
 
 applyResolversEnhanceMap(resolversEnhanceMap)
+
+// for relationship fields: applyRelationResolversEnhanceMap()
+applyModelsEnhanceMap({
+  Profile: {
+    fields: {
+      email: [
+        UseMiddleware(IsOwnUser),
+      ],
+    },
+  },
+});
 
 const userResolvers = [
   FindUniqueUserResolver,
@@ -313,3 +326,4 @@ export const generatedResolvers = [
   ...chatResolvers,
   ...chatMessageResolvers
 ]
+

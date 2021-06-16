@@ -1,9 +1,10 @@
 import { Currency, UserType } from '@prisma/client'
 import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
-import { prisma } from '../../services/prisma'
+import prisma from '../../services/prisma'
 import { createRandomNames } from '../../utils/createRandomNames'
 import { jwtClient } from '../../services/jsonWebToken'
 import { findUserByPhone } from '../database/user.repo'
+
 export class AuthLib {
   static getUserByToken = async (token: string) => {
     try {

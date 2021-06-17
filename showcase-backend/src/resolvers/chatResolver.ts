@@ -18,22 +18,22 @@ import { readChatMessages } from '../libs/chat/readChatMessages'
 import { addNewChatParticipant } from '../libs/chat/addNewChatParticipant'
 import { AddNewChatParticipantInput } from '../libs/chat/types/addNewChatParticipant.type'
 import { isChatParticipant } from '../libs/chat/validateChatParticipant'
+import { myPubSub, NEW_CHAT_MESSAGE } from '../services/pubSub'
 
-const NEW_CHAT_MESSAGE_TOPIC = 'NEW_CHAT_MESSAGE'
+
 @Resolver()
 export class ChatResolver {
   @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => ChatMessage)
   async sendMessage(
     @Ctx() ctx: any,
-    @PubSub(NEW_CHAT_MESSAGE_TOPIC) publish: Publisher<ChatMessage>,
     @Arg('newChatInput', { nullable: true }) newChatInput?: NewChatMessageInput,
     @Arg('existingChatInput', { nullable: true }) existingChatInput?: ExistingChatMessageInput
   ) {
     const input = newChatInput || existingChatInput
     if (!input) throw new GraphQLError('Please provide an input data')
     const message = await sendMessage(input, ctx.user)
-    await publish(message)
+    await myPubSub.publish(NEW_CHAT_MESSAGE, message)
     return message
   }
 
@@ -49,8 +49,9 @@ export class ChatResolver {
     return await addNewChatParticipant(input, ctx.user)
   }
 
+  @Authorized(UserType.basic, UserType.creator)
   @Subscription({
-    topics: NEW_CHAT_MESSAGE_TOPIC,
+    topics: NEW_CHAT_MESSAGE,
     filter: async ({ context, payload }: { context: { user: User }; payload: ChatMessage }) => {
       return await isChatParticipant(payload.chatId, context.user.id)
     },

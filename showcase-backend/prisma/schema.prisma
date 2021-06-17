@@ -411,8 +411,6 @@ model NotificationSettings {
 
   type NotificationType
 
-  allowEmailSending Boolean @default(false)
-  allowSmsSending   Boolean @default(false)
   allowPushSending  Boolean @default(false)
 
   @@id([id, type])

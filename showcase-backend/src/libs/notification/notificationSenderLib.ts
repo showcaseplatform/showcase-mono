@@ -1,4 +1,4 @@
-import { NotificationLimit, PushMessage, SendNotificationProps } from '../../types/notificaton'
+import { PushMessage, SendNotificationProps } from '../../types/notificaton'
 import { Uid } from '../../types/user'
 import {
   expo,
@@ -8,21 +8,21 @@ import {
   ExpoPushTicket,
 } from '../../services/expo'
 import moment from 'moment'
-import { ExpoType, NotificationType } from '@prisma/client'
+import { ExpoType } from '@prisma/client'
 import { prisma, PrismaClient } from '../../services/prisma'
 import Bluebird from 'bluebird'
 import { GraphQLError } from 'graphql'
-import { findUserNotificationsFromTypeInPeriod } from '../database/notification.repo'
+import {
+  createManyNotifications,
+  findUserNotificationsFromTypeInPeriod,
+} from '../database/notification.repo'
+import { notificationSettingsLib } from '../notificationSettings/notificationSettingsLib'
+import { findUserById } from '../database/user.repo'
+import { myPubSub, NEW_NOTIFCATION } from '../../services/pubSub'
+import { NotificationSubscriptionPayload } from './types/notificationSubscriptionPayload.type'
+import { MAX_PUSH_SEND_NUMBER, MAX_PUSH_SEND_PERIOD_DAY } from '../notificationSettings/default'
 
-// todo: store these is db so it can be modifed easier
-// To limit number of push notication sent to a specific user, modify this
-const MAX_PUSH_SEND_NUMBER: NotificationLimit = {
-  [NotificationType.NEW_BADGE_PUBLISHED]: 2,
-  [NotificationType.NEW_FOLLOWER_ADDED]: 100,
-}
-const MAX_PUSH_SEND_PERIOD_DAY = -1
-
-class NotificationCenter {
+class NotificationSenderLib {
   private expo: Expo
   private prisma: PrismaClient
 
@@ -31,14 +31,33 @@ class NotificationCenter {
     this.prisma = prisma
   }
 
-  // todo: create a func like: sendNotifcation = () => {}, which handles all notification send, also decides whether to call sendPushNoti...
+  send = async (notifications: SendNotificationProps[]) => {
+    await this.saveNotifications(notifications)
+    const pushNotifications = await this.filterPushSettings(notifications)
 
-  sendPushNotificationBatch = async (inputMessages: SendNotificationProps[]) => {
-    await this.saveMessages(inputMessages)
+    if (pushNotifications.length > 0) {
+      await this.sendPushNotificationBatch(pushNotifications)
+    }
+  }
+
+  private sendPushNotificationBatch = async (inputMessages: SendNotificationProps[]) => {
     const pushMessages = await this.constructPushMessages(inputMessages)
     const limitedPushMessages = await this.applyPushMessageLimits(pushMessages)
     const tickets = await this.sendPushMessagesToExpo(limitedPushMessages)
     await this.saveExpoAdminData(tickets, ExpoType.ticket)
+  }
+
+  private filterPushSettings = async (notifications: SendNotificationProps[]) => {
+    return await Bluebird.filter(notifications, async ({ type, recipientId }) => {
+      const user = await findUserById(recipientId)
+      if (!user) return false
+      const userNotificationSettings = await notificationSettingsLib.getNotificationSettings(user)
+      const typeNotificationSettings = userNotificationSettings.find(
+        (notificationSettings) => notificationSettings.type === type
+      )
+
+      return typeNotificationSettings?.allowPushSending === true
+    })
   }
 
   private applyPushMessageLimits = async (messages: PushMessage[]) => {
@@ -48,15 +67,19 @@ class NotificationCenter {
         return true
       }
       // todo: make it conditional, only when MAX_PUSH_SEND_PERIOD_DAY is set for notifcation
-      const periodStartDate = moment().add(MAX_PUSH_SEND_PERIOD_DAY, 'days').toDate()
-      const notifcationsAlreadySentInPeriod = await findUserNotificationsFromTypeInPeriod(uid, type, periodStartDate)
+      const periodStartDate = moment().add(MAX_PUSH_SEND_PERIOD_DAY[type], 'days').toDate()
+      const notifcationsAlreadySentInPeriod = await findUserNotificationsFromTypeInPeriod(
+        uid,
+        type,
+        periodStartDate
+      )
 
       const isUnderLimit = sendLimit >= notifcationsAlreadySentInPeriod.length
       return isUnderLimit
     })
   }
 
-  private getUserToken = async (uid: Uid) => {
+  private getUserNotificationToken = async (uid: Uid) => {
     const user = await this.prisma.user.findUnique({
       where: {
         id: uid,
@@ -90,7 +113,7 @@ class NotificationCenter {
     return await Bluebird.map(
       inputMessages,
       async ({ title, type, recipientId, pushData, message }) => {
-        const notificationToken = await this.getUserToken(recipientId)
+        const notificationToken = await this.getUserNotificationToken(recipientId)
         const pm: PushMessage = {
           to: notificationToken || '',
           type,
@@ -104,13 +127,16 @@ class NotificationCenter {
     ).filter((m) => Expo.isExpoPushToken(m.to))
   }
 
-  private saveMessages = async (messages: SendNotificationProps[]) => {
-    const messagesWithoutPushData = messages
+  private saveNotifications = async (notifications: SendNotificationProps[]) => {
+    const notificationsWithoutPushData = notifications
       .map(({ pushData, ...rest }) => rest)
       .filter((m) => m.recipientId && m.type)
 
-    await this.prisma.notification.createMany({
-      data: messagesWithoutPushData,
+    await createManyNotifications(notificationsWithoutPushData)
+
+    // todo: figure out an efficient way to send the actual created notifcations with subscription payload
+    notificationsWithoutPushData.map((notification) => {
+      myPubSub.publish(NEW_NOTIFCATION, notification as NotificationSubscriptionPayload)
     })
   }
 
@@ -138,7 +164,7 @@ class NotificationCenter {
             // You must handle the errors appropriately.
             console.error(`The error code is ${details.error}`)
           }
-          receiptDataToSave.push({expoId: receiptId,  status, message, error: details?.error })
+          receiptDataToSave.push({ expoId: receiptId, status, message, error: details?.error })
         }
       }
       await this.saveExpoAdminData(receiptDataToSave, ExpoType.receipt)
@@ -174,8 +200,8 @@ class NotificationCenter {
         },
       },
     })
-    return adminTickets.filter(t => !!t?.expoId).map(t => t.expoId as string)
+    return adminTickets.filter((t) => !!t?.expoId).map((t) => t.expoId as string)
   }
 }
 
-export const notificationCenter = new NotificationCenter()
+export const notificationSender = new NotificationSenderLib()

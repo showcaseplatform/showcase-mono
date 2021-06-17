@@ -9,7 +9,7 @@ interface FollowInput {
   followUserId: Uid
 }
 
-const isUserAlreadyFollowed = async ({ uid, followUserId }: FollowInput) => {
+export const isUserAlreadyFollowed = async ({ uid, followUserId }: FollowInput) => {
   const follow = await prisma.follow.findUnique({
     where: {
       userId_followerId: {

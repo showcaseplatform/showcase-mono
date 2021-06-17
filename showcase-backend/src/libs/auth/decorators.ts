@@ -2,8 +2,6 @@ import {
   NextFn,
   createParamDecorator,
   createMethodDecorator,
-  MiddlewareInterface,
-  ResolverData,
 } from 'type-graphql'
 import { MyContext } from '../../services/apollo'
 import { BadgeType, User } from '@generated/type-graphql'

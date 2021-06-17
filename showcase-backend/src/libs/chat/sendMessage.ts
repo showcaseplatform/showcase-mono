@@ -17,7 +17,7 @@ const createNewChat = async (fromUserId: Uid, message: string, participantId: Ui
       },
       participants: {
         createMany: {
-          data: [{ userId: participantId }, { userId: fromId }],
+          data: [{ userId: participantId }, { userId: fromUserId }],
         },
       },
     },

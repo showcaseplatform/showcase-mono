@@ -93,19 +93,18 @@ import { IsOwnUser, FallbackToContextUser } from '../libs/auth/middlewares'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
+    // publicly available with restrictions on properties
   },
   Profile: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
+    // publicly available with restrictions on properties
   },
   BadgeType: {
-    //  publicly available
-    // todo: we need a custom query instead for public use, because of relation ships
-  },
-  BadgeItem: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
+    // publicly available with restrictions on properties
   },
   Cause: {
+    // publicly available 
+  },
+  BadgeItem: {
     _all: [Authorized(UserType.basic, UserType.creator)],
   },
   Stripe: {

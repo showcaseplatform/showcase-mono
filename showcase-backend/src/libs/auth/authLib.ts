@@ -71,10 +71,4 @@ export class AuthLib {
       },
     })
   }
-
-  static async isOwnUser({ args, context }: MethodDecorator, next: Function) {
-    const { userId } = args
-    const isAllowed = userId === context.user?.id
-    return isAllowed ? next() : new GraphQLError(AuthError.isOwnUser)
-  }
 }

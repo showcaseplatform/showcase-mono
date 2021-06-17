@@ -68,7 +68,7 @@ model User {
   badgeTypeViews BadgeTypeView[]
 
   notifications        Notification[]
-  NotificationSettings NotificationSettings[]
+  notificationSettings NotificationSettings[]
 
   friends   Follow[] @relation("friends")
   followers Follow[] @relation("followers")
@@ -206,7 +206,7 @@ model Cause {
 
 model Crypto {
   id                  String @id @default(cuid())
-  userId              String
+  userId              String @unique
   owner               User   @relation(fields: [userId], references: [id])
   address             String
   encryptedMnemonic   String
@@ -220,7 +220,7 @@ model Crypto {
 // todo: use this table once requesting info from receipts cost too much resources
 model Balance {
   id     String @id @default(cuid())
-  userId String
+  userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
   EUR                          Float @default(0)
@@ -277,7 +277,7 @@ model Receipt {
 // todo: is it possible to add multiple bank card to an account?
 model Stripe {
   id     String @id @default(cuid())
-  userId String
+  userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
   stripeId          String @unique // todo: should stripeId be unique here? 
@@ -289,7 +289,7 @@ model Stripe {
 
 model Transferwise {
   id     String @id @default(cuid())
-  userId String
+  userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
   idUSD            String?

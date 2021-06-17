@@ -1,11 +1,10 @@
-import { Authorized, UseMiddleware } from 'type-graphql'
+import { Authorized } from 'type-graphql'
 
 import {
   ResolversEnhanceMap,
   applyResolversEnhanceMap,
   applyModelsEnhanceMap,
   applyRelationResolversEnhanceMap,
-  applyInputTypesEnhanceMap,
   FindUniqueUserResolver,
   FindFirstUserResolver,
   FindManyUserResolver,
@@ -24,12 +23,6 @@ import {
   GroupByBadgeTypeResolver,
   BadgeTypeRelationsResolver,
   FindUniqueBadgeTypeResolver,
-  FindUniqueBadgeItemResolver,
-  FindFirstBadgeItemResolver,
-  FindManyBadgeItemResolver,
-  AggregateBadgeItemResolver,
-  GroupByBadgeItemResolver,
-  BadgeItemRelationsResolver,
   FindUniqueCauseResolver,
   FindFirstCauseResolver,
   FindManyCauseResolver,
@@ -41,55 +34,9 @@ import {
   FindManyCurrencyRateResolver,
   AggregateCurrencyRateResolver,
   GroupByCurrencyRateResolver,
-  FindUniqueBadgeItemLikeResolver,
-  FindFirstBadgeItemLikeResolver,
-  FindManyBadgeItemLikeResolver,
-  AggregateBadgeItemLikeResolver,
-  GroupByBadgeItemLikeResolver,
-  FindUniqueBadgeTypeLikeResolver,
-  FindFirstBadgeTypeLikeResolver,
-  FindManyBadgeTypeLikeResolver,
-  AggregateBadgeTypeLikeResolver,
-  GroupByBadgeTypeLikeResolver,
-  FindUniqueBadgeItemViewResolver,
-  FindFirstBadgeItemViewResolver,
-  FindManyBadgeItemViewResolver,
-  AggregateBadgeItemViewResolver,
-  GroupByBadgeItemViewResolver,
-  FindUniqueBadgeTypeViewResolver,
-  FindFirstBadgeTypeViewResolver,
-  FindManyBadgeTypeViewResolver,
-  AggregateBadgeTypeViewResolver,
-  GroupByBadgeTypeViewResolver,
-  FindUniqueFollowResolver,
-  FindFirstFollowResolver,
-  FindManyFollowResolver,
-  AggregateFollowResolver,
-  GroupByFollowResolver,
-  FindUniqueNotificationResolver,
-  FindFirstNotificationResolver,
-  FindManyNotificationResolver,
-  AggregateNotificationResolver,
-  GroupByNotificationResolver,
-  BadgeItemViewRelationsResolver,
-  BadgeTypeViewRelationsResolver,
-  FollowRelationsResolver,
-  NotificationRelationsResolver,
-  FindUniqueChatResolver,
-  FindFirstChatResolver,
-  FindManyChatResolver,
-  AggregateChatResolver,
-  GroupByChatResolver,
-  ChatRelationsResolver,
-  FindUniqueChatMessageResolver,
-  FindFirstChatMessageResolver,
-  FindManyChatMessageResolver,
-  AggregateChatMessageResolver,
-  GroupByChatMessageResolver,
-  ChatMessageRelationsResolver,
 } from '@generated/type-graphql'
 import { UserType } from '@prisma/client'
-import { IsOwnUser, FallbackToContextUser } from '../libs/auth/middlewares'
+import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {
@@ -104,41 +51,8 @@ const resolversEnhanceMap: ResolversEnhanceMap = {
   Cause: {
     // publicly available 
   },
-  BadgeItem: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  Stripe: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  Balance: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
   CurrencyRate: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  BadgeItemLike: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  BadgeTypeLike: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  BadgeItemView: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  BadgeTypeView: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  Follow: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  Notification: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  Chat: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
-  },
-  ChatMessage: {
-    _all: [Authorized(UserType.basic, UserType.creator)],
+    // publicly available 
   },
 }
 
@@ -149,41 +63,94 @@ applyModelsEnhanceMap({
   User: {
     fields: {
       phone: [
-        UseMiddleware(IsOwnUser),
+        IsCurrentUser() as PropertyDecorator,
       ]
     }
   },
   Profile: {
     fields: {
       email: [
-        UseMiddleware(IsOwnUser),
+        IsCurrentUser() as PropertyDecorator,
       ],
     },
   },
+ 
 });
 
 applyRelationResolversEnhanceMap({
   User: {
     balance: [
-      UseMiddleware(IsOwnUser)
+      IsCurrentUser() as PropertyDecorator
     ],
     cryptoWallet: [
-      UseMiddleware(IsOwnUser)
+      IsCurrentUser() as PropertyDecorator
     ],
     transferwise: [
-      UseMiddleware(IsOwnUser)
+      IsCurrentUser() as PropertyDecorator
+    ],
+    withdrawals: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    stripeInfo: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    buyReceipts: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    sellReceipts: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    notifications: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    notificationSettings: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    chats: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    sentChatMessages: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    chatMessageReads: [
+      IsCurrentUser() as PropertyDecorator
+    ],
+    friends: [
+      Authorized(UserType.basic, UserType.creator)
+    ],
+    followers: [
+      Authorized(UserType.basic, UserType.creator)
+    ],
+    badgeTypesCreated: [
+      Authorized(UserType.basic, UserType.creator)
+    ],
+    badgeTypesForResell: [
+      Authorized(UserType.basic, UserType.creator)
+    ],
+    badgeItemsOwned: [ 
+      Authorized(UserType.basic, UserType.creator)
+
+    ],
+    badgeItemsOriginatedFrom: [
+      Authorized(UserType.basic, UserType.creator)
+    ],
+
+  },
+  BadgeType: {
+    receipts: [
+      IsBadgeTypeCreatedByCurrentUser() as PropertyDecorator
     ]
   }
 })
 
-applyInputTypesEnhanceMap({
-  // todo: make it work :)
-  UserWhereUniqueInput: {
-    fields: {
-      id: [UseMiddleware(FallbackToContextUser)]
-    },
-  },
-});
+// todo: make it work :)
+// applyInputTypesEnhanceMap({
+//   UserWhereUniqueInput: {
+//     fields: {
+//       id: [FallbackToCurrentUser() as PropertyDecorator],
+//     },
+//   },
+// });
 
 const userResolvers = [
   FindUniqueUserResolver,
@@ -211,15 +178,6 @@ const badgeTypeResolvers = [
   FindUniqueBadgeTypeResolver,
 ]
 
-const badgeItemResolvers = [
-  FindUniqueBadgeItemResolver,
-  FindFirstBadgeItemResolver,
-  FindManyBadgeItemResolver,
-  AggregateBadgeItemResolver,
-  GroupByBadgeItemResolver,
-  BadgeItemRelationsResolver,
-]
-
 const causeResolvers = [
   FindUniqueCauseResolver,
   FindFirstCauseResolver,
@@ -237,92 +195,13 @@ const currencyRateResolvers = [
   GroupByCurrencyRateResolver,
 ]
 
-const badgeItemLikeResolvers = [
-  FindUniqueBadgeItemLikeResolver,
-  FindFirstBadgeItemLikeResolver,
-  FindManyBadgeItemLikeResolver,
-  AggregateBadgeItemLikeResolver,
-  GroupByBadgeItemLikeResolver,
-  BadgeItemRelationsResolver,
-]
 
-const badgeTypeLikeResolvers = [
-  FindUniqueBadgeTypeLikeResolver,
-  FindFirstBadgeTypeLikeResolver,
-  FindManyBadgeTypeLikeResolver,
-  AggregateBadgeTypeLikeResolver,
-  GroupByBadgeTypeLikeResolver,
-  BadgeTypeRelationsResolver,
-]
-
-const badgeItemViewResolvers = [
-  FindUniqueBadgeItemViewResolver,
-  FindFirstBadgeItemViewResolver,
-  FindManyBadgeItemViewResolver,
-  AggregateBadgeItemViewResolver,
-  GroupByBadgeItemViewResolver,
-  BadgeItemViewRelationsResolver
-]
-
-const badgeTypeViewResolvers = [
-  FindUniqueBadgeTypeViewResolver,
-  FindFirstBadgeTypeViewResolver,
-  FindManyBadgeTypeViewResolver,
-  AggregateBadgeTypeViewResolver,
-  GroupByBadgeTypeViewResolver,
-  BadgeTypeViewRelationsResolver,
-]
-
-const followResolvers = [
-  FindUniqueFollowResolver,
-  FindFirstFollowResolver,
-  FindManyFollowResolver,
-  AggregateFollowResolver,
-  GroupByFollowResolver,
-  FollowRelationsResolver,
-]
-
-const notificationResolvers = [
-  FindUniqueNotificationResolver,
-  FindFirstNotificationResolver,
-  FindManyNotificationResolver,
-  AggregateNotificationResolver,
-  GroupByNotificationResolver,
-  NotificationRelationsResolver,
-]
-
-const chatResolvers = [
-  FindUniqueChatResolver,
-  FindFirstChatResolver,
-  FindManyChatResolver,
-  AggregateChatResolver,
-  GroupByChatResolver,
-  ChatRelationsResolver,
-]
-
-const chatMessageResolvers = [
-  FindUniqueChatMessageResolver,
-  FindFirstChatMessageResolver,
-  FindManyChatMessageResolver,
-  AggregateChatMessageResolver,
-  GroupByChatMessageResolver,
-  ChatMessageRelationsResolver,
-]
 
 export const generatedResolvers = [
   ...userResolvers,
   ...profileResolvers,
   ...badgeTypeResolvers,
-  ...badgeItemResolvers,
   ...causeResolvers,
   ...currencyRateResolvers,
-  ...badgeItemLikeResolvers,
-  ...badgeTypeLikeResolvers,
-  ...badgeItemViewResolvers,
-  ...badgeTypeViewResolvers,
-  ...followResolvers,
-  ...notificationResolvers,
-  ...chatResolvers,
-  ...chatMessageResolvers
 ]
 

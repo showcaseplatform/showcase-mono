@@ -8,12 +8,14 @@ import { CurrentUser } from '../libs/auth/decorators'
 
 @Resolver()
 export class SocialResolver {
+  
   // todo: mutation to accept / decline request eg.: answerFollowRequest
   @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => Follow)
   async toggleFollow(@CurrentUser() currentUser: User, @Arg('userId') userId: string) {
     return await toggleFollow(userId, currentUser.id)
   }
+
   @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => Profile)
   async updateProfileCustom(

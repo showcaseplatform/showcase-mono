@@ -116,25 +116,11 @@ applyRelationResolversEnhanceMap({
       IsCurrentUser() as PropertyDecorator
     ],
     friends: [
-      Authorized(UserType.basic, UserType.creator)
+      IsCurrentUser() as PropertyDecorator
     ],
     followers: [
-      Authorized(UserType.basic, UserType.creator)
+      IsCurrentUser() as PropertyDecorator
     ],
-    badgeTypesCreated: [
-      Authorized(UserType.basic, UserType.creator)
-    ],
-    badgeTypesForResell: [
-      Authorized(UserType.basic, UserType.creator)
-    ],
-    badgeItemsOwned: [ 
-      Authorized(UserType.basic, UserType.creator)
-
-    ],
-    badgeItemsOriginatedFrom: [
-      Authorized(UserType.basic, UserType.creator)
-    ],
-
   },
   BadgeType: {
     receipts: [

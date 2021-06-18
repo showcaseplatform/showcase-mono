@@ -18,6 +18,8 @@ import { NotificationSettingsResolver } from '../resolvers/notificationSettingRe
 import { myPubSub } from './pubSub'
 import { SearchResolver } from '../resolvers/search.resolver'
 import { customUserResolver } from '../resolvers/customUserResolver'
+import { customBadgeItemResolver } from '../resolvers/customBadgeItemResolver'
+import { customBadgeTypeResolver } from '../resolvers/customBadgeTypeResolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -49,6 +51,8 @@ export class MyApollo {
         NotificationSettingsResolver,
         SearchResolver,
         customUserResolver,
+        customBadgeTypeResolver,
+        customBadgeItemResolver
       ],
       validate: true,
       authChecker: AuthLib.authChecker,

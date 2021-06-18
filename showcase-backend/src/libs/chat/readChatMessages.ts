@@ -9,7 +9,7 @@ export const readChatMessages = async (chatId: string, user: User) => {
   const unreadMessages = await prisma.chatMessage.findMany({
     where: {
       chatId,
-      fromId: {
+      fromUserId: {
         not: user.id,
       },
     },

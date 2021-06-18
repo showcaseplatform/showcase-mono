@@ -34,15 +34,15 @@ enum UserType {
   creator
 }
 
-
 model User {
   id String @id @default(uuid())
-  
-  phone           String          @unique
 
-  userType    UserType @default(basic)
-  kycVerified Boolean  @default(false) // todo: maybe this should be a userType aswell?
-  isBanned    Boolean  @default(false)
+  phone String? @unique
+
+  userType          UserType @default(basic)
+  kycVerified       Boolean  @default(false) // todo: maybe this should be a userType aswell?
+  isBanned          Boolean  @default(false)
+  notificationToken String?
 
   profile Profile?
 
@@ -68,8 +68,7 @@ model User {
   badgeTypeViews BadgeTypeView[]
 
   notifications        Notification[]
-  notificationToken    String?
-  NotificationSettings NotificationSettings[]
+  notificationSettings NotificationSettings[]
 
   friends   Follow[] @relation("friends")
   followers Follow[] @relation("followers")
@@ -159,7 +158,7 @@ model BadgeType {
 }
 
 model BadgeItem {
-  id String @id @default(uuid())
+  id String @id @default(cuid())
 
   tokenId String // todo: is this uniqiue? if it changes after re-sell then yes
 
@@ -206,8 +205,9 @@ model Cause {
 }
 
 model Crypto {
-  id                  String @id
-  owner               User   @relation(fields: [id], references: [id])
+  id                  String @id @default(cuid())
+  userId              String @unique
+  owner               User   @relation(fields: [userId], references: [id])
   address             String
   encryptedMnemonic   String
   encryptedPrivateKey String
@@ -219,8 +219,9 @@ model Crypto {
 
 // todo: use this table once requesting info from receipts cost too much resources
 model Balance {
-  id    String @id
-  owner User   @relation(fields: [id], references: [id])
+  id     String @id @default(cuid())
+  userId String @unique
+  owner  User   @relation(fields: [userId], references: [id])
 
   EUR                          Float @default(0)
   GBP                          Float @default(0)
@@ -242,7 +243,7 @@ model CurrencyRate {
 }
 
 model Receipt {
-  id Int @id @default(autoincrement())
+  id String @id @default(cuid())
 
   recipient   User   @relation(name: "buyReceipts", fields: [recipientId], references: [id])
   recipientId String
@@ -275,8 +276,9 @@ model Receipt {
 
 // todo: is it possible to add multiple bank card to an account?
 model Stripe {
-  id    String @id
-  owner User   @relation(fields: [id], references: [id])
+  id     String @id @default(cuid())
+  userId String @unique
+  owner  User   @relation(fields: [userId], references: [id])
 
   stripeId          String @unique // todo: should stripeId be unique here? 
   lastFourCardDigit String
@@ -286,8 +288,9 @@ model Stripe {
 }
 
 model Transferwise {
-  id    String @id
-  owner User   @relation(fields: [id], references: [id])
+  id     String @id @default(cuid())
+  userId String @unique
+  owner  User   @relation(fields: [userId], references: [id])
 
   idUSD            String?
   accountNumberUSD String?
@@ -301,7 +304,7 @@ model Transferwise {
 }
 
 model Withdrawal {
-  id                    Int       @id @default(autoincrement())
+  id                    String    @id @default(cuid())
   ownerId               String
   owner                 User      @relation(fields: [ownerId], references: [id])
   customerTransactionId String
@@ -390,7 +393,7 @@ enum NotificationType {
 }
 
 model Notification {
-  id          String           @id @default(uuid())
+  id          String           @id @default(cuid())
   recipientId String
   recicpient  User             @relation(fields: [recipientId], references: [id])
   type        NotificationType
@@ -401,8 +404,10 @@ model Notification {
 }
 
 model NotificationSettings {
-  id   String 
-  user User   @relation(fields: [id], references: [id])
+  id String @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   type NotificationType
 
@@ -429,7 +434,7 @@ enum ExpoType {
 }
 
 model ExpoAdmin {
-  id      Int        @id @default(autoincrement())
+  id      String     @id @default(cuid())
   type    ExpoType
   status  ExpoStatus
   expoId  String?
@@ -439,7 +444,7 @@ model ExpoAdmin {
 
 // todo: decide where to store messages / how to implement chat
 model Chat {
-  id           String            @id @default(uuid())
+  id           String            @id @default(cuid())
   participants ChatParticipant[]
   messages     ChatMessage[]
 
@@ -461,12 +466,12 @@ model ChatParticipant {
 }
 
 model ChatMessage {
-  id      String @id @default(uuid())
-  fromId  String
-  from    User   @relation(name: "sentMessages", fields: [fromId], references: [id])
-  chatId  String
-  chat    Chat   @relation(fields: [chatId], references: [id])
-  message String
+  id         String @id @default(cuid())
+  fromUserId String
+  fromUser   User   @relation(name: "sentMessages", fields: [fromUserId], references: [id])
+  chatId     String
+  chat       Chat   @relation(fields: [chatId], references: [id])
+  message    String
 
   reads ChatMessageRead[]
 
@@ -475,7 +480,7 @@ model ChatMessage {
 }
 
 model ChatMessageRead {
-  id Int @id @default(autoincrement())
+  id String @id @default(cuid())
 
   messageId String
   message   ChatMessage @relation(fields: [messageId], references: [id])

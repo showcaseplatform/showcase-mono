@@ -1,5 +1,5 @@
 import { Arg, Authorized, Ctx, Mutation, Resolver, Root, Subscription } from 'type-graphql'
-import { notificationMarker} from '../libs/notification/notificationMarker'
+import { notificationMarker } from '../libs/notification/notificationMarker'
 import { Notification, User } from '@generated/type-graphql'
 import {
   addNotifcationToken,
@@ -10,6 +10,7 @@ import { MarkAsReadInfoUnion } from '../libs/notification/types/notificationMark
 import { UserType } from '@prisma/client'
 import { NEW_NOTIFCATION } from '../services/pubSub'
 import { NotificationSubscriptionPayload } from '../libs/notification/types/notificationSubscriptionPayload.type'
+import { CurrentUser } from '../libs/auth/decorators'
 
 @Resolver()
 export class NotificationResolver {
@@ -21,30 +22,41 @@ export class NotificationResolver {
 
   @Authorized(UserType.basic, UserType.creator)
   @Mutation(() => [Notification])
-  async markAllAsRead(@Ctx() ctx: any) {
-    return await notificationMarker.markAllAsRead(ctx.user.id)
+  async markAllAsRead(@CurrentUser() currentUser: User) {
+    return await notificationMarker.markAllAsRead(currentUser.id)
   }
 
   @Authorized(UserType.basic, UserType.creator)
   @Mutation(() => User)
-  async removeNotifcationToken(@Ctx() ctx: any) {
-    return await removeNotifcationToken(ctx.user.id)
+  async removeNotifcationToken(@CurrentUser() currentUser: User) {
+    return await removeNotifcationToken(currentUser.id)
   }
 
   @Authorized(UserType.basic, UserType.creator)
   @Mutation(() => User)
-  async addNotifcationToken(@Arg('notificationToken') notificationToken: NotificationToken, @Ctx() ctx: any) {
-    return await addNotifcationToken(notificationToken, ctx.user.id)
+  async addNotifcationToken(
+    @Arg('notificationToken') notificationToken: NotificationToken,
+    @CurrentUser() currentUser: User
+  ) {
+    return await addNotifcationToken(notificationToken, currentUser.id)
   }
 
   @Authorized(UserType.basic, UserType.creator)
   @Subscription({
     topics: NEW_NOTIFCATION,
-    filter: async ({ context, payload }: { context: { user: User }; payload: NotificationSubscriptionPayload }) => {
+    filter: async ({
+      context,
+      payload,
+    }: {
+      context: { user: User }
+      payload: NotificationSubscriptionPayload
+    }) => {
       return payload.recipientId === context.user.id
     },
   })
-  newNotification(@Root() payload: NotificationSubscriptionPayload): NotificationSubscriptionPayload {
+  newNotification(
+    @Root() payload: NotificationSubscriptionPayload
+  ): NotificationSubscriptionPayload {
     return { ...payload }
   }
 }

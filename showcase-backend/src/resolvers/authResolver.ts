@@ -7,7 +7,7 @@ import {
 } from '../libs/auth/types/verifyPhoneCode.type'
 import { User } from '@generated/type-graphql'
 import { UserType } from '.prisma/client'
-import { MyAuthContext } from '../services/apollo'
+import { CurrentUser } from '../libs/auth/decorators'
 
 @Resolver()
 export class AuthResolver {
@@ -23,7 +23,7 @@ export class AuthResolver {
 
   @Authorized(UserType.basic, UserType.creator)
   @Query((_returns) => User)
-  async me(@Ctx() ctx: MyAuthContext) {
-    return ctx.user
+  async me(@CurrentUser() currentUser: User) {
+    return currentUser
   }
 }

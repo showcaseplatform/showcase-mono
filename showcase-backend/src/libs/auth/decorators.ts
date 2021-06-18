@@ -2,6 +2,8 @@ import {
   NextFn,
   createParamDecorator,
   createMethodDecorator,
+  MiddlewareInterface,
+  ResolverData,
 } from 'type-graphql'
 import { MyContext } from '../../services/apollo'
 import { BadgeType, User } from '@generated/type-graphql'
@@ -12,35 +14,34 @@ export const CurrentUser = () => {
   })
 }
 
-export const IsCurrentUser = () => {
+export const IsCurrentUser = (fallbackType? : null | []) => {
   return createMethodDecorator<MyContext>(async ({ context, root }, next: NextFn) => {
     const isOwnedByCurrentUser = context.user?.id && context.user.id === (root as User).id
     if (isOwnedByCurrentUser) {
       return await next()
     } else {
-      return null
+      return fallbackType || null
     }
   })
 }
 
-export const IsBadgeTypeCreatedByCurrentUser = () => {
+export const IsBadgeTypeCreatedByCurrentUser = (fallbackType? : null | []) => {
   return createMethodDecorator<MyContext>(async ({ context, root }, next: NextFn) => {
     const isCreatedByCurrentUser = context.user?.id && context.user.id === (root as BadgeType).creatorId
     if (isCreatedByCurrentUser) {
       return await next()
     } else {
-      return null
+      return fallbackType || null
     }
   })
 }
 
 // todo: same as IsCurrentUser but in a middleware, decide which to use in generatedResvoler.ts
-// export class IsOwnUser implements MiddlewareInterface<MyContext> {
+// export class isOwnedByCurrentUser implements MiddlewareInterface<MyContext> {
 //   async use({ root, context }: ResolverData<MyContext>, next: NextFn) {
-//     const userId: string = context.user?.id || 'guest'
-//     console.log('IsOwnUser')
-//     const isOwnUser = userId === root.id
-//     if (isOwnUser) {
+//     const isOwnedByCurrentUser = context.user?.id && context.user.id === (root as User).id
+//     console.log("isOwnedByCurrentUser")
+//     if (isOwnedByCurrentUser) {
 //       return await next()
 //     } else {
 //       return null

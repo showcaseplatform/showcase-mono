@@ -1,4 +1,4 @@
-import { Authorized } from 'type-graphql'
+import { Authorized, UseMiddleware } from 'type-graphql'
 
 import {
   ResolversEnhanceMap,
@@ -34,9 +34,10 @@ import {
   FindManyCurrencyRateResolver,
   AggregateCurrencyRateResolver,
   GroupByCurrencyRateResolver,
+  FollowRelationsResolver
 } from '@generated/type-graphql'
 import { UserType } from '@prisma/client'
-import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
+import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser, isOwnedByCurrentUser } from '../libs/auth/decorators'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {
@@ -80,6 +81,7 @@ applyModelsEnhanceMap({
 applyRelationResolversEnhanceMap({
   User: {
     balance: [
+      // UseMiddleware(isOwnedByCurrentUser),
       IsCurrentUser() as PropertyDecorator
     ],
     cryptoWallet: [
@@ -182,6 +184,11 @@ const currencyRateResolvers = [
 ]
 
 
+const followResolvers = [
+  FollowRelationsResolver,
+]
+
+
 
 export const generatedResolvers = [
   ...userResolvers,
@@ -189,5 +196,6 @@ export const generatedResolvers = [
   ...badgeTypeResolvers,
   ...causeResolvers,
   ...currencyRateResolvers,
+  ...followResolvers
 ]
 

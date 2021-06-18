@@ -6,7 +6,7 @@ import prisma from '../../services/prisma'
 import { CountViewInput, ViewInfo } from './types/countView.type'
 import { BadgeItemId } from '../../types/badge'
 
-const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
+export const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
   if (marketplace) {
     const view = await prisma.badgeTypeView.findUnique({

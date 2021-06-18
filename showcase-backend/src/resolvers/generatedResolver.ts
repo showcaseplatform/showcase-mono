@@ -1,4 +1,4 @@
-import { Authorized } from 'type-graphql'
+import { Authorized, UseMiddleware } from 'type-graphql'
 
 import {
   ResolversEnhanceMap,
@@ -34,8 +34,8 @@ import {
   FindManyCurrencyRateResolver,
   AggregateCurrencyRateResolver,
   GroupByCurrencyRateResolver,
+  FollowRelationsResolver,
 } from '@generated/type-graphql'
-import { UserType } from '@prisma/client'
 import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
@@ -80,51 +80,52 @@ applyModelsEnhanceMap({
 applyRelationResolversEnhanceMap({
   User: {
     balance: [
-      IsCurrentUser() as PropertyDecorator
+      // UseMiddleware(isOwnedByCurrentUser),
+      IsCurrentUser(null) as PropertyDecorator
     ],
     cryptoWallet: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator
     ],
     transferwise: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator
     ],
     withdrawals: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     stripeInfo: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator
     ],
     buyReceipts: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     sellReceipts: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     notifications: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     notificationSettings: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     chats: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     sentChatMessages: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     chatMessageReads: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     friends: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     followers: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
   },
   BadgeType: {
     receipts: [
-      IsBadgeTypeCreatedByCurrentUser() as PropertyDecorator
+      IsBadgeTypeCreatedByCurrentUser([]) as PropertyDecorator
     ]
   }
 })
@@ -181,7 +182,9 @@ const currencyRateResolvers = [
   GroupByCurrencyRateResolver,
 ]
 
-
+const followResolvers = [
+  FollowRelationsResolver,
+]
 
 export const generatedResolvers = [
   ...userResolvers,
@@ -189,5 +192,6 @@ export const generatedResolvers = [
   ...badgeTypeResolvers,
   ...causeResolvers,
   ...currencyRateResolvers,
+  ...followResolvers
 ]
 

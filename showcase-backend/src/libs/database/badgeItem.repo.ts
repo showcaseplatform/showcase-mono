@@ -8,6 +8,22 @@ export const findBadgeItem = async (id: string) => {
   })
 }
 
+export const badgeItemLikeCount = (badgeItemId: string) => {
+  return prisma.badgeItemLike.count({
+    where: {
+      badgeItemId,
+    },
+  })
+}
+
+export const badgeItemViewCount = (badgeItemId: string) => {
+  return prisma.badgeItemView.count({
+    where: {
+      badgeItemId,
+    },
+  })
+}
+
 export const updateBadgeItem = async (
   id: string,
   updateData:
@@ -22,7 +38,7 @@ export const updateBadgeItem = async (
     },
     data: {
       ...updateData,
-      // ow,
     },
   })
 }
+

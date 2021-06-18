@@ -36,8 +36,7 @@ import {
   GroupByCurrencyRateResolver,
   FollowRelationsResolver
 } from '@generated/type-graphql'
-import { UserType } from '@prisma/client'
-import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser, isOwnedByCurrentUser } from '../libs/auth/decorators'
+import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {

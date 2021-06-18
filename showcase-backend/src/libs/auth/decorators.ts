@@ -14,9 +14,7 @@ export const CurrentUser = () => {
 
 export const IsCurrentUser = () => {
   return createMethodDecorator<MyContext>(async ({ context, root }, next: NextFn) => {
-    const rootUser = root as User
-    const userId: string = context.user?.id || 'guest'
-    const isOwnedByCurrentUser = userId === rootUser.id
+    const isOwnedByCurrentUser = context.user?.id && context.user.id === (root as User).id
     if (isOwnedByCurrentUser) {
       return await next()
     } else {
@@ -27,9 +25,7 @@ export const IsCurrentUser = () => {
 
 export const IsBadgeTypeCreatedByCurrentUser = () => {
   return createMethodDecorator<MyContext>(async ({ context, root }, next: NextFn) => {
-    const rootBadgeType = root as BadgeType
-    const userId: string = context.user?.id || 'guest'
-    const isCreatedByCurrentUser = userId === rootBadgeType.creatorId
+    const isCreatedByCurrentUser = context.user?.id && context.user.id === (root as BadgeType).creatorId
     if (isCreatedByCurrentUser) {
       return await next()
     } else {

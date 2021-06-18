@@ -6,7 +6,9 @@ export const friendsCount = async (id: Uid) => {
   const followCount = await prisma.follow.count({
     where: {
       followerId: id,
-      status: FollowStatus.Accepted
+      status: {
+        equals:  FollowStatus.Accepted
+      }
     }
   })
 
@@ -17,7 +19,9 @@ export const followersCount = async (id: Uid) => {
   const followCount = await prisma.follow.count({
     where: {
       userId: id,
-      status: FollowStatus.Accepted
+      status: {
+        equals:  FollowStatus.Accepted
+      }
     }
   })
 

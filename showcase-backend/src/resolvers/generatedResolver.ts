@@ -34,7 +34,7 @@ import {
   FindManyCurrencyRateResolver,
   AggregateCurrencyRateResolver,
   GroupByCurrencyRateResolver,
-  FollowRelationsResolver
+  FollowRelationsResolver,
 } from '@generated/type-graphql'
 import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
 
@@ -81,51 +81,51 @@ applyRelationResolversEnhanceMap({
   User: {
     balance: [
       // UseMiddleware(isOwnedByCurrentUser),
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator
     ],
     cryptoWallet: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator
     ],
     transferwise: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator
     ],
     withdrawals: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     stripeInfo: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator
     ],
     buyReceipts: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     sellReceipts: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     notifications: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     notificationSettings: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     chats: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     sentChatMessages: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     chatMessageReads: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     friends: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
     followers: [
-      IsCurrentUser() as PropertyDecorator
+      IsCurrentUser([]) as PropertyDecorator
     ],
   },
   BadgeType: {
     receipts: [
-      IsBadgeTypeCreatedByCurrentUser() as PropertyDecorator
+      IsBadgeTypeCreatedByCurrentUser([]) as PropertyDecorator
     ]
   }
 })
@@ -182,12 +182,9 @@ const currencyRateResolvers = [
   GroupByCurrencyRateResolver,
 ]
 
-
 const followResolvers = [
   FollowRelationsResolver,
 ]
-
-
 
 export const generatedResolvers = [
   ...userResolvers,

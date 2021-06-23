@@ -4,7 +4,7 @@ import cors from 'cors'
 import fs from 'fs'
 import util from 'util'
 
-import { loadFileStream, uploadFile } from './S3'
+import { generateSignedUrl, loadFileStream, uploadFile } from './S3'
 
 const imageServer = express()
 
@@ -41,7 +41,7 @@ imageServer.post('/upload-badge', upload.single('image'), async ({ file }, res) 
     if (!file) {
       res.status(400).send({
         status: false,
-        message: 'No file uploaded'
+        message: 'No file uploaded 👎'
       })
     } else {
       // ?: resizing,
@@ -63,6 +63,21 @@ imageServer.post('/upload-badge', upload.single('image'), async ({ file }, res) 
     }
   } catch (err) {
     res.status(500).send(err)
+  }
+})
+
+imageServer.get('/getSignedUrl/:key', (req, res) => {
+  const key = req.params.key
+
+  const url = generateSignedUrl(key)
+
+  if (!url) {
+    res.status(400).send({
+      status: false,
+      message: 'something went wrong 😢'
+    })
+  } else {
+    res.send({ url })
   }
 })
 

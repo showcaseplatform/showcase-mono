@@ -4,7 +4,7 @@ import fs from 'fs'
 // todo: move me into config system
 const { S3_BUCKETREGION, S3_ACCESS_KEY, S3_SECRET } = process.env
 
-const Bucket = `showcase-badges-development` //${NODE_ENV}
+const Bucket = `showcase-badges-dev` //${NODE_ENV}
 
 const s3 = new S3({
   accessKeyId: S3_ACCESS_KEY,
@@ -31,4 +31,14 @@ export function loadFileStream(Key: string) {
   }
 
   return s3.getObject(params).createReadStream()
+}
+
+export function generateSignedUrl(Key: string, expiryInSec?: number) {
+  const params = {
+    Bucket,
+    Key,
+    Expires: expiryInSec || 36000
+  }
+
+  return s3.getSignedUrl('getObject', params)
 }

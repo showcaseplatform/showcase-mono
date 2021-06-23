@@ -12,11 +12,10 @@ imageServer.use(cors())
 imageServer.use(express.json())
 imageServer.use(express.urlencoded({ extended: true }))
 
-const deleteTempFile = util.promisify(fs.unlink)
-const fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => void = (_, file, cb) => {
+const fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => void = (_, { mimetype }, cb) => {
   // ?: do a proper validation with fs-extra
   // ?: size check
-  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+  if (mimetype === "image/jpeg" || mimetype === "image/png") {
     cb(null, true)
   } else {
     cb(new Error("Only JPEG and PNG allowed."))
@@ -24,8 +23,17 @@ const fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallba
 }
 
 const upload = multer({
-  dest: 'temp/',
   fileFilter,
+  dest: 'temp/',
+})
+
+const deleteTempFile = util.promisify(fs.unlink)
+
+
+imageServer.get('/badge/:key', (req, res) => {
+  const key = req.params.key
+  const downloadStream = loadFileStream(key)
+  downloadStream.pipe(res)
 })
 
 imageServer.post('/upload-badge', upload.single('image'), async ({ file }, res) => {
@@ -58,12 +66,5 @@ imageServer.post('/upload-badge', upload.single('image'), async ({ file }, res) 
   }
 })
 
-imageServer.get('/badge/:key', (req, res) => {
-  const key: string = req.params.key
-
-  const downloadStream = loadFileStream(key)
-
-  downloadStream.pipe(res)
-})
-
 export default imageServer
+

@@ -20,6 +20,7 @@ import { SearchResolver } from '../resolvers/search.resolver'
 import { customUserResolver } from '../resolvers/customUserResolver'
 import { customBadgeItemResolver } from '../resolvers/customBadgeItemResolver'
 import { customBadgeTypeResolver } from '../resolvers/customBadgeTypeResolver'
+import { FileUploadResolver } from '../resolvers/fileUploadResolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -52,7 +53,8 @@ export class MyApollo {
         SearchResolver,
         customUserResolver,
         customBadgeTypeResolver,
-        customBadgeItemResolver
+        customBadgeItemResolver,
+        FileUploadResolver,
       ],
       validate: true,
       authChecker: AuthLib.authChecker,
@@ -81,7 +83,7 @@ export class MyApollo {
             const users = await prisma.user.findMany()
             user = users[0]
           }
-          
+
           return { prisma, user }
         }
       },

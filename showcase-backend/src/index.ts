@@ -14,6 +14,7 @@ import { prisma } from './services/prisma'
 import { MyApollo } from './services/apollo'
 import { ShowcaseCron } from './jobs'
 import http from 'http'
+import imageServer from './services/imageServer'
 
 const main = async () => {
   // Set up express server
@@ -31,21 +32,19 @@ const main = async () => {
 
   const apolloService = new MyApollo(expressApp, httpServer)
   const apolloServer = await apolloService.init()
-  
   const cronJobs = new ShowcaseCron()
   cronJobs.init()
-  
   // todo: check if type-gql error handler middleware is better
   // Add error handling
   expressApp.use(globalErrorHandler)
-  
   // Make sure to call listen on httpServer, NOT on app.
-  const port = process.env.PORT || 3000
+  const port = parseInt(process.env.PORT || "3000", 10)
+
   httpServer.listen(port)
   console.log(`🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`);
   console.log(`🚀 Subscriptions ready at ws://localhost:${port}${apolloServer.subscriptionsPath}`);
 
-  // expressApp.listen(process.env.PORT || 3000)
+  imageServer.listen({ port: port + 1 }, () => console.log(`🖼️  Image Server ready at http://localhost:${port + 1}`))
 }
 
 main()

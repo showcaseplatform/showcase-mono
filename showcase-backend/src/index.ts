@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import { graphqlUploadExpress } from 'graphql-upload';
 
 // Import middlewares
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
@@ -26,6 +27,9 @@ const main = async () => {
   expressApp.use(cookieParser())
   expressApp.use(express.json({ limit: '2mb' }))
 
+  // todo: incase move me into aseparate endpoint
+  expressApp.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
+
   // Need this to handle subscriptions (http + ws)
   const httpServer = http.createServer(expressApp)
 
@@ -48,16 +52,11 @@ const main = async () => {
   console.log(`🚀 Subscriptions ready at ws://localhost:${port}${apolloServer.subscriptionsPath}`);
 }
 
-const fileServer = async () => {
-  imageServer.listen({ port: port + 1 }, () => console.log(`🖼️  Image Server ready at http://localhost:${port + 1}`))
-}
-
 main()
-  .then(() => fileServer())
-    .catch((error) => {
-      console.error(error)
-      process.exit(1)
-    })
-    .finally(async () => {
-      await prisma.$disconnect()
-    })
+  .catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })

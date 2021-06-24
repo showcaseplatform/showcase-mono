@@ -43,7 +43,7 @@ export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
   description?: string
 
   @Field()
-  image: string
+  image: string // S3 key string
 
   @Field()
   imageHash: string

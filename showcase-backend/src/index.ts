@@ -15,7 +15,6 @@ import { prisma } from './services/prisma'
 import { MyApollo } from './services/apollo'
 import { ShowcaseCron } from './jobs'
 import http from 'http'
-import imageServer from './services/imageServer'
 
 const port = parseInt(process.env.PORT || "3000", 10)
 

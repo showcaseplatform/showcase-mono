@@ -20,4 +20,4 @@ databases:
   - name: showcase-monorepo
     plan: starter
     previewPlan: starter
-    region: frankfurt
+    region: oregon

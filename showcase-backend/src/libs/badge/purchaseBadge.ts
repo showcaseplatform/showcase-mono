@@ -9,7 +9,7 @@ import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/busi
 import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
-import { getRandomNum } from '../../test/testHelpers'
+import { getRandomNum } from '../../utils/randoms'
 
 interface PurchaseTransactionInput {
   userId: string

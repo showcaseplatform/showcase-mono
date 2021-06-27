@@ -1,11 +1,46 @@
-var convict = require('convict')
-require('dotenv').config()
+import convict from 'convict'
 
 // Add new format
 // convict.addFormat(require('convict-format-with-validator').ipaddress)
 
+type ConfigType = {
+  env: string
+  transferWise: {
+    profile: string
+    token: string
+  }
+  stripe: string
+  blockchain: {
+    server: string
+    authToken: string
+    enabled: boolean
+  }
+  twilio: {
+    account: string
+    token: string
+    from: string
+  }
+  algolia: {
+    id: string
+    adminKey: string
+    searchKey: string
+  }
+  expo: {
+    server: string
+    token: string
+  }
+  openExchange: {
+    appId: string
+    url: string
+  }
+  jwt: {
+    privateKey: string
+    expiresIn: string
+  }
+}
+
 // Define a schema
-var config = convict({
+const config = convict<ConfigType>({
   env: {
     doc: 'The application environment.',
     format: ['production', 'development', 'test'],
@@ -48,7 +83,7 @@ var config = convict({
     enabled: {
       doc: 'Flag to attach / remove blockchain functionalities',
       format: Boolean,
-      default: '',
+      default: false,
       env: 'BLOCKCHAIN_ENABLED',
     },
   },
@@ -73,7 +108,7 @@ var config = convict({
       env: 'TWILIO_FROM',
     },
   },
-  // todo: remove algolia completely 
+  // todo: remove algolia completely
   algolia: {
     id: {
       doc: 'Algolia ID',
@@ -104,43 +139,51 @@ var config = convict({
       doc: 'Access token if you have enabled push security',
       format: String,
       default: '',
-      env: 'EXPO_ACCESS_TOKEN'
-    }
+      env: 'EXPO_ACCESS_TOKEN',
+    },
   },
   openExchange: {
     appId: {
       doc: 'App id for openexchangerates.org',
       format: String,
       default: '',
-      env: 'OPEN_EXCHANGE_RATES_APP_ID'
+      env: 'OPEN_EXCHANGE_RATES_APP_ID',
     },
     url: {
       doc: 'Url for openexchangerates.org',
       format: String,
       default: '',
-      env: 'OPEN_EXCHANGE_RATES_URL'
-    }
+      env: 'OPEN_EXCHANGE_RATES_URL',
+    },
   },
   jwt: {
     privateKey: {
       doc: 'Jwt private key',
       format: String,
       default: '',
-      env: 'JWT_PRIVATE_KEY'
+      env: 'JWT_PRIVATE_KEY',
     },
     expiresIn: {
       doc: 'Jwt token expiration date',
       format: String,
       default: '7 days',
     },
-  }
+  },
 })
 
 // Load environment dependent configuration
-const env = config.get('env');
-config.loadFile('./src/config/' + env + '.json');
+config.loadFile('./src/config/' + config.get('env') + '.json')
 
 // throws error if config does not conform to schema
 config.validate({ allowed: 'strict' })
+const properties = config.getProperties()
 
-module.exports = { ...config.getProperties() }
+export const env = properties.env
+export const transferWise = properties.transferWise
+export const stripe = properties.stripe
+export const blockchain = properties.blockchain
+export const twilio = properties.twilio
+export const algolia = properties.algolia
+export const expo = properties.expo
+export const openExchange = properties.openExchange
+export const jwt = properties.jwt

@@ -2,33 +2,37 @@ import { ToggleLikeInput } from './types/toggleLike.type'
 import { mockCreateBadgeItemLike, mockCreateBadgeTypeLike } from '../../test/testHelpers'
 import { createLikeRecord } from './toggleLike'
 
+describe('createLikeRecord test cases', () => {
+  it('createLikeRecord should create new LikeBadgeType record if badge viewed in marketplace', async () => {
+    const badgeTypeId = 'badgeTypeId'
+    const likerUserId = 'likerUserId'
 
-test('createLikeRecord should create new LikeBadgeType record if badge viewed in marketplace', async () => {
-  const badgeTypeId = 'badgeTypeId'
-  const likerUserId = 'likerUserId'
+    const input: ToggleLikeInput = {
+      badgeId: badgeTypeId,
+      marketplace: true,
+    }
 
-  const input: ToggleLikeInput = {
-    badgeId: badgeTypeId,
-    marketplace: true,
-  }
+    mockCreateBadgeTypeLike(badgeTypeId, likerUserId)
+    const createdRecord = await createLikeRecord(input, likerUserId)
 
-  mockCreateBadgeTypeLike(badgeTypeId, likerUserId)
+    expect(createdRecord.userId).toEqual(likerUserId)
+    expect(createdRecord).toHaveProperty('badgeTypeId', badgeTypeId)
+  })
 
-  await expect(createLikeRecord(input, likerUserId)).resolves.toHaveProperty('badgeTypeId', badgeTypeId)
-  await expect(createLikeRecord(input, likerUserId)).resolves.toHaveProperty('profileId', likerUserId)
-})
+  it('createLikeRecord should create new LikeBadgeType record if badge viewed NOT in marketplace', async () => {
+    const badgeItemId = 'badgeItemId'
+    const likerUserId = 'likerUserId'
 
-test('createLikeRecord should create new LikeBadgeType record if badge viewed NOT in marketplace', async () => {
-  const badgeItemId = 'badgeItemId'
-  const likerUserId = 'likerUserId'
+    const input: ToggleLikeInput = {
+      badgeId: badgeItemId,
+      marketplace: false,
+    }
 
-  const input: ToggleLikeInput = {
-    badgeId: badgeItemId,
-    marketplace: false,
-  }
+    mockCreateBadgeItemLike(badgeItemId, likerUserId)
 
-  mockCreateBadgeItemLike(badgeItemId, likerUserId)
+    const createdRecord = await createLikeRecord(input, likerUserId)
 
-  await expect(createLikeRecord(input, likerUserId)).resolves.toHaveProperty('badgeId', badgeItemId)
-  await expect(createLikeRecord(input, likerUserId)).resolves.toHaveProperty('profileId', likerUserId)
+    expect(createdRecord.userId).toEqual(likerUserId)
+    expect(createdRecord).toHaveProperty('badgeItemId', badgeItemId)
+  })
 })

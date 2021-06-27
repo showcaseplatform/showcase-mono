@@ -4,6 +4,12 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 
+import * as dotenv from 'dotenv'
+import { join } from 'path'
+process.chdir(join(__dirname, '..'))
+const dotenvPath = join(__dirname, '..', '.env')
+dotenv.config({ path: dotenvPath })
+
 // Import middlewares
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
@@ -31,19 +37,19 @@ const main = async () => {
 
   const apolloService = new MyApollo(expressApp, httpServer)
   const apolloServer = await apolloService.init()
-  
+
   const cronJobs = new ShowcaseCron()
   cronJobs.init()
-  
+
   // todo: check if type-gql error handler middleware is better
   // Add error handling
   expressApp.use(globalErrorHandler)
-  
+
   // Make sure to call listen on httpServer, NOT on app.
   const port = process.env.PORT || 3000
   httpServer.listen(port)
-  console.log(`🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`);
-  console.log(`🚀 Subscriptions ready at ws://localhost:${port}${apolloServer.subscriptionsPath}`);
+  console.log(`🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`)
+  console.log(`🚀 Subscriptions ready at ws://localhost:${port}${apolloServer.subscriptionsPath}`)
 
   // expressApp.listen(process.env.PORT || 3000)
 }

@@ -7,9 +7,9 @@ services:
     name: showcase-backend-monorepo
     region: frankfurt
     env: node
-    buildCommand: node scripts/git-info.js && cd showcase-backend && yarn && yarn run build:app
-    startCommand: cd showcase-backend && yarn run migration:run && yarn start
-    afterFirstDeployCommand: cd showcase-backend && yarn run seed:run
+     buildCommand: cd showcase-backend && yarn && yarn run prisma:generate && yarn run build
+    startCommand: cd showcase-backend && yarn prisma:ci && yarn start
+    afterFirstDeployCommand: cd showcase-backend yarn prisma:seed
     envVars:
       - fromGroup: showcase-backend
       - key: DATABASE_URL

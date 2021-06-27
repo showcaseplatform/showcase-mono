@@ -5,7 +5,6 @@ import prisma from '../../services/prisma'
 import { GraphQLError } from 'graphql'
 import { EURAccount, GBPAccount, USDAccount } from './types/payoutAccount.type'
 
-
 const sendDataToTransferwise = async (inputData: any) => {
   const url = 'https://api.sandbox.transferwise.tech/v1/accounts'
   const legalType = 'PRIVATE'
@@ -35,7 +34,7 @@ const sendDataToTransferwise = async (inputData: any) => {
 }
 
 const upsertTranferwiseInfo = async (upsertData: Partial<Transferwise>, user: User) => {
-  let saveData: any = {}
+  const saveData: any = {}
   for (const [key, value] of Object.entries(upsertData)) {
     if (value) {
       saveData[key] = value
@@ -57,19 +56,17 @@ const upsertTranferwiseInfo = async (upsertData: Partial<Transferwise>, user: Us
   console.log('Transferwise info upserted: ', { transferwiseInfo })
 }
 
-const createRecipientUSD = async (
-  {
-    currency,
-    accountHolderName,
-    routingNumber,
-    accountNumber,
-    accountType,
-    city,
-    country,
-    firstLine,
-    postCode,
-  }: USDAccount
-) => {
+const createRecipientUSD = async ({
+  currency,
+  accountHolderName,
+  routingNumber,
+  accountNumber,
+  accountType,
+  city,
+  country,
+  firstLine,
+  postCode,
+}: USDAccount) => {
   const tranferwiseData = {
     currency,
     type: 'aba',
@@ -88,12 +85,15 @@ const createRecipientUSD = async (
   }
 
   const id = await sendDataToTransferwise(tranferwiseData)
-  return {idUSD: id, accountNumberUSD: accountNumber }
+  return { idUSD: id, accountNumberUSD: accountNumber }
 }
 
-const createRecipientGBP = async (
-  { currency, accountHolderName, accountNumber, sortCode }: GBPAccount
-) => {
+const createRecipientGBP = async ({
+  currency,
+  accountHolderName,
+  accountNumber,
+  sortCode,
+}: GBPAccount) => {
   const tranferwiseData = {
     currency,
     type: 'sort_code',
@@ -107,9 +107,12 @@ const createRecipientGBP = async (
   return { idGBP: id, accountNumberGBP: accountNumber }
 }
 
-const createRecipientEUR = async (
-  { currency, accountHolderName, accountNumber, iban }: EURAccount
-) => {
+const createRecipientEUR = async ({
+  currency,
+  accountHolderName,
+  accountNumber,
+  iban,
+}: EURAccount) => {
   const tranferwiseData = {
     currency,
     type: 'iban',
@@ -123,7 +126,10 @@ const createRecipientEUR = async (
   return { idEUR: id, accountNumberEUR: accountNumber }
 }
 
-export const createTransferwiseAccount = async (input: EURAccount | GBPAccount | USDAccount, user: User) => {
+export const createTransferwiseAccount = async (
+  input: EURAccount | GBPAccount | USDAccount,
+  user: User
+) => {
   const { currency } = input
   let accountData: Partial<Transferwise>
 
@@ -138,6 +144,6 @@ export const createTransferwiseAccount = async (input: EURAccount | GBPAccount |
   }
 
   await upsertTranferwiseInfo(accountData, user)
-  
+
   return 'Succesfully executed transferwise payout account'
 }

@@ -1,10 +1,11 @@
 import { backupMnemonicPhrase } from '../libs/payment/backup'
 import { unLock } from '../libs/payment/unlock'
 
-const WalletController = require('express').Router()
+import express from 'express'
+
+const WalletController = express.Router()
 
 WalletController.route('/unlock').post(unLock)
 WalletController.route('/backup').post(backupMnemonicPhrase)
 
 export { WalletController }
-

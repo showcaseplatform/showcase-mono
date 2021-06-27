@@ -50,7 +50,9 @@ class NotificationSenderLib {
   private filterPushSettings = async (notifications: SendNotificationProps[]) => {
     return await Bluebird.filter(notifications, async ({ type, recipientId }) => {
       const user = await findUserById(recipientId)
-      if (!user) return false
+      if (!user) {
+        return false
+      }
       const userNotificationSettings = await notificationSettingsLib.getNotificationSettings(user)
       const typeNotificationSettings = userNotificationSettings.find(
         (notificationSettings) => notificationSettings.type === type
@@ -148,13 +150,15 @@ class NotificationSenderLib {
     // your app. Expo does not control this policy and sends back the feedback from
     // Apple and Google so you can handle it appropriately.
     const receiptIds = await this.getExpoAdminTicketIds()
-    if (receiptIds?.length === 0) throw new GraphQLError('There were no tickets found')
+    if (receiptIds?.length === 0) {
+      throw new GraphQLError('There were no tickets found')
+    }
 
     const receiptIdChunks = expo.chunkPushNotificationReceiptIds(receiptIds)
     await Bluebird.map(receiptIdChunks, async (chunk) => {
       const receipts = await expo.getPushNotificationReceiptsAsync(chunk)
       const receiptDataToSave = []
-      for (let receiptId in receipts) {
+      for (const receiptId in receipts) {
         const { status, message, details } = receipts[receiptId] as ExpoPushErrorReceipt
         if (status === 'error') {
           console.error(`There was an error sending a notification: ${message}`)
@@ -200,7 +204,7 @@ class NotificationSenderLib {
         },
       },
     })
-    return adminTickets.filter((t) => !!t?.expoId).map((t) => t.expoId as string)
+    return adminTickets.filter((t) => Boolean(t?.expoId)).map((t) => t.expoId as string)
   }
 }
 

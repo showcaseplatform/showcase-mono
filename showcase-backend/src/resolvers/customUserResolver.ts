@@ -9,7 +9,9 @@ export class customUserResolver {
   @FieldResolver((_) => Boolean)
   async amIFollowing(@Root() user: User, @Ctx() ctx: MyContext) {
     const uid = ctx.user?.id
-    if (!uid) return false
+    if (!uid) {
+      return false
+    }
     return await isUserAlreadyFollowed({ uid, followUserId: user.id })
   }
 

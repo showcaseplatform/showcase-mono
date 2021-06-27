@@ -1,13 +1,5 @@
 import { User, UserType } from '@prisma/client'
-import {
-  Mutation,
-  Arg,
-  Resolver,
-  Ctx,
-  Authorized,
-  Subscription,
-  Root,
-} from 'type-graphql'
+import { Mutation, Arg, Resolver, Ctx, Authorized, Subscription, Root } from 'type-graphql'
 import { sendMessage } from '../libs/chat/sendMessage'
 import { NewChatMessageInput, ExistingChatMessageInput } from '../libs/chat/types/sendMessage.type'
 import { ChatMessage, ChatParticipant } from '@generated/type-graphql'
@@ -29,7 +21,9 @@ export class ChatResolver {
     @Arg('existingChatInput', { nullable: true }) existingChatInput?: ExistingChatMessageInput
   ) {
     const input = newChatInput || existingChatInput
-    if (!input) throw new GraphQLError('Please provide an input data')
+    if (!input) {
+      throw new GraphQLError('Please provide an input data')
+    }
     const message = await sendMessage(input, currentUser)
     await myPubSub.publish(NEW_CHAT_MESSAGE, message)
     return message

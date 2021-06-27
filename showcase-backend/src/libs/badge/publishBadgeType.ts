@@ -1,7 +1,7 @@
 /* eslint-disable promise/no-nesting */
 import axios from 'axios'
 import { blockchain } from '../../config'
-import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
+// import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
 import { Profile, User } from '@generated/type-graphql'
 import { prisma } from '../../services/prisma'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
@@ -15,13 +15,15 @@ interface InputWithUser extends PublishBadgeTypeInput {
 
 // todo: does user musst have a crypto account?
 const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWithUser>) => {
-  if (!user || user.userType != UserType.creator) {
+  if (!user || user.userType !== UserType.creator) {
     throw new GraphQLError('You are not a verified creator')
   }
 
   if (causeId || donationAmount) {
     try {
-      if (!donationAmount) throw new GraphQLError('Invalid donation amount')
+      if (!donationAmount) {
+        throw new GraphQLError('Invalid donation amount')
+      }
       await prisma.cause.findUnique({
         where: {
           id: causeId,

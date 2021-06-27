@@ -18,7 +18,7 @@ export const isUserAlreadyFollowed = async ({ uid, followUserId }: FollowInput) 
       },
     },
   })
-  return !!follow && follow.status === FollowStatus.Accepted
+  return follow?.status === FollowStatus.Accepted
 }
 
 const addFriend = async ({ uid, followUserId }: FollowInput) => {
@@ -56,7 +56,9 @@ const removeFollower = async ({ uid, followUserId }: { uid: Uid; followUserId: U
 }
 
 export const toggleFollow = async (followUserId: string, uid: Uid) => {
-  if (followUserId === uid) throw new GraphQLError('Followed user id matches your id')
+  if (followUserId === uid) {
+    throw new GraphQLError('Followed user id matches your id')
+  }
   const isAlreadyFollowed = await isUserAlreadyFollowed({ uid, followUserId })
   if (isAlreadyFollowed) {
     return await removeFollower({ uid, followUserId })

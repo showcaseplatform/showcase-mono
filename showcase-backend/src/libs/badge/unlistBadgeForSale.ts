@@ -12,9 +12,9 @@ export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Ui
   const badgeItem = await findBadgeItem(badgeItemId)
 
   // here we need to make sure user currently owns the badge because the removebadge is called from escrow
-  if (!badgeItem || badgeItem.ownerId != uid) {
+  if (!badgeItem || badgeItem.ownerId !== uid) {
     throw new GraphQLError('User doesnt match badge owner')
-  } else if(!badgeItem.forSale) {
+  } else if (!badgeItem.forSale) {
     throw new GraphQLError('Badge already on sale!')
   }
 
@@ -24,7 +24,6 @@ export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Ui
     : { data: { success: true } }
 
   if (response && response.data && response.data.success) {
-
     return await updateBadgeItem(badgeItemId, {
       forSale: false,
       salePrice: null,

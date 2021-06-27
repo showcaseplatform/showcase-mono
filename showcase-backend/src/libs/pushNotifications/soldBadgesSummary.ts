@@ -6,7 +6,6 @@ import { SendNotificationProps } from '../../types/notificaton'
 import prisma from '../../services/prisma'
 import { BadgeType, Receipt } from '@prisma/client'
 
-
 // todo: currently this notification is not used
 interface BadgesSoldRecordValue {
   USD: number
@@ -20,19 +19,19 @@ const getAllReceiptsFromLastWeek = async () => {
   return await prisma.receipt.findMany({
     where: {
       createdAt: {
-        gt: periodStartDate
-      }
+        gt: periodStartDate,
+      },
     },
     include: {
-      badgeType: true
-    }
+      badgeType: true,
+    },
   })
 }
 
 const getSummaryOfSoldBadgesByCreators = (
   receipts: (Receipt & {
-    badgeType: BadgeType;
-})[]
+    badgeType: BadgeType
+  })[]
 ): Record<Uid, BadgesSoldRecordValue> => {
   return receipts.reduce((acc, curr) => {
     if (acc[curr.creatorId]) {
@@ -51,7 +50,7 @@ const getSummaryOfSoldBadgesByCreators = (
 }
 
 const getMessagesForCreators = async (dictionary: Record<Uid, BadgesSoldRecordValue>) => {
-  let inputMessages: SendNotificationProps[] = []
+  const inputMessages: SendNotificationProps[] = []
   for (const [uid, value] of Object.entries(dictionary)) {
     const title = `Weekly recap:`
     const message = `You sold ${value.count} badges this week for a total of ${

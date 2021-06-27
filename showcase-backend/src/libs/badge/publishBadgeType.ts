@@ -7,7 +7,9 @@ import { prisma } from '../../services/prisma'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { GraphQLError } from 'graphql'
 import { UserType } from '.prisma/client'
-
+import { FileUpload } from 'graphql-upload'
+import { v4 as uuidv4 } from 'uuid';
+import { uploadFile } from '../../services/S3'
 interface InputWithUser extends PublishBadgeTypeInput {
   user: User
   profile: Profile
@@ -102,4 +104,22 @@ export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User)
   // await sendNotificationToFollowersAboutNewBadge(user.id)
 
   return badgeType
+}
+
+// todo: atm upload service handling bucketName
+// todo: key should have proper file type like: *.png
+export const uploadBadge = async (file: FileUpload) => {
+  const { createReadStream, mimetype, filename } = file
+
+  if (mimetype !== "image/jpeg" || "image/png") {
+    throw new GraphQLError("Only JPEG and PNG file allowed.")
+  }
+
+  const stream = createReadStream()
+
+  const id = uuidv4()
+  const fileExtension = mimetype.split('/')[1]
+  const S3_key = `${id}.${fileExtension}`
+
+  return await uploadFile({ Key: S3_key, stream })
 }

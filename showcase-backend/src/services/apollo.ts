@@ -52,7 +52,7 @@ export class MyApollo {
         SearchResolver,
         customUserResolver,
         customBadgeTypeResolver,
-        customBadgeItemResolver
+        customBadgeItemResolver,
       ],
       validate: true,
       authChecker: AuthLib.authChecker,
@@ -63,6 +63,7 @@ export class MyApollo {
 
     const apolloServer = new ApolloServer({
       schema,
+      uploads: false,
       playground: true,
       introspection: true,
       context: async ({ req, connection }): Promise<MyContext> => {
@@ -81,7 +82,7 @@ export class MyApollo {
             const users = await prisma.user.findMany()
             user = users[0]
           }
-          
+
           return { prisma, user }
         }
       },

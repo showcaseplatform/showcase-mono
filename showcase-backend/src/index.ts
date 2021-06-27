@@ -15,6 +15,12 @@ import { MyApollo } from './services/apollo'
 import { ShowcaseCron } from './jobs'
 import http from 'http'
 
+import * as dotenv from 'dotenv'
+import { join } from 'path'
+process.chdir(join(__dirname, '..'))
+const dotenvPath = join(__dirname, '..', '.env')
+dotenv.config({ path: dotenvPath })
+
 const port = parseInt(process.env.PORT || '3000', 10)
 
 const main = async () => {

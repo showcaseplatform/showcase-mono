@@ -27,7 +27,7 @@ interface PurchaseTransactionInput {
 }
 
 const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
-  const badgesOwned = await prisma.user.findUnique({
+  const userWithBadgeItems = await prisma.user.findUnique({
     where: {
       id: userId,
     },
@@ -40,7 +40,7 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
     },
   })
 
-  if (badgesOwned?.badgeItemsOwned?.length && badgesOwned?.badgeItemsOwned?.length > 0) {
+  if (userWithBadgeItems?.badgeItemsOwned?.length && userWithBadgeItems?.badgeItemsOwned?.length > 0) {
     throw new GraphQLError('You already purchased this badge')
   }
 }
@@ -215,25 +215,27 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const user = await getUserProfileWithFinancialInfo(uid)
 
   if (!user || !user.balance) {
-    throw Boom.badData('Profile missing')
+    throw new GraphQLError('Profile missing')
   }
 
   if (
     (!user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
     (user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
   ) {
-    throw Boom.preconditionFailed(
+    throw new GraphQLError(
       'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.'
     )
   }
-  if (
-    !user.cryptoWallet ||
-    !user.cryptoWallet.address ||
-    !user.balance?.id ||
-    !user.stripeInfo?.stripeId
-  ) {
-    throw Boom.preconditionFailed('No wallet or card')
-  }
+
+  // todo: uncomment when strip integration is tested
+  // if (
+  //   !user.cryptoWallet ||
+  //   !user.cryptoWallet.address ||
+  //   !user.balance?.id ||
+  //   !user.stripeInfo?.stripeId
+  // ) {
+  //   throw new GraphQLError('No wallet or card')
+  // }
 
   await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
 
@@ -270,23 +272,28 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   }
 
   if (currenciesData[user.profile.currency] !== currencyRate) {
+    console.log(currenciesData[user.profile.currency], currencyRate)
     throw new GraphQLError('Transaction currency conversion rate dont match!')
   }
 
-  const { chargeId } = await chargeStripeAccount({
-    amount: calculatedPrice,
-    currency: user.profile.currency,
-    title: badgeType.title,
-    badgeItemId: newBadgeTokenId,
-    creatorProfileId: badgeType.creatorId,
-    customerStripeId: user.stripeInfo.stripeId,
-  })
+  // todo: uncomment when strip integration is tested
+  // const { chargeId } = await chargeStripeAccount({
+  //   amount: calculatedPrice,
+  //   currency: user.profile.currency,
+  //   title: badgeType.title,
+  //   badgeItemId: newBadgeTokenId,
+  //   creatorProfileId: badgeType.creatorId,
+  //   customerStripeId: user.stripeInfo.stripeId,
+  // })
+  const chargeId = getRandomNum().toString()
 
   try {
+    // todo: uncomment when strip integration is tested
     // todo: remove blockchain.enabled once server is ready
-    const { transactionHash } = blockchain.enabled
-      ? await mintNewBadgeOnBlockchain(user.cryptoWallet.address, newBadgeTokenId)
-      : { transactionHash: 'fake_hash' + getRandomNum() }
+    // const { transactionHash } = blockchain.enabled
+    //   ? await mintNewBadgeOnBlockchain(user.cryptoWallet.address, newBadgeTokenId)
+    //   : { transactionHash: 'fake_hash' + getRandomNum() }
+    const transactionHash = 'fake_hash' + getRandomNum()
 
     let payoutAmount = 0
     let causeFullAmount = 0

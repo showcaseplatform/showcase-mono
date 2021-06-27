@@ -66,7 +66,11 @@ export class AuthLib {
           },
         },
         balance: {
-          create: {}
+          create: {
+            EUR: 0,
+            GBP: 0,
+            USD: 0
+          }
         },
       },
     })

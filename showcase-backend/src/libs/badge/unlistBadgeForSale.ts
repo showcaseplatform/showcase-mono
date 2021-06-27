@@ -2,40 +2,35 @@
 import axios from 'axios'
 import { blockchain } from '../../config'
 import { Uid } from '../../types/user'
-import Boom from 'boom'
 import { UnListBadgeForSaleInput } from './types/unlistBadgeForSale.type'
-import prisma from '../../services/prisma'
+import { findBadgeItem, updateBadgeItem } from '../database/badgeItem.repo'
+import { GraphQLError } from 'graphql'
 
 export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Uid) => {
   const { badgeItemId } = input
 
-  const badge = await prisma.badgeItem.findUnique({
-    where: {
-      id: badgeItemId,
-    },
-  })
+  const badgeItem = await findBadgeItem(badgeItemId)
 
   // here we need to make sure user currently owns the badge because the removebadge is called from escrow
-  if (!badge || badge.ownerId != uid) {
-    throw Boom.preconditionFailed('User doesnt match badge owner', { badge, uid })
+  if (!badgeItem || badgeItem.ownerId != uid) {
+    throw new GraphQLError('User doesnt match badge owner')
+  } else if(!badgeItem.forSale) {
+    throw new GraphQLError('Badge already on sale!')
   }
 
   // todo: remove blockchain.enabled once server is ready
   const response = blockchain.enabled
-    ? await axios.post(blockchain.server + '/removeBadgeFromEscrow', { badgeid: badgeItemId })
+    ? await axios.post(blockchain.server + '/removeBadgeFromEscrow', { badgeid: badgeItem.tokenId })
     : { data: { success: true } }
 
   if (response && response.data && response.data.success) {
-    // todo: delete related the badgeSale for this listing, if concept stays to create new badgeType when resale
-    return await prisma.badgeItem.update({
-      where: {
-        id: badgeItemId,
-      },
-      data: {
-        forSale: false,
-      },
+
+    return await updateBadgeItem(badgeItemId, {
+      forSale: false,
+      salePrice: null,
+      saleCurrency: null,
     })
   } else {
-    throw Boom.internal('Blockchain server gave invalid response', response)
+    throw new GraphQLError('Blockchain server gave invalid response')
   }
 }

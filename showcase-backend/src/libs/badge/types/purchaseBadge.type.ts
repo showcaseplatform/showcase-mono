@@ -7,10 +7,6 @@ export class PurchaseBadgeInput {
   @Field()
   badgeTypeId: string
 
-  @Field()
-  @MaxLength(BADGE_TYPE_MAX_TITLE_LENGTH)
-  title: string
-
   @Field((_type) => Int)
   @Min(0)
   @Max(1)

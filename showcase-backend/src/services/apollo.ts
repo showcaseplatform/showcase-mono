@@ -58,12 +58,11 @@ export class MyApollo {
       authChecker: AuthLib.authChecker,
       // here provide all the types that are missing in schema
       //   orphanedTypes: [FirstObject],
-      pubSub: myPubSub  // todo: replace with redisPubSub for production subscriptions
+      pubSub: myPubSub, // todo: replace with redisPubSub for production subscriptions
     })
 
     const apolloServer = new ApolloServer({
       schema,
-      uploads: false,
       playground: true,
       introspection: true,
       context: async ({ req, connection }): Promise<MyContext> => {
@@ -75,7 +74,6 @@ export class MyApollo {
 
           // Try to retrieve a user with the token
           let user: User | null = await AuthLib.getUserByToken(token)
-
 
           // Only for testing purposes
           if (!user && token === 'test') {

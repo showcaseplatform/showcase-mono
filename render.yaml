@@ -5,9 +5,9 @@ services:
     plan: starter
     previewPlan: starter
     name: showcase-backend-monorepo
-    region: frankfurt
+    region: oregon
     env: node
-     buildCommand: cd showcase-backend && yarn && yarn run prisma:generate && yarn run build
+    buildCommand: cd showcase-backend && yarn && yarn run prisma:generate && yarn run build
     startCommand: cd showcase-backend && yarn prisma:ci && yarn start
     afterFirstDeployCommand: cd showcase-backend yarn prisma:seed
     envVars:

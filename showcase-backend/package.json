@@ -8,6 +8,7 @@
     "build": "npx rimraf dist && npx tsc -p tsconfig.build.json",
     "lint": "eslint .",
     "test": "jest -i",
+    "test:watch": "jest --watch",
     "postgresql": "npm run postgresql:kill && npm run postgresql:start",
     "postgresql:kill": "docker ps -a | grep showcase-postgresql | awk '{print $1}' | xargs -I {} docker rm -f {}",
     "postgresql:start": "docker run --rm -p 5432:5432 --name showcase-postgresql -e POSTGRES_PASSWORD=showcase-test -e POSTGRES_USER=showcase-test -d postgres:13",

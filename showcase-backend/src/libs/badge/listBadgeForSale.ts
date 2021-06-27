@@ -7,8 +7,9 @@ import Boom from 'boom'
 import { ListBadgeForSaleInput } from './types/listBadgeForSale.type'
 import { BADGE_TYPE_MAX_SALE_PRICE, BADGE_TYPE_MIN_SALE_PRICE } from '../../consts/businessRules'
 import prisma from '../../services/prisma'
-import { BadgeType, Currency } from '.prisma/client'
-import { v4 } from 'uuid'
+import { findProfile } from '../database/profile.repo'
+import { findBadgeItem, updateBadgeItem } from '../database/badgeItem.repo'
+import { GraphQLError } from 'graphql'
 
 interface BlockChainPostData {
   sig: string
@@ -19,7 +20,7 @@ interface BlockChainPostData {
 }
 
 const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleInput, uid: Uid) => {
-  const { sig, message, badgeItemId } = input
+  const { sig, message, badgeItemId: tokenId } = input
 
   const cryptoWallet = await prisma.crypto.findUnique({
     where: {
@@ -32,7 +33,7 @@ const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleI
   const postData: BlockChainPostData = {
     sig,
     message,
-    badgeid: badgeItemId,
+    badgeid: tokenId,
     badgeowner: cryptoWallet.address,
     token: blockchain.authToken,
   }
@@ -45,69 +46,12 @@ const addNonFungibleToEscrowWithSignatureRelay = async (input: ListBadgeForSaleI
   if (response && response.data && response.data.success) {
     return
   } else {
-    throw Boom.internal('Blockchain server gave invalid response', response)
+    throw new GraphQLError('Blockchain server gave invalid response')
   }
 }
 
-const createResaleBadgeTypeAndUpdateBadge = async ({
-  badgeItemId,
-  currency,
-  uid,
-  price,
-  originBadgeType,
-}: {
-  badgeItemId: BadgeItemId
-  currency: Currency
-  uid: Uid
-  price: number
-  originBadgeType: BadgeType
-}) => {
-  const newBadgeTypeId = v4()
-
-  const [_, updatedBadge] = await prisma.$transaction([
-    // todo: delete resaleBadgeType on purchase or handle resaleBadges separetly to badgeTypes
-    // do we make a new badge sale here? probably. then we will delete the badge from user profile on purchase
-    prisma.badgeType.create({
-      data: {
-        ...originBadgeType,
-        id: newBadgeTypeId,
-        uri: 'https://showcase.to/badge/' + badgeItemId,
-        currency,
-        price,
-        resale: true,
-        resallerId: uid,
-        supply: 1,
-        shares: 0,
-        soldout: false,
-        removedFromShowcase: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        badgeItems: {
-          // connect resaleBadgType with the actual badge
-          connect: {
-            id: badgeItemId,
-          },
-        },
-      },
-    }),
-
-    prisma.badgeItem.update({
-      where: {
-        id: badgeItemId,
-      },
-      data: {
-        // here we need to set forSale = true on the original badge doc
-        forSale: true,
-      },
-    }),
-  ])
-
-  return updatedBadge
-}
-
-// todo: currency is not used from input type, should be removed if realy not neccesary
 export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) => {
-  const { badgeItemId, price } = input
+  const { badgeItemId, price, currency, sig, message } = input
 
   // todo: price validation should be done with gql class-validators
   if (
@@ -116,37 +60,27 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
     isNaN(price) ||
     typeof price !== 'number'
   ) {
-    throw Boom.badData('Invalid Price', price)
+    throw new GraphQLError('Invalid Price')
   }
 
-  const profile = await prisma.profile.findUnique({
-    where: {
-      id: uid,
-    },
-  })
+  const profile = await findProfile(uid)
+  const badge = await findBadgeItem(badgeItemId)
 
-  const badge = await prisma.badgeItem.findUnique({
-    where: {
-      id: badgeItemId,
-    },
-    include: {
-      badgeType: true,
-    },
-  })
-
-  if (profile && badge && badge.ownerId === uid) {
+  if (profile && badge && badge.ownerId === uid && badge.tokenId) {
     // todo: remove blockchain.enabled once server is ready
-    blockchain.enabled && (await addNonFungibleToEscrowWithSignatureRelay(input, uid))
+    blockchain.enabled &&
+      (await addNonFungibleToEscrowWithSignatureRelay(
+        { sig, price, message, badgeItemId: badge.tokenId },
+        uid
+      ))
     
-    const { badgeType } = badge
-    return await createResaleBadgeTypeAndUpdateBadge({
-      badgeItemId,
-      price,
-      uid,
-      currency: profile.currency,
-      originBadgeType: badgeType,
+    // todo: what is  "uri: 'https://showcase.to/badge/' + badgeItemId" used for? should we add a new one to the badgeItem or does this refer only the the badgeType?
+    return await updateBadgeItem(badgeItemId, {
+      forSale: true,
+      salePrice: price,
+      saleCurrency: currency || profile.currency,
     })
   } else {
-    throw Boom.preconditionFailed('User doesnt own the provided badge', { badge, uid })
+    throw new GraphQLError('User doesnt own the provided badge')
   }
 }

@@ -1,7 +1,7 @@
 import { Currency, UserType } from '@prisma/client'
 import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
-import { prisma } from '../../services/prisma'
-import { createRandomNames } from '../../utils/createRandomNames'
+import prisma from '../../services/prisma'
+import { createRandomNames } from '../../utils/randoms'
 import { jwtClient } from '../../services/jsonWebToken'
 import { findUserById } from '../database/user.repo'
 import { ArgsDictionary } from 'type-graphql'
@@ -66,7 +66,11 @@ export class AuthLib {
           },
         },
         balance: {
-          create: {}
+          create: {
+            EUR: 0,
+            GBP: 0,
+            USD: 0
+          }
         },
       },
     })

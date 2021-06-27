@@ -5,6 +5,12 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { graphqlUploadExpress } from 'graphql-upload';
 
+import * as dotenv from 'dotenv'
+import { join } from 'path'
+process.chdir(join(__dirname, '..'))
+const dotenvPath = join(__dirname, '..', '.env')
+dotenv.config({ path: dotenvPath })
+
 // Import middlewares
 import { globalErrorHandler } from './middlewares/globalErrorHandler'
 
@@ -49,6 +55,7 @@ const main = async () => {
   httpServer.listen(port)
   console.log(`🚀 Server ready at http://localhost:${port}${apolloServer.graphqlPath}`);
   console.log(`🚀 Subscriptions ready at ws://localhost:${port}${apolloServer.subscriptionsPath}`);
+
 }
 
 main()

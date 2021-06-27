@@ -3,6 +3,7 @@
 ## Getting started
 
 Make sure to install:
+
 - yarn
 - Docker
 
@@ -10,10 +11,8 @@ Make sure to install:
 
 - Create `.env` file based on the contents of `.env.example`
 - Run `yarn`
-- Source your new .env file: `source .env`
 - Seed DB with `yarn prisma:seed`
 - Run dev server: `yarn start:dev`
-
 
 ## Modify database schema / add new migrations
 

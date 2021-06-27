@@ -1,0 +1,39 @@
+{
+  "name": "showcase",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Apex Lab",
+  "license": "ISC",
+  "homepage": "https://github.com/showcaseplatform",
+  "private": true,
+  "scripts": {
+    "precommit:frontend": "cd roche-betmen-frontend && npm run precommit",
+    "precommit:backend": "cd cd roche-betmen-frontend && npm run precommit",
+    "precommit": "npm-run-all precommit:*",
+    "postinstall": "npx yarn-recursive --skipRoot"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "~4.28.0",
+    "@typescript-eslint/parser": "~4.28.0",
+    "eslint": "^7.29.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-typescript": "^0.14.0",
+    "husky": "^6.0.0",
+    "lint-staged": "^11.0.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^2.3.1",
+    "recursive-install": "^1.4.0",
+    "typescript": "^4.3.4",
+    "yarn-recursive": "^1.1.0"
+  }
+}

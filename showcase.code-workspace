@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "Core Backend",
+      "path": "showcase-backend"
+    },
+    {
+      "name": "Core Frontend",
+      "path": "showcase-mobile"
+    }
+  ],
+  "settings": {
+    "eslint.workingDirectories": ["showcase-backend", "showcase-mobile"]
+  }
+}

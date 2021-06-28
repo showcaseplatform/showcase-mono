@@ -17,7 +17,7 @@ export const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid)
         },
       },
     })
-    return Boolean(view)
+    return !!view
   } else {
     const view = await prisma.badgeItemView.findUnique({
       where: {
@@ -27,7 +27,7 @@ export const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid)
         },
       },
     })
-    return Boolean(view)
+    return !!view
   }
 }
 
@@ -108,7 +108,7 @@ const checkBadgeOwnedOnBlockchain = async (badgeItemId: BadgeItemId): Promise<bo
   const response = await axios.post(blockchain.server + '/verifyOwnershipOfBadge', data)
   console.log('Blockchain response: ', { response })
 
-  return Boolean(response?.data?.isOwner)
+  return !!response?.data?.isOwner
 }
 
 const randomBadgeInspection = (marketplace: boolean): boolean => {

@@ -70,7 +70,7 @@
     "no-floating-decimal": 2,
 
     // Warn against shorthand type conversions
-    "no-implicit-coercion": 1,
+    "no-implicit-coercion": 0,
 
     // Warn against function declarations and expressions inside loop statements
     "no-loop-func": 1,

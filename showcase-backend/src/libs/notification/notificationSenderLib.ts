@@ -204,7 +204,7 @@ class NotificationSenderLib {
         },
       },
     })
-    return adminTickets.filter((t) => Boolean(t?.expoId)).map((t) => t.expoId as string)
+    return adminTickets.filter((t) => !!t?.expoId).map((t) => t.expoId as string)
   }
 }
 

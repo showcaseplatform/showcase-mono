@@ -1,0 +1,6 @@
+mutation ToggleFollow($userId: String!) {
+  toggleFollow(userId: $userId) {
+    userId
+    status
+  }
+}

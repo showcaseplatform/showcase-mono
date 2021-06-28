@@ -1,0 +1,16 @@
+query UserFollowers($id: String!) {
+  user(where: { id: $id }) {
+    id
+    followers {
+      userId
+      user {
+        id
+        profile {
+          id
+          displayName
+          username
+        }
+      }
+    }
+  }
+}

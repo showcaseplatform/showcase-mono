@@ -1,0 +1,10 @@
+fragment Me_Profile on Profile {
+  id
+  displayName
+  username
+  bio
+  email
+  currency
+  birthDate
+  avatar
+}

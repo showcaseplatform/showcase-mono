@@ -1,0 +1,35 @@
+query Me {
+  me {
+    id
+    userType
+    ...Me_Counter
+    profile {
+      ...Me_Profile
+    }
+    badgeTypesCreated {
+      price
+      currency
+      image
+      supply
+      sold
+    }
+    friends {
+      userId
+      status
+      user {
+        id
+        amIFollowing
+        profile {
+          id
+          avatar
+          displayName
+          username
+        }
+      }
+    }
+    followers {
+      userId
+      status
+    }
+  }
+}

@@ -1,0 +1,4 @@
+fragment Me_Counter on User {
+  followersCount
+  friendsCount
+}

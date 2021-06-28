@@ -12,11 +12,14 @@ import { BadgeHistorySectionHeader } from '../components/BadgeHistorySectionHead
 const BadgeHistory = () => {
   const { badges, isLoading } = useBadge()
 
-  const groupedBadges = useMemo(() => groupBadgesByDateDistance(badges), [
-    badges,
-  ])
+  const groupedBadges = useMemo(
+    () => groupBadgesByDateDistance(badges),
+    [badges]
+  )
 
-  if (isLoading) return <LoadingIndicator fullScreen />
+  if (isLoading) {
+    return <LoadingIndicator fullScreen />
+  }
 
   return (
     <SectionList

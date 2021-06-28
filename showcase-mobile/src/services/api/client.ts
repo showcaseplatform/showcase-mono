@@ -1,4 +1,5 @@
 import { Client, dedupExchange, fetchExchange, makeOperation } from 'urql'
+import { multipartFetchExchange } from '@urql/exchange-multipart-fetch'
 import { gql } from '@urql/core'
 import { cacheExchange, DataFields } from '@urql/exchange-graphcache'
 import { authExchange } from '@urql/exchange-auth'
@@ -113,6 +114,7 @@ const client = new Client({
         },
     }),
     fetchExchange,
+    multipartFetchExchange,
   ],
 })
 

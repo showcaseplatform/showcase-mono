@@ -303,16 +303,15 @@ const englishTranslations = {
 
 const russianTranslations = {}
 
-export const translate: (
-  language?: string
-) => { [key: string]: string } = () => {
-  var language = ''
-  if (language == 'ru' || language == 'ru_US' || language == 'ru_RU') {
-    return russianTranslations
-  } else {
-    return englishTranslations
+export const translate: (language?: string) => { [key: string]: string } =
+  () => {
+    var language = ''
+    if (language == 'ru' || language == 'ru_US' || language == 'ru_RU') {
+      return russianTranslations
+    } else {
+      return englishTranslations
+    }
   }
-}
 
 export function getCurrencySymbol(currency: 'USD' | 'EUR' | 'GBP') {
   try {

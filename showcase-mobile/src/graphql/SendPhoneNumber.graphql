@@ -1,0 +1,5 @@
+mutation SendPhoneNumber($areaCode: String!, $phone: String!) {
+  sendPhoneCode(data: { areaCode: $areaCode, phone: $phone }) {
+    success
+  }
+}

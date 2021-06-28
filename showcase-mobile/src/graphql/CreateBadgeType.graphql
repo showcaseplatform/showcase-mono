@@ -1,0 +1,5 @@
+mutation CreateBadge($data: PublishBadgeTypeInput!, $file: Upload!) {
+  publishBadgeType(data: $data, file: $file) {
+    id
+  }
+}

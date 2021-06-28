@@ -1,0 +1,74 @@
+*** BUGS ***
+☐ DATE Input filed: invalid date
+☐ android:
+  ✔ EnterPhoneNumber screen's picker does not respond. Bottom sheet is glitchy @done(21-06-21 07:53)
+  ✔ sub-modals are not opening @done(21-06-21 07:53)
+  ☐ auto keyboard open  / auto input focus messing up BottomSheet and BottomNav as well
+  ☐ BottomSheet bottom inset does not set, slighly open on init render
+☐ Profile Screen - (horizontal) flatlist height does not calc properply. Maybe on other screens either
+☐ Bottom and / or top instets are not setup properly
+☐ at first render: category icons are slower then the layout
+☐ BadgeDetails: currency exchanger: eg. USD -> $
+☐ After badge has been edited -> next -> forwardRef data warning pops
+☐ BUY CTA should be on Portal instead of position absolute (if cause modal open overlaps)
+☐ Android cause widget round styling issue
+☐ FollowButton component ui stuck in loading (disabled) state after first onPress
+✔ CreateBadgeButton can be "overclicked" (badge in the background is activated on click upper bart of the button) @done(21-06-21 07:56)
+✔ Follow - Unfollow button loading state is over before the data has been changed (ui glitch) @done(21-06-17 10:21)
+✘ badges screen - if search input exists then category selected -> results flashing once @cancelled(21-05-06 11:39)
+  seems to be disappeared
+
+*** IMPROVEMENTS ***
+☐ prevent "direct" navigation between screens if not authenticated
+☐ navigation should be typed properly (stacks and routes)
+☐ maybe: Auth Modal is slow at first opening
+☐ Optional: BottomSheetHeader - ModalHeader are similar, try to homogenise them?
+☐ add focus on next form input on submit editing
+☐ path aliases to 'components', 'utils', etc.
+☐ RN-styledcomps vs RN-paper theming vs unthemed space/sizing should use the same theme file / format (spacing with and without 'px' )
+☐ detailed camera / image gallery permission implementation
+☐ Lift Editor's state into a separate Context (choosen category, imagePath, maybe filter settings as well)
+✘ AppSettings should be moved into server or env, eg.: donation details (min, max, default) @cancelled(21-06-21 07:54)
+✘ should handle Dimensions @cancelled(21-06-21 07:54)
+☐ BadgeDetails screen loading states handling
+  ☐ load cause image
+  ☐ load main image
+  ☐ load image background
+  ☐ header data must be there when images loaded
+☐ Profile screen should handle longer (~infinite) bio text
+☐ MyFriend screen items may navigate to user's profile
+✔ create a reuseable fetch client @done(21-05-10 18:04)
+✔ build a screen comp with basic settings eg.: bg @done(21-05-06 11:28)
+✔ enter phone and enter auth screens are built with Stylesheet, replace it with styled comps @done(21-05-06 11:26)
+✔ Text component: sort out styled / rn / paper types @done(21-04-28 06:34)
+✘ bring StyledSafeArea to a common place @cancelled(21-05-06 11:27) - replaced with another common comp
+✘ extract header components @cancelled(21-04-28 06:31)
+
+*** FEATURES ***
+☐ Privacy - Terms modal comps should be reusable
+☐ Animated.VIew transition between 'nav' - 'auth' steps
+  - could be implemented with other modal 'nav' - 'auth' steps
+☐ TextInput - states should handle better number vs string changes
+☐ Authentication Flow may refactored into a separate navigation stack
+☐ Header tint color could be dynamic (based on background color and / or theme)
+☐ use translate everywhere (replace static strings)
+☐ image handling with proper cache
+☐ Editor may give an option to choose another image without navigating back
+☐ Editor may support landscape mode
+☐ Editor image quality should be tested
+☐ Editor more detailed cropping
+☐ Editor's list of required presets should be defined / researched (preset effects)
+✔ More sophisticated input validation (like react-hook-forms) @done(21-05-06 11:28)
+✔ RN Picker placeholder component @done(21-05-06 11:28)
+
+
+*** QUESTIONS ***
+☐ Where should we navigate back from Profile screen (other user's profile)?
+☐ Profile screen -> open badge -> onBack: where to?
+☐ edit user profile image -> upload on 'Save' or asap as picked?
+☐ If logged in user is Verified Creator -> Trade Stack is active -> how will bottomsheet will behave (curr: custom asset colored Create button)
+☐ trading
+  - own 1 badge only?
+  - creator inventory control? more items, sell only few from them
+  - after selling state badge -> modify sell details
+  -

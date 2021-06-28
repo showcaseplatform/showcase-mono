@@ -1,0 +1,12 @@
+mutation SendAuthCode($code: String!, $areaCode: String!, $phone: String!) {
+  verifyPhoneCode(data: { areaCode: $areaCode, phone: $phone, code: $code }) {
+    token
+    user {
+      id
+      userType
+      profile {
+        ...Profile_WithBasics
+      }
+    }
+  }
+}

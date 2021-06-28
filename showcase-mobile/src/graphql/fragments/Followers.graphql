@@ -1,0 +1,14 @@
+fragment Followers on User {
+  followers {
+    userId
+    status
+    user {
+      id
+      profile {
+        id
+        displayName
+        username
+      }
+    }
+  }
+}

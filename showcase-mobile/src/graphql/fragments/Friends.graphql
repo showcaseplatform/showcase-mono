@@ -1,0 +1,14 @@
+fragment Friends on User {
+  friends {
+    userId
+    status
+    user {
+      id
+      profile {
+        id
+        displayName
+        username
+      }
+    }
+  }
+}

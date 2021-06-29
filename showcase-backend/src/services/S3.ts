@@ -1,15 +1,14 @@
 import S3 from 'aws-sdk/clients/s3'
-import { ReadStream } from 'fs'
 
 // todo: move me into config system
-const { S3_BUCKETREGION, S3_ACCESS_KEY, S3_SECRET } = process.env
+const { DEV_AWS_REGION, DEV_AWS_ACCESS_KEY_ID, DEV_AWS_SECRET_ACCESS_KEY, DEV_AWS_S3_BUCKET } = process.env
 
-const Bucket = `showcase-badges-dev` //${NODE_ENV}
+const Bucket = DEV_AWS_S3_BUCKET as string
 
 const s3 = new S3({
-  accessKeyId: S3_ACCESS_KEY,
-  secretAccessKey: S3_SECRET,
-  region: S3_BUCKETREGION,
+  accessKeyId: DEV_AWS_ACCESS_KEY_ID,
+  secretAccessKey: DEV_AWS_SECRET_ACCESS_KEY,
+  region: DEV_AWS_REGION,
 })
 
 export function uploadFile({ Key, buffer }: { Key: string; buffer: Buffer }) {
@@ -18,6 +17,7 @@ export function uploadFile({ Key, buffer }: { Key: string; buffer: Buffer }) {
     Key,
     Body: buffer,
     ContentEncoding: 'base64',
+    // ACL: 'public-read-write',
   }
 
   return s3.upload(params).promise()
@@ -32,12 +32,3 @@ export function generateSignedUrl(Key: string, expiryInSec?: number) {
 
   return s3.getSignedUrl('getObject', params)
 }
-
-// export function loadFileStream(Key: string) {
-//   const params = {
-//     Bucket,
-//     Key,
-//   }
-
-//   return s3.getObject(params).createReadStream()
-// }

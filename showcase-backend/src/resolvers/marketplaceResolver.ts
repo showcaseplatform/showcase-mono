@@ -20,10 +20,14 @@ export class MarketplaceResolver {
     @Arg('data') publishBadgeTypeInput: PublishBadgeTypeInput,
     @CurrentUser() currentUser: User
   ): Promise<BadgeType> {
-    const { uploadedFile, hash } = await uploadBadge(file)
-    if (!uploadedFile) throw new GraphQLError('something went wrong with fileupload')
+    try {
+      const { hash } = await uploadBadge(file)
 
-    return publishBadgeType(publishBadgeTypeInput, hash, currentUser)
+      return publishBadgeType(publishBadgeTypeInput, hash, currentUser)
+    } catch (error) {
+      throw new GraphQLError('RESOLVER ERROR: publishBadgeType', error)
+    }
+
   }
 
   @Authorized(UserType.basic, UserType.creator)

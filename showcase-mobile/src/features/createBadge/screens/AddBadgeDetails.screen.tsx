@@ -81,16 +81,16 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
     })
   }, [isSubmitting, navigation])
 
-  // todo: hit the create endpoint
   const onSubmit = async (formData: BadgeDetails) => {
     let _data: PublishBadgeTypeInput = {
       title: formData.title,
+      price: formData.price,
+      supply: formData.supply,
       description: formData.description,
       category: category.label,
-      causeId: Number(donation.cause),
-      supply: formData.quantity,
+      causeId: donation.causeId,
+      donationAmount: donation.donationPercent,
       gif: false,
-      price: formData.price as number,
     }
 
     const file = await FileSystem.readAsStringAsync(imagePath, {

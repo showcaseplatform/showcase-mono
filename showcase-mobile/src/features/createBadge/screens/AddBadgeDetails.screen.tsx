@@ -101,7 +101,7 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
       file: {
         base64DataURL: file,
         fileName: _data.title,
-        mimeType: 'image/jpeg',
+        mimeType: `image/${imagePath.split('.').reverse()[0]}`,
       },
       data: _data,
     })

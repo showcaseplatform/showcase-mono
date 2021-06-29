@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import * as FileSystem from 'expo-file-system'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
 import { View } from 'react-native'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { v4 } from 'uuid'
-import * as FileSystem from 'expo-file-system'
 
 import { EditorStackParamList } from '../../../infrastructure/navigation/editor.navigator'
 
@@ -22,20 +21,13 @@ import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import {
   BadgeType,
   PublishBadgeTypeInput,
-  useCreateBadgeMutation,
+  useUploadBadgeFileMutation,
 } from '../../../generated/graphql'
 
 type BadgeDetails = Pick<
   BadgeType,
   'title' | 'price' | 'supply' | 'description'
 >
-
-type File = {
-  id: string
-  filename: string
-  mimetype: 'image/jpeg'
-  path: string
-}
 
 type AddBadgeDetailsProps = {
   route: RouteProp<EditorStackParamList, 'AddBadgeDetails'>
@@ -62,9 +54,10 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
   route,
   navigation,
 }) => {
-  const { imagePath, category, donation, image } = route.params
-  const [{ fetching, error }, createBadge] = useCreateBadgeMutation()
+  const { imagePath, category, donation } = route.params
   const theme = useTheme()
+
+  const [, upload] = useUploadBadgeFileMutation()
 
   const {
     control,
@@ -89,42 +82,30 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
   }, [isSubmitting, navigation])
 
   // todo: hit the create endpoint
-  const onSubmit = useCallback(
-    async (formData: BadgeDetails) => {
-      // const file: File = {
-      //   id: formData.title, // temp
-      //   filename: formData.title,
-      //   mimetype: 'image/jpeg',
-      //   path: imagePath,
-      // }
-      let data = {
-        ...formData,
-        category,
-        donationAmount: donation.donationPercent,
-        causeId: donation.causeId,
-        gif: false,
-        id: v4(), // !: no need
-        image: 'x', // !: no need
-        imageHash: 'x', // !: no need
-        isFree: undefined,
-      }
+  const onSubmit = async (formData: BadgeDetails) => {
+    let _data: PublishBadgeTypeInput = {
+      title: formData.title,
+      description: formData.description,
+      category: category.label,
+      causeId: Number(donation.cause),
+      supply: formData.quantity,
+      gif: false,
+      price: formData.price as number,
+    }
 
-      const file = await FileSystem.readAsStringAsync(imagePath, {
-        encoding: 'base64',
-      })
-      createBadge({ data, file })
-    },
-    [
-      category,
-      createBadge,
-      donation.causeId,
-      donation.donationPercent,
-      imagePath,
-    ]
-  )
+    const file = await FileSystem.readAsStringAsync(imagePath, {
+      encoding: FileSystem.EncodingType.Base64,
+    })
 
-  console.log('create error', error?.message)
-  console.log('create fetching', fetching)
+    await upload({
+      file: {
+        base64DataURL: file,
+        fileName: _data.title,
+        mimeType: 'image/jpeg',
+      },
+      data: _data,
+    })
+  }
 
   return (
     <StyledSafeArea>
@@ -187,7 +168,7 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
             name="isFree"
             control={control}
             render={({
-              field: { onChange, onBlur, value },
+              field: { onChange, value },
               // fieldState: { error },
             }) => (
               <Switch

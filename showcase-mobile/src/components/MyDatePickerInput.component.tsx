@@ -18,14 +18,8 @@ interface MyDatePickerInput
 }
 
 const MyDatePickerInput = (props: MyDatePickerInput) => {
-  const {
-    error,
-    value,
-    placeholder,
-    onConfirm,
-    hasErrorField,
-    maximumDate,
-  } = props
+  const { error, value, placeholder, onConfirm, hasErrorField, maximumDate } =
+    props
   const [showModal, setShowModal] = useState<boolean>(false)
   const showDatePicker = useCallback(() => setShowModal(true), [])
   const hideDatePicker = useCallback(() => setShowModal(false), [])

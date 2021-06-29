@@ -12,11 +12,12 @@ const s3 = new S3({
   region: S3_BUCKETREGION,
 })
 
-export function uploadFile({ Key, stream }: { Key: string, stream: ReadStream }) {
+export function uploadFile({ Key, buffer }: { Key: string; buffer: Buffer }) {
   const params = {
     Bucket,
     Key,
-    Body: stream,
+    Body: buffer,
+    ContentEncoding: 'base64',
   }
 
   return s3.upload(params).promise()
@@ -26,7 +27,7 @@ export function generateSignedUrl(Key: string, expiryInSec?: number) {
   const params = {
     Bucket,
     Key,
-    Expires: expiryInSec || 36000
+    Expires: expiryInSec || 36000,
   }
 
   return s3.getSignedUrl('getObject', params)

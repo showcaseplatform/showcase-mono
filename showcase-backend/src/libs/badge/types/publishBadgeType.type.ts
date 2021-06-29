@@ -15,10 +15,6 @@ import {
 // todo: validations are not tiggered
 @InputType({ description: 'Data for publishing a new badgeType' })
 export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
-  // todo: maybe this should be name clientID and id should be auto generated
-  @Field()
-  id: string
-
   @Field()
   @MaxLength(BADGE_TYPE_MAX_TITLE_LENGTH)
   title: string
@@ -41,12 +37,6 @@ export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
   @Field({ nullable: true })
   @MaxLength(BADGE_TYPE_MAX_DESC_LENGTH)
   description?: string
-
-  @Field()
-  image: string // S3 key string
-
-  @Field()
-  imageHash: string
 
   @Field((_type) => Category)
   category: Category

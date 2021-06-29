@@ -10,7 +10,7 @@ import { BottomSheetWrapper } from '../../../components/ScreenWrapper.component'
 import { useMyBottomSheet } from '../../../utils/useMyBottomSheet'
 import BottomSheetHeader from '../../authentication/components/BottomSheetHeader.component'
 
-import { categories } from '../../../utils/helpers'
+import { BadgeCategory, categories } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 import { TabStackParamList } from '../../../infrastructure/navigation/tab.navigator'
 
@@ -39,7 +39,7 @@ const CategorySelectorModal = ({
     }, 200)
   }
 
-  function handleNavigateToEditor(category: string) {
+  function handleNavigateToEditor(category: BadgeCategory) {
     collapse()
     setTimeout(() => {
       return navigation.navigate('EditorNavigator', {
@@ -57,15 +57,15 @@ const CategorySelectorModal = ({
         data={categories}
         additionalRowStyle={{ marginBottom: '10%' }}
         scrollEnabled={false}
-        renderItem={({ item: { gradientColors, iconName, label } }) => (
+        renderItem={({ item }) => (
           <TouchableOpacity
-            onPress={() => handleNavigateToEditor(label)}
+            onPress={() => handleNavigateToEditor(item)}
             style={{ alignItems: 'center', justifyContent: 'center' }}
           >
             <LinearGradient
               start={[0, 0]}
               end={[1, 1]}
-              colors={gradientColors}
+              colors={item.gradientColors}
               style={{
                 width: 60,
                 height: 60,
@@ -74,11 +74,11 @@ const CategorySelectorModal = ({
                 alignItems: 'center',
               }}
             >
-              <Ionicons name={iconName} size={36} color={'#fff'} />
+              <Ionicons name={item.iconName} size={36} color={'#fff'} />
             </LinearGradient>
             <Spacer position="top" size="medium">
               <Text color="grey" uppercase>
-                {label}
+                {item.label}
               </Text>
             </Spacer>
           </TouchableOpacity>

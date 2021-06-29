@@ -2,12 +2,12 @@ import React from 'react'
 import styled from 'styled-components/native'
 import { View } from 'react-native'
 import { Surface } from 'react-native-paper'
-import { UserChatTransformed } from '../../../services/authentication/authentication.context'
-import { formatDistance } from 'date-fns'
-import { getImageSource, makeDateDistanceTag, today } from '../../../utils/helpers'
+
+import { getImageSource, makeDateDistanceTag } from '../../../utils/helpers'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 import { TouchableOpacity } from 'react-native-gesture-handler'
+import { UserChatTransformed } from '../../../../types/chat'
 
 export const StyledImage = styled.Image`
   height: 100%;

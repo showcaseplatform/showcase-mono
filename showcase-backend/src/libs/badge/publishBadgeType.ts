@@ -78,6 +78,7 @@ const createTokenTypeOnBlockchain = async ({
 
 export const publishBadgeType = async (
   input: PublishBadgeTypeInput,
+  imageId: string,
   imageHash: string,
   user: User
 ) => {
@@ -95,8 +96,6 @@ export const publishBadgeType = async (
     ...input,
     user,
   })
-
-  const imageId = v4()
 
   // todo: remove blockchain.enabled once server is ready
   const tokenTypeId = blockchain.enabled
@@ -116,12 +115,12 @@ export const publishBadgeType = async (
       ...restData,
       id: imageId,
       imageHash,
-      image: '',
+      image: imageId,
       uri: 'https://showcase.to/badge/' + imageId,
       creator: { connect: { id: user.id } },
       currency: profile.currency,
       tokenTypeId,
-      cause: { connect: { id: causeId } },
+      cause: causeId ? { connect: { id: causeId } } : undefined,
     },
   })
 
@@ -144,12 +143,15 @@ export const uploadBadge = async (fileData: FileUpload) => {
   const fileExtension = mimeType.split('/')[1]
   const S3_key = `${id}.${fileExtension}`
 
-  const hash = crypto.createHash('sha256').update(base64DataURL).digest('base64')
+  const buffer = Buffer.from(base64DataURL, 'base64')
+
+  const hash = crypto.createHash('md5').update(buffer).digest('base64')
 
   const uploadedFile = await uploadFile({
     Key: S3_key,
-    buffer: Buffer.from(base64DataURL, 'base64'),
+    buffer,
+    hash,
   })
 
-  return { hash, uploadedFile }
+  return { key: S3_key, hash, uploadedFile }
 }

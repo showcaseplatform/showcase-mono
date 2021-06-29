@@ -107,7 +107,7 @@ const client = new Client({
           if (error) {
             console.log(
               'didAuthError, should log out with error msg:',
-              error.message
+              error.message || error.graphQLErrors
             )
             // tokenStore.remove()
           }

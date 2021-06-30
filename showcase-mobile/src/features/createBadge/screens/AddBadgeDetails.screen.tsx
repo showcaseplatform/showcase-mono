@@ -105,6 +105,16 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
       },
       data: _data,
     })
+      .then((res) => {
+        // todo: in case of success navigate & send a success toast?
+        res.data?.publishBadgeType.id &&
+          navigation.navigate('BadgeNavigator', {
+            screen: 'Badges',
+          })
+      })
+      .catch((err) => {
+        // todo: do something if sad path eg.: fail toast?
+      })
   }
 
   return (

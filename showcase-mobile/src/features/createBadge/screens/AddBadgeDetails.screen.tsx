@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import * as FileSystem from 'expo-file-system'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
-import { View } from 'react-native'
+import { Alert, View } from 'react-native'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 
@@ -114,6 +114,7 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
       })
       .catch((err) => {
         // todo: do something if sad path eg.: fail toast?
+        Alert.alert(err)
       })
   }
 

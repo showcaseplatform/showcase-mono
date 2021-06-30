@@ -1,4 +1,4 @@
-import S3 from 'aws-sdk/clients/s3'
+import S3, { ContentType } from 'aws-sdk/clients/s3'
 import config from './config'
 
 const s3 = new S3({
@@ -7,11 +7,12 @@ const s3 = new S3({
   region: config.region,
 })
 
-export function uploadFile({ Key, buffer, hash }: { Key: string; buffer: Buffer; hash: string }) {
+export function uploadFile({ Key, ContentType, buffer, hash }: { Key: string; ContentType: ContentType; buffer: Buffer; hash: string }) {
   return s3
     .upload({
       Bucket: config.bucket,
       Key,
+      ContentType,
       Body: buffer,
       ContentEncoding: 'base64',
       ContentMD5: hash,

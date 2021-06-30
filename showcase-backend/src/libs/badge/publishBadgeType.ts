@@ -100,12 +100,12 @@ export const publishBadgeType = async (
   // todo: remove blockchain.enabled once server is ready
   const tokenTypeId = blockchain.enabled
     ? await createTokenTypeOnBlockchain({
-        ...input,
-        currency: input.currency as Currency,
-        category: input.category as Category,
-        profile,
-        user,
-      })
+      ...input,
+      currency: input.currency as Currency,
+      category: input.category as Category,
+      profile,
+      user,
+    })
     : imageId
 
   const { causeId, ...restData } = input
@@ -113,7 +113,6 @@ export const publishBadgeType = async (
   const badgeType = await prisma.badgeType.create({
     data: {
       ...restData,
-      id: imageId,
       imageHash,
       image: imageId,
       uri: 'https://showcase.to/badge/' + imageId,
@@ -141,17 +140,17 @@ export const uploadBadge = async (fileData: FileUpload) => {
 
   const id = uuidv4()
   const fileExtension = mimeType.split('/')[1]
-  const S3_key = `${id}.${fileExtension}`
 
   const buffer = Buffer.from(base64DataURL, 'base64')
 
   const hash = crypto.createHash('md5').update(buffer).digest('base64')
 
   const uploadedFile = await uploadFile({
-    Key: S3_key,
+    Key: id,
+    ContentType: fileExtension,
     buffer,
     hash,
   })
 
-  return { key: S3_key, hash, uploadedFile }
+  return { hash, uploadedFile }
 }

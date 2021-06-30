@@ -115,7 +115,8 @@ enum Category {
 }
 
 model BadgeType {
-  id        String @id
+  id String @id @default(uuid())
+
   creator   User   @relation(name: "badgeTypesCreated", fields: [creatorId], references: [id])
   creatorId String
 
@@ -285,7 +286,7 @@ model Stripe {
   userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
-  stripeId          String @unique // todo: should stripeId be unique here? 
+  stripeId          String @unique // todo: should stripeId be unique here?
   lastFourCardDigit String
 
   createdAt DateTime @default(now())

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import * as FileSystem from 'expo-file-system'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
-import { View } from 'react-native'
+import { Alert, View } from 'react-native'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 
@@ -81,16 +81,16 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
     })
   }, [isSubmitting, navigation])
 
-  // todo: hit the create endpoint
   const onSubmit = async (formData: BadgeDetails) => {
     let _data: PublishBadgeTypeInput = {
       title: formData.title,
+      price: formData.price,
+      supply: formData.supply,
       description: formData.description,
       category: category.label,
-      causeId: Number(donation.cause),
-      supply: formData.quantity,
+      causeId: donation.causeId,
+      donationAmount: donation.donationPercent,
       gif: false,
-      price: formData.price as number,
     }
 
     const file = await FileSystem.readAsStringAsync(imagePath, {
@@ -101,10 +101,21 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
       file: {
         base64DataURL: file,
         fileName: _data.title,
-        mimeType: 'image/jpeg',
+        mimeType: `image/${imagePath.split('.').reverse()[0]}`,
       },
       data: _data,
     })
+      .then((res) => {
+        // todo: in case of success navigate & send a success toast?
+        res.data?.publishBadgeType.id &&
+          navigation.navigate('BadgeNavigator', {
+            screen: 'Badges',
+          })
+      })
+      .catch((err) => {
+        // todo: do something if sad path eg.: fail toast?
+        Alert.alert(err)
+      })
   }
 
   return (

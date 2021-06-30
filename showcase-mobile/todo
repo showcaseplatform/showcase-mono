@@ -13,6 +13,7 @@
 ☐ BUY CTA should be on Portal instead of position absolute (if cause modal open overlaps)
 ☐ Android cause widget round styling issue
 ☐ FollowButton component ui stuck in loading (disabled) state after first onPress
+☐ AWS S3 does not receive file Type properly (empty)
 ✔ CreateBadgeButton can be "overclicked" (badge in the background is activated on click upper bart of the button) @done(21-06-21 07:56)
 ✔ Follow - Unfollow button loading state is over before the data has been changed (ui glitch) @done(21-06-17 10:21)
 ✘ badges screen - if search input exists then category selected -> results flashing once @cancelled(21-05-06 11:39)

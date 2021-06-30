@@ -78,6 +78,7 @@ const createTokenTypeOnBlockchain = async ({
 
 export const publishBadgeType = async (
   input: PublishBadgeTypeInput,
+  imageId: string,
   imageHash: string,
   user: User
 ) => {
@@ -96,17 +97,15 @@ export const publishBadgeType = async (
     user,
   })
 
-  const imageId = v4()
-
   // todo: remove blockchain.enabled once server is ready
   const tokenTypeId = blockchain.enabled
     ? await createTokenTypeOnBlockchain({
-        ...input,
-        currency: input.currency as Currency,
-        category: input.category as Category,
-        profile,
-        user,
-      })
+      ...input,
+      currency: input.currency as Currency,
+      category: input.category as Category,
+      profile,
+      user,
+    })
     : imageId
 
   const { causeId, ...restData } = input
@@ -114,14 +113,13 @@ export const publishBadgeType = async (
   const badgeType = await prisma.badgeType.create({
     data: {
       ...restData,
-      id: imageId,
       imageHash,
-      image: '',
+      image: imageId,
       uri: 'https://showcase.to/badge/' + imageId,
-      creator: { connect: { ...user, phone: user.phone || undefined } },
-      currency: input.currency || profile.currency,
+      creator: { connect: { id: user.id } },
+      currency: profile.currency,
       tokenTypeId,
-      cause: { connect: { id: causeId } },
+      cause: causeId ? { connect: { id: causeId } } : undefined,
     },
   })
 
@@ -142,13 +140,16 @@ export const uploadBadge = async (fileData: FileUpload) => {
 
   const id = uuidv4()
   const fileExtension = mimeType.split('/')[1]
-  const S3_key = `${id}.${fileExtension}`
 
-  const hash = crypto.createHash('sha256').update(base64DataURL).digest('base64')
+  const buffer = Buffer.from(base64DataURL, 'base64')
+
+  const hash = crypto.createHash('md5').update(buffer).digest('base64')
 
   const uploadedFile = await uploadFile({
-    Key: S3_key,
-    buffer: Buffer.from(base64DataURL, 'base64'),
+    Key: id,
+    ContentType: fileExtension,
+    buffer,
+    hash,
   })
 
   return { hash, uploadedFile }

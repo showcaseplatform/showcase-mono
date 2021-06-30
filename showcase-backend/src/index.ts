@@ -29,7 +29,7 @@ const main = async () => {
 
   expressApp.use(cors({ origin: true }))
   expressApp.use(cookieParser())
-  expressApp.use(express.json({ limit: '2mb' }))
+  expressApp.use(express.json({ limit: '10mb' }))
 
   // Need this to handle subscriptions (http + ws)
   const httpServer = http.createServer(expressApp)

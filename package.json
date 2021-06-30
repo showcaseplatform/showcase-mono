@@ -7,9 +7,6 @@
   "homepage": "https://github.com/showcaseplatform",
   "private": true,
   "scripts": {
-    "precommit:frontend": "cd roche-betmen-frontend && npm run precommit",
-    "precommit:backend": "cd cd roche-betmen-frontend && npm run precommit",
-    "precommit": "npm-run-all precommit:*",
     "postinstall": "npx yarn-recursive --skipRoot"
   },
   "husky": {

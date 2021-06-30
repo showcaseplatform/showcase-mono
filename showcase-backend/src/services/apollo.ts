@@ -52,13 +52,13 @@ export class MyApollo {
         SearchResolver,
         customUserResolver,
         customBadgeTypeResolver,
-        customBadgeItemResolver
+        customBadgeItemResolver,
       ],
       validate: true,
       authChecker: AuthLib.authChecker,
       // here provide all the types that are missing in schema
       //   orphanedTypes: [FirstObject],
-      pubSub: myPubSub  // todo: replace with redisPubSub for production subscriptions
+      pubSub: myPubSub, // todo: replace with redisPubSub for production subscriptions
     })
 
     const apolloServer = new ApolloServer({
@@ -75,13 +75,12 @@ export class MyApollo {
           // Try to retrieve a user with the token
           let user: User | null = await AuthLib.getUserByToken(token)
 
-
           // Only for testing purposes
           if (!user && token === 'test') {
             const users = await prisma.user.findMany()
             user = users[0]
           }
-          
+
           return { prisma, user }
         }
       },

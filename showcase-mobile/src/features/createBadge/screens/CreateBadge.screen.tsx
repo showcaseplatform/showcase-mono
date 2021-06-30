@@ -29,10 +29,8 @@ type SelectedImageState = (ImagePickerResult & Partial<ImageInfo>) | undefined
 const CreateBadge: React.FC<CreateBadgeProps> = ({ route, navigation }) => {
   const { category } = route?.params
   const { pickImage } = useCameraRoll()
-  const [
-    selectedImageInfo,
-    setSelectedImageInfo,
-  ] = useState<SelectedImageState>(undefined)
+  const [selectedImageInfo, setSelectedImageInfo] =
+    useState<SelectedImageState>(undefined)
   const [filteredImageRef, setFilteredImageRef] = useState<GLView | null>(null)
 
   // on first render open image picker modal
@@ -73,7 +71,7 @@ const CreateBadge: React.FC<CreateBadgeProps> = ({ route, navigation }) => {
   }
 
   // todo: style me
-  if (!selectedImageInfo || selectedImageInfo.cancelled)
+  if (!selectedImageInfo || selectedImageInfo.cancelled) {
     return (
       <StyledSafeArea>
         <CenterView flex={1}>
@@ -83,6 +81,7 @@ const CreateBadge: React.FC<CreateBadgeProps> = ({ route, navigation }) => {
         </CenterView>
       </StyledSafeArea>
     )
+  }
 
   return (
     <StyledSafeArea>

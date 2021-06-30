@@ -47,6 +47,7 @@ model User {
   profile Profile?
 
   badgeTypesCreated        BadgeType[] @relation("badgeTypesCreated")
+  badgeTypesForResell      BadgeType[] @relation("badgeTypesForResell")
   badgeItemsOriginatedFrom BadgeItem[] @relation("badgeOriginatedFrom")
 
   badgeItemsOwned BadgeItem[] @relation("badgeCurrentlyOwned")
@@ -117,6 +118,9 @@ model BadgeType {
   id        String @id
   creator   User   @relation(name: "badgeTypesCreated", fields: [creatorId], references: [id])
   creatorId String
+
+  resaller   User?   @relation(name: "badgeTypesForResell", fields: [resallerId], references: [id])
+  resallerId String?
 
   tokenTypeId String @unique
   uri         String @unique

@@ -2,13 +2,11 @@ import { NavigationProp, useIsFocused } from '@react-navigation/native'
 import React, { useMemo } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 import { FAB, Portal } from 'react-native-paper'
+import { UserChats, UserChatTransformed } from '../../../../types/chat'
 import EmptyListComponent from '../../../components/EmptyList.component'
 import { SocialStackParamList } from '../../../infrastructure/navigation/social.navigator'
-import { theme } from '../../../infrastructure/theme'
-import {
-  UserChats,
-  UserChatTransformed,
-} from '../../../services/authentication/authentication.context'
+import theme from '../../../infrastructure/theme'
+
 import useFuse from '../../../utils/useFuse'
 import {
   SearchContainer,

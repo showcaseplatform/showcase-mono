@@ -139,5 +139,5 @@ export const createTransferwiseAccount = async (input: EURAccount | GBPAccount |
 
   await upsertTranferwiseInfo(accountData, user)
   
-  return 'Succesfully executed transferwise payout account'
+  return 'Succesfully created transferwise account'
 }

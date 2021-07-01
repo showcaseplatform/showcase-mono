@@ -218,6 +218,7 @@ model Crypto {
   publicKey           String
 }
 
+// todo: only create balance for creators!
 // todo: use this table once requesting info from receipts cost too much resources
 model Balance {
   id     String @id @default(cuid())

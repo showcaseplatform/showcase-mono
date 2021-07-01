@@ -13,7 +13,10 @@ export class SearchResolver {
 
   @Query((_returns) => [BadgeType])
   async feedSearch(
-    @Arg('data', { nullable: true, defaultValue: { search: null, category: null, cursor: null } })
+    @Arg('data', {
+      nullable: true,
+      defaultValue: { search: null, category: null, cursor: null, take: 10 },
+    })
     input: FeedSearchInput
   ) {
     return await feedSearch(input)

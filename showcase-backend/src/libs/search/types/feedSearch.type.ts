@@ -1,4 +1,4 @@
-import { InputType, Field } from 'type-graphql'
+import { InputType, Field, Int } from 'type-graphql'
 import { Category } from '@generated/type-graphql'
 import { BadgeTypeId } from '../../../types/badge'
 
@@ -12,4 +12,7 @@ export class FeedSearchInput {
 
   @Field({ nullable: true })
   cursor?: BadgeTypeId
+
+  @Field((_) => Int, { nullable: true })
+  take?: number
 }

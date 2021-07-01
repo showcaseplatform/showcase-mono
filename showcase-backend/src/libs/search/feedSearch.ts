@@ -2,7 +2,7 @@ import { prisma, Prisma } from '../../services/prisma'
 import { FeedSearchInput } from './types/feedSearch.type'
 
 export const feedSearch = async (input: FeedSearchInput) => {
-  const { search: contains, category, cursor: inputCursor } = input
+  const { search: contains, category, cursor: inputCursor, take } = input
 
   const mode = 'insensitive' as Prisma.QueryMode
 
@@ -51,6 +51,7 @@ export const feedSearch = async (input: FeedSearchInput) => {
             cause: {
               name: {
                 contains,
+                mode,
               },
             },
           },
@@ -58,6 +59,7 @@ export const feedSearch = async (input: FeedSearchInput) => {
             cause: {
               site: {
                 contains,
+                mode,
               },
             },
           },
@@ -75,7 +77,7 @@ export const feedSearch = async (input: FeedSearchInput) => {
     },
     cursor,
     skip,
-    take: 10,
+    take,
     orderBy: {
       createdAt: 'desc',
     },

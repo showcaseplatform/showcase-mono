@@ -8,8 +8,8 @@ export class FeedSearchInput {
   search?: string
 
   @Field((_) => Category, { nullable: true })
-  category: Category
+  category?: Category
 
   @Field({ nullable: true })
-  cursor: BadgeTypeId
+  cursor?: BadgeTypeId
 }

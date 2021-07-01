@@ -1,11 +1,16 @@
-import {prisma, Prisma} from '../../services/prisma'
+import { prisma, Prisma } from '../../services/prisma'
 import { FeedSearchInput } from './types/feedSearch.type'
-
-
-const mode = 'insensitive' as Prisma.QueryMode 
 
 export const feedSearch = async (input: FeedSearchInput) => {
   const { search: contains, category, cursor: inputCursor } = input
+
+  const mode = 'insensitive' as Prisma.QueryMode
+
+  const whereCategory = category
+    ? {
+        category: { equals: category },
+      }
+    : {}
 
   const whereSearch = contains
     ? {
@@ -60,13 +65,7 @@ export const feedSearch = async (input: FeedSearchInput) => {
       }
     : {}
 
-  const whereCategory = category
-    ? {
-        category: { equals: category },
-      }
-    : {}
-
-  const cursor = inputCursor ? { id: inputCursor } : undefined 
+  const cursor = inputCursor ? { id: inputCursor } : undefined
   const skip = inputCursor ? 1 : undefined
 
   return await prisma.badgeType.findMany({

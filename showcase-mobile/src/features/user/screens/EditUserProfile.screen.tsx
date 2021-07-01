@@ -53,20 +53,11 @@ const schema = yup.object().shape({
 // todo: implement auto-focus on fields
 const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
   const [{ data, fetching, error }, refetchMe] = useMeQuery()
-  const [
-    { fetching: updating, error: updateError },
-    updateMe,
-  ] = useUpdateMeMutation()
+  const [{ fetching: updating, error: updateError }, updateMe] =
+    useUpdateMeMutation()
 
-  const {
-    avatar,
-    displayName,
-    username,
-    email,
-    currency,
-    birthDate,
-    bio,
-  } = data?.me.profile
+  const { avatar, displayName, username, email, currency, birthDate, bio } =
+    data?.me.profile
 
   const { control, handleSubmit } = useForm<UpdateProfileInput>({
     defaultValues: {
@@ -88,7 +79,9 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
   const onSubmit = useCallback(
     async (formData: UpdateProfileInput) => {
       await updateMe({ data: formData })
-      if (!error) await refetchMe({ requestPolicy: 'network-only' })
+      if (!error) {
+        await refetchMe({ requestPolicy: 'network-only' })
+      }
       if (!updateError) {
         navigation.goBack()
       }
@@ -99,7 +92,9 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
   // ?: temp file upload
   const onChangeProfileImage = async () => {
     pickImage().then((res) => {
-      if (!res) return
+      if (!res) {
+        return
+      }
 
       setUploading(true)
       setTimeout(() => {

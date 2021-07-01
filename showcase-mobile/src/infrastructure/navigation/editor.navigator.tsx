@@ -4,29 +4,27 @@ import React from 'react'
 import AddBadgeDetails from '../../features/createBadge/screens/AddBadgeDetails.screen'
 import CreateBadge from '../../features/createBadge/screens/CreateBadge.screen'
 import SelectCause from '../../features/createBadge/screens/SelectCause.screen'
-import { Category } from '../../generated/graphql'
+import { MyBadgeCategory } from '../../features/badges/components/CategorySelector.component'
 import { translate } from '../../utils/translator'
 
 const EditorStack = createStackNavigator<EditorStackParamList>()
 
 export type EditorStackParamList = {
   CreateBadge: {
-    // Todo: rename to BadgeEditor
-    category: Category
+    category: MyBadgeCategory
   }
   SelectCause: {
-    category: Category
+    category: MyBadgeCategory
     imagePath: string
     image: GLSnapshot
   }
   AddBadgeDetails: {
-    // Todo: rename CreateBadge
-    category: Category
+    category: MyBadgeCategory
     imagePath: string
     image: GLSnapshot
     donation: {
       causeId?: number
-      donationPercent?: number // !: currently eg. 30%
+      donationPercent?: number // ?: FLOAT
     }
   }
 }

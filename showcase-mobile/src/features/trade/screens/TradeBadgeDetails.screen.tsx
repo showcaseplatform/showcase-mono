@@ -1,7 +1,7 @@
-import React, { useRef, useState, ComponentType, useEffect } from 'react'
+import React, { useRef, useState, ComponentType } from 'react'
 import { View, Image, LayoutAnimation, Alert } from 'react-native'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
-import { Button, Chip, List, Surface } from 'react-native-paper'
+import { Button, List, Surface } from 'react-native-paper'
 import styled, { useTheme } from 'styled-components'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -22,10 +22,7 @@ const StyledAccordionItem = styled(List.Item)`
 `
 
 // todo: temp on sale / in inventory cuz dataset does not identify obviously
-const TradeBadgeDetailsScreen = ({
-  route,
-  navigation,
-}: TradeBadgeDetailsScreenProps) => {
+const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
   const { item } = route.params
   const {
     price,
@@ -43,10 +40,8 @@ const TradeBadgeDetailsScreen = ({
   } = item
   const theme = useTheme()
 
-  const [
-    expandedAccordion,
-    setExpandedAccordion,
-  ] = useState<AccordionStateProps>(undefined)
+  const [expandedAccordion, setExpandedAccordion] =
+    useState<AccordionStateProps>(undefined)
 
   let scrollRef = useRef<ComponentType<any> | null>(null) // todo: TS FIX ME
 

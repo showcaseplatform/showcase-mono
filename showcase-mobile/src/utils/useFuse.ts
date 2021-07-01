@@ -10,10 +10,10 @@ const useFuse = <T>(
 ): [ReadonlyArray<T>, string, Dispatch<SetStateAction<string>>] => {
   const [filteredData, setFilteredData] = useState(data)
   const [query, setQuery] = useState('')
-  const fuseSearch = useMemo(() => new Fuse(data, fuseOptions), [
-    data,
-    fuseOptions,
-  ])
+  const fuseSearch = useMemo(
+    () => new Fuse(data, fuseOptions),
+    [data, fuseOptions]
+  )
   useDebounce(
     () =>
       setFilteredData(

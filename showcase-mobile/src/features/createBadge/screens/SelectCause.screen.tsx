@@ -59,7 +59,7 @@ const SelectCause: React.FC<SelectCauseProps> = ({ route, navigation }) => {
     if (selectedCause) {
       donation = {
         causeId: selectedCause,
-        donationPercent,
+        donationPercent: donationPercent > 0 ? donationPercent / 100 : 0, // todo: fix me: some place is float other is Int
       }
     }
     navigation.navigate('AddBadgeDetails', {

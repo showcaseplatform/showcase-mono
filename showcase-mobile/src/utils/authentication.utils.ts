@@ -3,10 +3,12 @@ import validator from 'validator'
 
 export function validateMobilePhone(
   areaCode?: number,
-  phoneNumber?: number,
+  phoneNumber?: number
   // locale?: any // MobilePhoneLocal from package
 ) {
-  if (!areaCode || !phoneNumber) return false
+  if (!areaCode || !phoneNumber) {
+    return false
+  }
   return validator.isMobilePhone(
     `+${areaCode}${phoneNumber}`,
     undefined, // locale || 'en-US',

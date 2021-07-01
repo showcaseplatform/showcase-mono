@@ -36,9 +36,8 @@ const editorTabs: TabRouteProps[] = [
 export const Editor: React.FC<EditorProps> = ({ imageUri, setImageRef }) => {
   const [tabIndex, setTabIndex] = React.useState(0)
 
-  const [filterState, setFilterState] = useState<FilterStateProps>(
-    defaultFilterState
-  )
+  const [filterState, setFilterState] =
+    useState<FilterStateProps>(defaultFilterState)
   const [presetState, setPresetState] = useState<FilterStateProps | undefined>(
     undefined
   )

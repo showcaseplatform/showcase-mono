@@ -2,7 +2,6 @@ import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
 import ChatScreen from '../../features/social/screens/Chat.screen'
 import ChatListScreen from '../../features/social/screens/ChatList.screen'
-import FindFriendScreen from '../../features/social/screens/FindFriend.screen'
 
 const SocialStack = createStackNavigator<SocialStackParamList>()
 

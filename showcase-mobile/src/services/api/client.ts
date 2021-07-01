@@ -1,4 +1,5 @@
-import { Client, dedupExchange, fetchExchange, makeOperation } from 'urql'
+import { Client, dedupExchange, makeOperation } from 'urql'
+import { multipartFetchExchange } from '@urql/exchange-multipart-fetch'
 import { gql } from '@urql/core'
 import { cacheExchange, DataFields } from '@urql/exchange-graphcache'
 import { authExchange } from '@urql/exchange-auth'
@@ -104,15 +105,18 @@ const client = new Client({
         // todo: proper 401 handling
         {
           if (error) {
-            // ?: auth error shouldn't always remove token ?
-            tokenStore.remove()
+            console.log(
+              'didAuthError, should log out with error msg:',
+              error.message || error.graphQLErrors
+            )
+            // tokenStore.remove()
           }
           return error.graphQLErrors.some(
             (err) => err.extensions?.code === 'UNAUTHENTICATED'
           )
         },
     }),
-    fetchExchange,
+    multipartFetchExchange,
   ],
 })
 

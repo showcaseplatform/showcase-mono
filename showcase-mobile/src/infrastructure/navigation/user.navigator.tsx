@@ -7,7 +7,7 @@ import EditUserProfileScreen from '../../features/user/screens/EditUserProfile.s
 import UserFollowersScreen from '../../features/user/screens/UserFollowers.screen'
 import UserFriendsScreen from '../../features/user/screens/UserFriends.screen'
 import UserProfileScreen from '../../features/user/screens/UserProfile.screen'
-import { FollowStatus, useMeQuery, User } from '../../generated/graphql'
+import { FollowStatus, useMeQuery } from '../../generated/graphql'
 import UserSettingsNavigator from './userSettings.navigator'
 import Error from '../../components/Error.component'
 import { MyUser } from '../../../types'
@@ -43,7 +43,9 @@ const UserNavigator = () => {
   // const friendsLength = data?.me.friendsCount
   // const followersLength = data?.me.followersCount
 
-  if (fetching) return <LoadingIndicator fullScreen />
+  if (fetching) {
+    return <LoadingIndicator fullScreen />
+  }
 
   if (data?.me) {
     return (
@@ -65,7 +67,7 @@ const UserNavigator = () => {
         <UserStack.Screen
           name="UserFriends"
           component={UserFriendsScreen}
-          options={({ route }) => ({
+          options={() => ({
             title: `Following (${friendsLength})`,
             headerTintColor: '#000',
             headerBackTitleVisible: false,
@@ -74,7 +76,7 @@ const UserNavigator = () => {
         <UserStack.Screen
           name="UserFollowers"
           component={UserFollowersScreen}
-          options={({ route }) => ({
+          options={() => ({
             title: `Followers (${followersLength})`,
             headerTintColor: '#000',
             headerBackTitleVisible: false,

@@ -11,7 +11,7 @@ import BadgeItem from '../../badges/components/BadgeItem.component'
 import EmptyListForProfile from '../../badges/components/EmptyListForProfile'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
-import ProfileImage from '../components/ProfileImage.component'
+import ProfileImage from '../../../components/ProfileImage.component'
 import { BadgeType, FollowStatus, useMeQuery } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
@@ -30,13 +30,14 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
 
   const countOfFriends = useMemo(
     () =>
-      data?.me.friends.filter((f) => f.status === FollowStatus.Accepted).length,
+      data?.me.friends.filter((f) => f.status === FollowStatus.Accepted)
+        .length || 0,
     [data?.me.friends]
   )
   const countOfFollowers = useMemo(
     () =>
       data?.me.followers.filter((f) => f.status === FollowStatus.Accepted)
-        .length,
+        .length || 0,
     [data?.me.followers]
   )
 

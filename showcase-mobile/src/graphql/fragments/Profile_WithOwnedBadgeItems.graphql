@@ -1,0 +1,11 @@
+fragment Profile_WithOwnedBadgeItems on Profile {
+  user {
+    id
+    badgeItemsOwned {
+      id
+      badgeType {
+        ...BadgeType_WithBasics
+      }
+    }
+  }
+}

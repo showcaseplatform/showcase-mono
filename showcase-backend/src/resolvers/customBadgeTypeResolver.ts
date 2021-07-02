@@ -7,7 +7,7 @@ import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
 import { generateSignedUrl } from '../services/S3'
 
 @Resolver((_of) => BadgeType)
-export class customBadgeTypeResolver {
+export class CustomBadgeTypeResolver {
   @FieldResolver((_) => Boolean)
   async isViewedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
     const uid = currentUser?.id

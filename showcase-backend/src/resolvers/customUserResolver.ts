@@ -5,7 +5,7 @@ import { isUserAlreadyFollowed } from '../libs/user/toggleFollow'
 import { friendsCount, followersCount } from '../libs/user/followCount'
 
 @Resolver((_of) => User)
-export class customUserResolver {
+export class CustomUserResolver {
   @FieldResolver((_) => Boolean)
   async amIFollowing(@Root() user: User, @Ctx() ctx: MyContext) {
     const uid = ctx.user?.id

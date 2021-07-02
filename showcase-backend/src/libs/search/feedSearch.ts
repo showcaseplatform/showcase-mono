@@ -1,14 +1,9 @@
-import {
-  ConnectionEdge,
-  ConnectionPageInfo,
-  Cursor,
-  CursorConnectionResponse,
-} from '../../resolvers/types/cursorConnection'
+
 import { prisma, Prisma } from '../../services/prisma'
-import { FeedSearchInput } from './types/feedSearch.type'
+import { BadgeTypeEdge, BadgeTypeCursor, FeedSearchInput, FeedSearchResponse, PageInfo } from './types/feedSearch.type'
 
 interface PrismaCursor {
-  id: Cursor
+  id: BadgeTypeCursor
 }
 interface PaginateBadgeTypes {
   where: any
@@ -29,11 +24,11 @@ const findPaginatedBadgeTypes = async ({ where, cursor, skip, take }: PaginateBa
   })
 }
 
-export const feedSearch = async (input: FeedSearchInput): Promise<CursorConnectionResponse> => {
+export const feedSearch = async (input: FeedSearchInput): Promise<FeedSearchResponse> => {
   const { search: contains, category, forwardPagination, backwardPagination } = input
 
   let take: number
-  let inputCursor: Cursor = ''
+  let inputCursor: BadgeTypeCursor = ''
 
   if (forwardPagination) {
     take = forwardPagination.first
@@ -121,7 +116,7 @@ export const feedSearch = async (input: FeedSearchInput): Promise<CursorConnecti
     take,
   })
 
-  const edges: ConnectionEdge[] = badges.map((badge) => {
+  const edges: BadgeTypeEdge[] = badges.map((badge) => {
     return {
       cursor: badge.id,
       node: { ...badge },
@@ -161,7 +156,7 @@ export const feedSearch = async (input: FeedSearchInput): Promise<CursorConnecti
     return previousBadge.length > 0
   }
 
-  const pageInfo: ConnectionPageInfo = {
+  const pageInfo: PageInfo = {
     hasNextPage: await hasNextPage(),
     hasPreviousPage: await hasPreviousPage(),
     startCursor: startCursor?.id || '',

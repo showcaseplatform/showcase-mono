@@ -1,6 +1,7 @@
 import { InputType, Field, Int } from 'type-graphql'
 import { Category } from '@generated/type-graphql'
 import { BadgeTypeId } from '../../../types/badge'
+import { BackwardPaginationInput, ForwardPaginationInput } from '../../../resolvers/types/cursorConnection'
 
 @InputType()
 export class FeedSearchInput {
@@ -11,8 +12,8 @@ export class FeedSearchInput {
   category?: Category
 
   @Field({ nullable: true })
-  cursor?: BadgeTypeId
+  forwardPagination?: ForwardPaginationInput
 
-  @Field((_) => Int, { nullable: true })
-  take?: number
+  @Field({ nullable: true })
+  backwardPagination?: BackwardPaginationInput
 }

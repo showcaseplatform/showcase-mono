@@ -4,6 +4,7 @@ import { fullTextSearch } from '../libs/search/fullTextSearch'
 import { FullTextSearchResult } from '../libs/search/types/fullTextSearch.type'
 import { BadgeType } from '@generated/type-graphql'
 import { FeedSearchInput } from '../libs/search/types/feedSearch.type'
+import { CursorConnectionResponse } from './types/cursorConnection'
 @Resolver()
 export class SearchResolver {
   @Query((_returns) => FullTextSearchResult)
@@ -11,11 +12,11 @@ export class SearchResolver {
     return await fullTextSearch(search)
   }
 
-  @Query((_returns) => [BadgeType])
+  @Query((_returns) => CursorConnectionResponse)
   async feedSearch(
     @Arg('data', {
       nullable: true,
-      defaultValue: { search: null, category: null, cursor: null, take: 10 },
+      defaultValue: { search: null, category: null },
     })
     input: FeedSearchInput
   ) {

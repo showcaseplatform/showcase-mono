@@ -22,6 +22,16 @@ export const notificationSettingDefaults: NotificationSettingDefault[] = [
     userType: UserType.creator,
   },
   {
+    type: NotificationType.NEW_FRIEND_MESSAGE_RECEIVED,
+    allowPushSending: true,
+    userType: UserType.basic,
+  },
+  {
+    type: NotificationType.NEW_FRIEND_MESSAGE_RECEIVED,
+    allowPushSending: true,
+    userType: UserType.creator,
+  },
+  {
     type: NotificationType.NEW_BADGE_PUBLISHED,
     allowPushSending: true,
     userType: UserType.basic,

@@ -1,4 +1,5 @@
 import validator from 'validator'
+import { v4 as uuidv4 } from 'uuid'
 import { Uid } from '../../types/user'
 import Boom from 'boom'
 import { CURRENCIES } from '../../consts/currencies'
@@ -12,6 +13,10 @@ import {
 import { Currency } from '@generated/type-graphql'
 import prisma from '../../services/prisma'
 import { UpdateProfileInput } from './types/updateProfile.type'
+import { FileUpload } from '../../types/fileUpload'
+import { GraphQLError } from 'graphql'
+import { uploadFileToS3Bucket } from '../../services/S3'
+import {Profile } from '@prisma/client'
 
 const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {
@@ -88,10 +93,31 @@ const validateCurrency = (currency: Currency) => {
   }
 }
 
-export const updateProfile = async (input: UpdateProfileInput, uid: Uid) => {
-  const { bio, email, username, displayName, birthDate, avatar, currency } = input
+const uploadAvatarImg = async (fileData: FileUpload) => {
+  const { base64DataURL, mimeType } = fileData
 
-  const updateData = {} as Partial<UpdateProfileInput>
+  if (!['image/jpeg', 'image/png'].includes(mimeType)) {
+    throw new GraphQLError('Only JPEG and PNG file allowed.')
+  }
+
+  const fileExtension = mimeType.split('/')[1]
+  const id = `avatars/${uuidv4()}.${fileExtension}`
+
+  const buffer = Buffer.from(base64DataURL, 'base64')
+
+  await uploadFileToS3Bucket({
+    Key: id,
+    ContentType: mimeType,
+    buffer,
+  })
+
+  return id
+}
+
+export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUpload, uid: Uid) => {
+  const { bio, email, username, displayName, birthDate, currency } = input
+
+  const updateData = {} as Partial<Omit<Profile, 'id'>>
 
   if (bio) {
     updateData.bio = validateBio(bio)
@@ -111,22 +137,14 @@ export const updateProfile = async (input: UpdateProfileInput, uid: Uid) => {
 
   if (birthDate) {
     updateData.birthDate = validateBirthdate(new Date(birthDate))
-    //todo: is it neccesary to store these? maybe replace with fieldResolver if needed
-    // updateData.birthDay = updateData.birthDate.getDate()
-    // updateData.birthMonth = updateData.birthDate.getMonth()
-    // updateData.birthYear = updateData.birthDate.getFullYear()
   }
 
   if (currency) {
     updateData.currency = validateCurrency(currency)
   }
 
-  // todo: update this validation once we are able to upload images from client
-  if (avatar) {
-    updateData.avatar =
-      'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/images%2F' +
-      uid +
-      '?alt=media'
+  if (avatarImg) {
+    updateData.avatarId = await uploadAvatarImg(avatarImg)
   }
 
   if (Object.keys(updateData).length >= 1) {
@@ -139,6 +157,6 @@ export const updateProfile = async (input: UpdateProfileInput, uid: Uid) => {
       },
     })
   } else {
-    throw Boom.preconditionFailed('There wasnt any data to update')
+    throw new GraphQLError('There wasnt any data to update')
   }
 }

@@ -22,7 +22,7 @@ const createUserWithFakeBadgeTypes = async (prisma: PrismaClient, id: string) =>
           bio: faker.lorem.paragraph(),
           displayName: `${faker.name.firstName()} ${faker.name.lastName()}`,
           username: `${faker.name.firstName()}_${faker.datatype.number()}`,
-          avatar: faker.image.avatar(),
+          avatarId: faker.image.avatar(),
           email: `${faker.name.firstName()}@${faker.name.lastName()}.com`
         },
       },
@@ -73,7 +73,7 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
           bio: faker.lorem.paragraph(),
           displayName: `${faker.name.firstName()} ${faker.name.lastName()}`,
           username: `${faker.name.firstName()}_${faker.datatype.number()}`,
-          avatar: faker.image.avatar(),
+          avatarId: faker.image.avatar(),
         },
       },
       balance: {

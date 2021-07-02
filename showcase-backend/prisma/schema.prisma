@@ -93,7 +93,7 @@ model Profile {
 
   currency  Currency  @default(USD)
   birthDate DateTime?
-  avatar    String?
+  avatarId  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -144,7 +144,7 @@ model BadgeType {
 
   shares Int @default(0)
 
-  soldout             Boolean     @default(false)
+  soldout Boolean @default(false)
 
   removedFromShowcase Boolean     @default(false) //todo: set this to true when all badgeItems all badges get removed => should be a calculated field
   gif                 Boolean     @default(false)

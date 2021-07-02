@@ -1,14 +1,13 @@
 import { Resolver, Mutation, Arg, Authorized } from 'type-graphql'
 import { BadgeType, BadgeItem } from '@generated/type-graphql'
 
-import { publishBadgeType, uploadBadge } from '../libs/badge/publishBadgeType'
+import { publishBadgeType } from '../libs/badge/publishBadgeType'
 import { PublishBadgeTypeInput } from '../libs/badge/types/publishBadgeType.type'
 import { PurchaseBadgeInput } from '../libs/badge/types/purchaseBadge.type'
 import { purchaseBadge } from '../libs/badge/purchaseBadge'
 import { UserType } from '.prisma/client'
 import { User } from '@prisma/client'
 import { CurrentUser } from '../libs/auth/decorators'
-import { GraphQLError } from 'graphql'
 import { FileUpload } from '../types/fileUpload'
 
 @Resolver()
@@ -20,13 +19,7 @@ export class MarketplaceResolver {
     @Arg('data') publishBadgeTypeInput: PublishBadgeTypeInput,
     @CurrentUser() currentUser: User
   ): Promise<BadgeType> {
-    try {
-      const { hash, uploadedFile } = await uploadBadge(file)
-
-      return publishBadgeType(publishBadgeTypeInput, uploadedFile.Key, hash, currentUser)
-    } catch (error) {
-      throw new GraphQLError(`RESOLVER ERROR: publishBadgeType: ${(error as Error).message}`)
-    }
+    return publishBadgeType(publishBadgeTypeInput, file, currentUser)
   }
 
   @Authorized(UserType.basic, UserType.creator)

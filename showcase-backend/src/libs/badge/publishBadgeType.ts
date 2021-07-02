@@ -44,7 +44,7 @@ const createTokenTypeOnBlockchain = async ({
   title,
   description,
   category,
-  image,
+  imageId,
   imageHash,
   supply,
 }: Partial<InputWithUser & BadgeTypeCreateInput & { profile: Profile }>): Promise<string> => {
@@ -55,7 +55,7 @@ const createTokenTypeOnBlockchain = async ({
     description: description || 'None',
     creatorname: profile?.username,
     category,
-    image,
+    image: imageId,
     imagehash: imageHash, // todo: camelCase on blockchain server
     supply,
     creatoraddress: user?.cryptoWallet?.address,
@@ -138,7 +138,7 @@ export const publishBadgeType = async (
     data: {
       ...restData,
       imageHash,
-      image: imageId,
+      imageId,
       uri: 'https://showcase.to/badge/' + imageId, // todo: check if its ok on showcase.to that imageId includes full path of img (badges/xyz123..)
       creator: { connect: { id: user.id } },
       currency: profile.currency,

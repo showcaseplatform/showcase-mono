@@ -131,7 +131,7 @@ model BadgeType {
   currency Currency @default(USD)
   sold     Int      @default(0)
 
-  image     String
+  imageId     String
   imageHash String
 
   causeId        Int?

@@ -34,6 +34,6 @@ export class CustomBadgeTypeResolver {
 
   @FieldResolver((_) => String)
   async publicUrl(@Root() badgeType: BadgeType) {
-    return generateSignedUrl(badgeType.image)
+    return generateSignedUrl(badgeType.imageId)
   }
 }

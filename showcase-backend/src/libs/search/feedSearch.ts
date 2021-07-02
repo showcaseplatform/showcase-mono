@@ -6,7 +6,6 @@ import {
 } from '../../resolvers/types/cursorConnection'
 import { prisma, Prisma } from '../../services/prisma'
 import { FeedSearchInput } from './types/feedSearch.type'
-import { BadgeType } from '@generated/type-graphql'
 
 interface PrismaCursor {
   id: Cursor
@@ -144,7 +143,6 @@ export const feedSearch = async (input: FeedSearchInput): Promise<CursorConnecti
       skip: 1,
       take: 1,
     })
-    console.log({ nextBadge })
 
     return nextBadge.length > 0 
   }
@@ -159,8 +157,6 @@ export const feedSearch = async (input: FeedSearchInput): Promise<CursorConnecti
       skip: 1,
       take: -1,
     })
-
-    console.log({ previousBadge })
 
     return previousBadge.length > 0
   }

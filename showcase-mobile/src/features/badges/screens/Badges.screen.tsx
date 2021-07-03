@@ -44,8 +44,8 @@ const BadgesScreen = ({
           clearButtonMode="unless-editing"
         />
       </SearchContainer>
-      <Spacer position="y" size="medium">
-        <CategorySelector onSelect={setCategory} />
+      <Spacer position="y" size="small">
+        <CategorySelector onSelect={setCategory} activeCategory={category} />
       </Spacer>
       <View flexGrow={1}>
         {fetching ? (

@@ -1,5 +1,7 @@
 declare module 'camelize'
 import { Profile } from '../src/generated/graphql'
+import { Ionicons } from '@expo/vector-icons'
+
 interface TypedResponse<T = any> extends Response {
   json<P = T>(): Promise<P>
 }
@@ -17,4 +19,10 @@ export type MyUser = {
     | 'birthDate'
     | 'displayName'
   >
+}
+export interface MyBadgeCategory {
+  id: number
+  label: Category
+  iconName: React.ComponentProps<typeof Ionicons>['name']
+  gradientColors: string[]
 }

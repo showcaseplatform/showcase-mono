@@ -1,5 +1,4 @@
 import validator from 'validator'
-import { v4 as uuidv4 } from 'uuid'
 import { Uid } from '../../types/user'
 import Boom from 'boom'
 import { CURRENCIES } from '../../consts/currencies'
@@ -15,8 +14,8 @@ import prisma from '../../services/prisma'
 import { UpdateProfileInput } from './types/updateProfile.type'
 import { FileUpload } from '../../types/fileUpload'
 import { GraphQLError } from 'graphql'
-import { uploadFileToS3Bucket } from '../../services/S3'
-import {Profile } from '@prisma/client'
+import { Profile } from '@prisma/client'
+import { FileType, uploadFile } from '../../utils/fileUpload'
 
 const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {
@@ -33,8 +32,8 @@ const validateEmail = async (email: string, uid: Uid) => {
       email,
     },
     select: {
-      email: true
-    }
+      email: true,
+    },
   })
 
   if (
@@ -48,14 +47,14 @@ const validateEmail = async (email: string, uid: Uid) => {
 }
 
 const validateUsername = async (username: string, uid: Uid) => {
-   // todo: is it neccesary to do this check this in db? or enough to add unique constrain
+  // todo: is it neccesary to do this check this in db? or enough to add unique constrain
   const profileWithSameUsername = await prisma.profile.findMany({
     where: {
       username,
     },
     select: {
-      username: true
-    }
+      username: true,
+    },
   })
 
   if (
@@ -93,27 +92,6 @@ const validateCurrency = (currency: Currency) => {
   }
 }
 
-const uploadAvatarImg = async (fileData: FileUpload) => {
-  const { base64DataURL, mimeType } = fileData
-
-  if (!['image/jpeg', 'image/png'].includes(mimeType)) {
-    throw new GraphQLError('Only JPEG and PNG file allowed.')
-  }
-
-  const fileExtension = mimeType.split('/')[1]
-  const id = `avatars/${uuidv4()}.${fileExtension}`
-
-  const buffer = Buffer.from(base64DataURL, 'base64')
-
-  await uploadFileToS3Bucket({
-    Key: id,
-    ContentType: mimeType,
-    buffer,
-  })
-
-  return id
-}
-
 export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUpload, uid: Uid) => {
   const { bio, email, username, displayName, birthDate, currency } = input
 
@@ -144,7 +122,8 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
   }
 
   if (avatarImg) {
-    updateData.avatarId = await uploadAvatarImg(avatarImg)
+    const { Key: avatarId } = await uploadFile({ fileData: avatarImg, fileType: FileType.avatar })
+    updateData.avatarId = avatarId
   }
 
   if (Object.keys(updateData).length >= 1) {

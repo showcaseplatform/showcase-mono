@@ -1,7 +1,7 @@
 import S3, { ContentType } from 'aws-sdk/clients/s3'
 import config from './config'
 
-interface UploadFileInput {
+export interface S3UploadInput {
   Key: string
   ContentType: ContentType
   buffer: Buffer
@@ -14,7 +14,7 @@ const s3 = new S3({
   region: config.region,
 })
 
-export function uploadFileToS3Bucket({ Key, ContentType, buffer, hash }: UploadFileInput) {
+export function uploadFileToS3Bucket({ Key, ContentType, buffer, hash }: S3UploadInput) {
   return s3
     .upload({
       Bucket: config.bucket,

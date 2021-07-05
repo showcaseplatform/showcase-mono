@@ -82,26 +82,16 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
     toggleFollow({ userId: id })
   }
 
-  const reshapedCreatedBadgeTypes = useMemo(
-    () =>
-      reshapeBadges<Partial<BadgeType>>(
-        data?.profile?.user.badgeTypesCreated || []
-      ),
-    [data?.profile?.user.badgeTypesCreated]
+  const reshapedCreatedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
+    data?.profile?.user.badgeTypesCreated || []
   )
-  const reshapedResellBadgeTypes = useMemo(
-    () =>
-      reshapeBadges<Partial<BadgeType>>(
-        data?.profile?.user.badgeTypesForResell || []
-      ),
-    [data?.profile?.user.badgeTypesForResell]
+
+  const reshapedResellBadgeTypes = reshapeBadges<Partial<BadgeType>>(
+    data?.profile?.user.badgeTypesForResell || []
   )
-  const reshapedOwnedBadgeTypes = useMemo(
-    () =>
-      reshapeBadges<Partial<BadgeType>>(
-        data?.profile?.user.badgeItemsOwned.badgeType || []
-      ),
-    [data?.profile?.user.badgeItemsOwned]
+
+  const reshapedOwnedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
+    data?.profile?.user.badgeItemsOwned.badgeType || []
   )
 
   if (fetching) {
@@ -111,10 +101,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
       <StyledSafeArea>
         <View style={{ alignItems: 'center' }}>
           <Spacer position="y" size="large">
-            <ProfileImage
-              small={false}
-              source={data.profile.avatar as string | undefined}
-            />
+            <ProfileImage source={data.profile.avatar} />
           </Spacer>
           <Spacer position="bottom" size="large">
             <Text>{data.profile.username || 'placeholder'}</Text>

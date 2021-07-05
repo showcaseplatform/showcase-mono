@@ -25,13 +25,14 @@ export const uploadFile = async ({ fileData, fileType }: FileUploadInput) => {
 
   let Key = ''
   let hash = ''
+  let gif = false
 
   switch (fileType) {
     case FileType.badge:
       if (!BADGE_ALLOWED_FILES.includes(ContentType)) {
         throw new GraphQLError('Only JPEG, PNG, GIF file allowed.')
       }
-
+      gif = fileExtension == 'gif' 
       Key = `badges/${uuidv4()}.${fileExtension}`
       hash = crypto.createHash('md5').update(buffer).digest('base64')
       break
@@ -55,5 +56,5 @@ export const uploadFile = async ({ fileData, fileType }: FileUploadInput) => {
     hash,
   })
 
-  return { hash, Key }
+  return { hash, Key, gif }
 }

@@ -93,7 +93,7 @@ export const publishBadgeType = async (
   })
 
   // todo: add more userfriendly error handling & upload progress follow
-  const { hash: imageHash, Key: imageId } = await uploadFile({ fileData, fileType: FileType.badge })
+  const { hash: imageHash, Key: imageId, gif } = await uploadFile({ fileData, fileType: FileType.badge })
 
   // todo: remove blockchain.enabled once server is ready
   const tokenTypeId = blockchain.enabled
@@ -113,6 +113,7 @@ export const publishBadgeType = async (
       ...restData,
       imageHash,
       imageId,
+      gif,
       uri: 'https://showcase.to/badge/' + imageId, // todo: check if its ok on showcase.to that imageId includes full path of img (badges/xyz123..)
       creator: { connect: { id: user.id } },
       currency: profile.currency,

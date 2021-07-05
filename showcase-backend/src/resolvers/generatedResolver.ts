@@ -36,7 +36,7 @@ import {
   GroupByCurrencyRateResolver,
   FollowRelationsResolver,
 } from '@generated/type-graphql'
-import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
+import { IsCurrentUser } from '../libs/auth/decorators'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {
@@ -123,11 +123,6 @@ applyRelationResolversEnhanceMap({
       IsCurrentUser([]) as PropertyDecorator
     ],
   },
-  BadgeType: {
-    receipts: [
-      IsBadgeTypeCreatedByCurrentUser([]) as PropertyDecorator
-    ]
-  }
 })
 
 // todo: make it work :)

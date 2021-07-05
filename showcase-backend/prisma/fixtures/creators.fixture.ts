@@ -51,8 +51,6 @@ const generateFakeBadgeType = (amount: number) => {
       currency: i % 3 === 0 ? Currency.GBP : i % 3 === 0 ? Currency.EUR : Currency.USD,
       sold: 0,
       shares: 0,
-      soldout: false,
-      removedFromShowcase: false,
       tokenTypeId: faker.datatype.uuid(),
       image: faker.image.imageUrl(),
       imageHash: faker.datatype.uuid(),
@@ -91,8 +89,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.USD,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             causeId: 1,
             donationAmount: 0.1,
             tokenTypeId:
@@ -111,8 +107,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             causeId: 2,
             donationAmount: 0.1,
             tokenTypeId:
@@ -131,8 +125,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.GBP,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             causeId: 3,
             donationAmount: 0.1,
             tokenTypeId:
@@ -151,8 +143,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             causeId: 4,
             donationAmount: 0.1,
             tokenTypeId:
@@ -171,8 +161,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             causeId: 5,
             donationAmount: 0.1,
             tokenTypeId:
@@ -191,8 +179,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953928676686534345912800509039648547174088704',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2F186ee4a8123c5c35b967378e1a479e3bff41acd66413321e9f94e881f04cda19?alt=media&datenow=1611766968`,
@@ -209,8 +195,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953929697533635108728190899163470842478723072',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2F32e565c0a453325db5f38b34fffa225699b38f84ec4859c70254c8c9dbf11c24?alt=media&datenow=1617896504`,
@@ -227,8 +211,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953950454758017285974462165014524180339621888',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2Fphoto_2020-11-05_19-10-30.jpg?alt=media`,
@@ -245,8 +227,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953930037816002029666654362538078274246934528',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2F3c266eb8605c2e103ec8223fd748999f6b0d86710ffb97d9db59e7b905d486df?alt=media&datenow=1618219660`,
@@ -263,8 +243,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953930037816002029666654362538078274246934529',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2F3d56ad5ff806ebf244fd367f96f90a15a3693103e1123dbbb73d8f68f6ab6f4d?alt=media&datenow=1604942459`,
@@ -281,8 +259,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953952496452218811605242945262168770948890624',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2Fphoto_2020-11-05_19-11-24.jpg?alt=media`,
@@ -299,8 +275,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953949774193283444097535238265309316803198976',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2Fphoto_2020-11-05_19-10-00.jpg?alt=media`,
@@ -317,8 +291,6 @@ const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
             currency: Currency.EUR,
             sold: 0,
             shares: 0,
-            soldout: false,
-            removedFromShowcase: false,
             tokenTypeId:
               '57896044618658097711785492504343953952156169851890666779481887561339180679168',
             image: `https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/badgeimages%2Fgiph3.gif?alt=media`,

@@ -4,7 +4,7 @@ import { notificationSender } from '../notification/notificationSenderLib'
 import { NotificationType } from '.prisma/client'
 import { SendNotificationProps } from '../../types/notificaton'
 import prisma from '../../services/prisma'
-import { BadgeType, Receipt } from '@prisma/client'
+import { BadgeType, Receipt, BadgeItem } from '@prisma/client'
 
 
 // todo: currently this notification is not used
@@ -24,27 +24,33 @@ const getAllReceiptsFromLastWeek = async () => {
       }
     },
     include: {
-      badgeType: true
+      badgeItem: {
+        include: {
+          badgeType: true
+        }
+      }
     }
   })
 }
 
 const getSummaryOfSoldBadgesByCreators = (
   receipts: (Receipt & {
-    badgeType: BadgeType;
+    badgeItem: BadgeItem & {
+      badgeType: BadgeType;
+  };
 })[]
 ): Record<Uid, BadgesSoldRecordValue> => {
   return receipts.reduce((acc, curr) => {
-    if (acc[curr.creatorId]) {
-      if (acc[curr.creatorId][curr.badgeType.currency]) {
-        acc[curr.creatorId][curr.badgeType.currency] += curr.badgeType.price
+    if (acc[curr.badgeItem.badgeType.creatorId]) {
+      if (acc[curr.badgeItem.badgeType.creatorId][curr.badgeItem.badgeType.currency]) {
+        acc[curr.badgeItem.badgeType.creatorId][curr.badgeItem.badgeType.currency] += curr.badgeItem.badgeType.price
       } else {
-        acc[curr.creatorId][curr.badgeType.currency] = curr.badgeType.price
+        acc[curr.badgeItem.badgeType.creatorId][curr.badgeItem.badgeType.currency] = curr.badgeItem.badgeType.price
       }
-      acc[curr.creatorId].count += 1
+      acc[curr.badgeItem.badgeType.creatorId].count += 1
     } else {
-      acc[curr.creatorId] = { [curr.badgeType.currency]: curr.badgeType.price }
-      acc[curr.creatorId].count = 1
+      acc[curr.badgeItem.badgeType.creatorId] = { [curr.badgeItem.badgeType.currency]: curr.badgeItem.badgeType.price }
+      acc[curr.badgeItem.badgeType.creatorId].count = 1
     }
     return acc
   }, {} as any)

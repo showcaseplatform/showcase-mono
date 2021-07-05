@@ -25,16 +25,17 @@ export const IsCurrentUser = (fallbackType? : null | []) => {
   })
 }
 
-export const IsBadgeTypeCreatedByCurrentUser = (fallbackType? : null | []) => {
-  return createMethodDecorator<MyContext>(async ({ context, root }, next: NextFn) => {
-    const isCreatedByCurrentUser = context.user?.id && context.user.id === (root as BadgeType).creatorId
-    if (isCreatedByCurrentUser) {
-      return await next()
-    } else {
-      return fallbackType || null
-    }
-  })
-}
+// todo: not used atm, delete if cant be used anywhere
+// export const IsBadgeTypeCreatedByCurrentUser = (fallbackType? : null | []) => {
+//   return createMethodDecorator<MyContext>(async ({ context, root }, next: NextFn) => {
+//     const isCreatedByCurrentUser = context.user?.id && context.user.id === (root as BadgeType).creatorId
+//     if (isCreatedByCurrentUser) {
+//       return await next()
+//     } else {
+//       return fallbackType || null
+//     }
+//   })
+// }
 
 // todo: same as IsCurrentUser but in a middleware, decide which to use in generatedResvoler.ts
 // export class isOwnedByCurrentUser implements MiddlewareInterface<MyContext> {

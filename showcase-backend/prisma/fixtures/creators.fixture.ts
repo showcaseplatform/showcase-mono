@@ -14,7 +14,7 @@ export const addCreatorsFixture = async (prisma: PrismaClient) => {
 
 
 const createUserWithBadgeTypes = async (prisma: PrismaClient, id: string) => {
-  const avatarId = `avatars/${id[id.length-1]}.jpg`
+  const avatarId = `avatars/test-${id[id.length-1]}.jpg`
   await prisma.user.create({
     data: {
       id,

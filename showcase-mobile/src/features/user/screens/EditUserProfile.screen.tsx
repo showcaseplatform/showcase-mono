@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react'
+import React, { useCallback, useLayoutEffect, useState } from 'react'
 import * as FileSystem from 'expo-file-system'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
@@ -90,35 +90,35 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
     console.log(pickedImage)
   }, [pickedImage])
 
-  const onSubmit = async (formData: UpdateProfileInput) => {
-    let file
+  const onSubmit = useCallback(
+    async (formData: UpdateProfileInput) => {
+      let file
 
-    console.log('image path from submit', pickedImage)
+      if (pickedImage?.uri) {
+        const base64DataURL = await FileSystem.readAsStringAsync(
+          pickedImage.uri,
+          {
+            encoding: FileSystem.EncodingType.Base64,
+          }
+        )
+        const mimeType = `image/${pickedImage.uri.split('.').reverse()[0]}`
 
-    if (pickedImage) {
-      const base64DataURL = await FileSystem.readAsStringAsync(
-        pickedImage.uri,
-        {
-          encoding: FileSystem.EncodingType.Base64,
+        file = {
+          base64DataURL,
+          mimeType,
         }
-      )
-      const mimeType = `image/${pickedImage.uri.split('.').reverse()[0]}`
-
-      file = {
-        base64DataURL,
-        mimeType,
       }
-    }
 
-    console.log('file from submit', file)
-
-    await updateMe({
-      variables: {
-        file: file ?? undefined,
-        data: formData,
-      },
-    })
-  }
+      await updateMe({
+        variables: {
+          file: file ?? undefined,
+          data: formData,
+        },
+      })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pickedImage]
+  )
 
   const onChangeProfileImage = () => {
     setUploading(true)
@@ -145,8 +145,7 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
         paddingRight: 10,
       },
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updating])
+  }, [handleSubmit, navigation, onSubmit, updating])
 
   return (
     <MyKeyboardAwareScrollView>

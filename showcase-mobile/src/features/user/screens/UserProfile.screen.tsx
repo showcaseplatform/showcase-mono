@@ -88,7 +88,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
           <Spacer position="y" size="large">
             <ProfileImage
               resizeMode="contain"
-              source={data.me.profile?.avatar}
+              source={data.me.profile?.avatarUrl}
             />
           </Spacer>
           <Spacer position="bottom" size="large">

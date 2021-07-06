@@ -18,6 +18,7 @@ export type MyUser = {
     | 'currency'
     | 'birthDate'
     | 'displayName'
+    | 'avatarUrl'
   >
 }
 export interface MyBadgeCategory {

@@ -23,7 +23,6 @@ import ProfileImage from '../components/ProfileImage.component'
 import {
   MeDocument,
   UpdateProfileInput,
-  useMeQuery,
   useUpdateMeMutation,
 } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
@@ -59,15 +58,18 @@ const schema = yup.object().shape({
 })
 
 // todo: implement auto-focus on fields
-const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
-  const { data } = useMeQuery()
+const EditUserProfileScreen = ({
+  navigation,
+  route,
+}: EditProfileScreenProps) => {
+  const { user: data } = route.params
   const [updateMe, { loading: updating }] = useUpdateMeMutation({
     onCompleted: (_) => navigation.goBack(),
     refetchQueries: [{ query: MeDocument }],
   })
 
   const { avatarUrl, displayName, username, email, currency, birthDate, bio } =
-    data?.me.profile
+    data?.profile
 
   const { control, handleSubmit } = useForm<UpdateProfileInput>({
     defaultValues: {

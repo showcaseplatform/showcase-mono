@@ -1,6 +1,6 @@
 import { FlatList, Image, View } from 'react-native'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { Button, Chip } from 'react-native-paper'
 import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
 import { Ionicons } from '@expo/vector-icons'
@@ -36,36 +36,39 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
 
 const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   let id = route.params.userId
-  const [{ data, fetching, error }] = useProfileQuery({
+
+  const { data, loading, error } = useProfileQuery({
     variables: { id },
+    fetchPolicy: 'network-only',
   })
-  const [{ fetching: fetchingToggle }, toggleFollow] = useToggleFollowMutation()
+
+  console.log(data?.profile)
+
+  const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation()
 
   const [activeTab, setActiveTab] = useState<'created' | 'bought'>('created')
   const theme = useTheme()
 
   function handleToggleFollow() {
-    toggleFollow({ userId: id })
+    toggleFollow({ variables: { userId: id } })
   }
 
-  const reshapedCreatedBadgeTypes = useMemo(
-    () =>
-      reshapeBadges<Partial<BadgeType>>(
-        data?.profile?.user.badgeTypesCreated || []
-      ),
-    [data?.profile?.user.badgeTypesCreated]
+  const reshapedCreatedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
+    data?.profile?.user.badgeTypesCreated || []
   )
-  const reshapedResellBadgeTypes = useMemo(
-    () =>
-      reshapeBadges<Partial<BadgeType>>(
-        data?.profile?.user.badgeTypesForResell || []
-      ),
-    [data?.profile?.user.badgeTypesForResell]
+  const reshapedResellBadgeTypes = reshapeBadges<Partial<BadgeType>>(
+    data?.profile?.user.badgeTypesForResell || []
   )
 
-  if (fetching) {
+  if (loading) {
+    console.log('im loading')
     return <LoadingIndicator fullScreen />
+  } else if (error) {
+    console.log(error)
+
+    return <Error error={error} />
   } else if (data && data.profile) {
+    console.log('im not loading')
     return (
       <StyledSafeArea>
         <View style={{ alignItems: 'center' }}>
@@ -97,7 +100,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
           <CenterView row>
             <FollowButton
               isFollowed={data.profile.user.amIFollowing}
-              disabled={fetchingToggle}
+              disabled={loadingToggle}
               onPress={handleToggleFollow}
             />
             <Spacer position="x" size="medium" />
@@ -184,8 +187,6 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
         </View>
       </StyledSafeArea>
     )
-  } else if (error) {
-    return <Error />
   }
 }
 

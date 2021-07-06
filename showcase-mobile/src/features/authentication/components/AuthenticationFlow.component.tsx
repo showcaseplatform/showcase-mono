@@ -10,11 +10,11 @@ export enum AuthStep {
 
 const AuthenticationFlow = () => {
   const [currentAuthStep, setCurrentAuthStep] = useState<AuthStep>(
-    AuthStep.ENTER_PHONE
+    AuthStep.ENTER_AUTHCODE
   )
   const [phoneNumber, setPhone] = useState<PhoneInputProps>({
-    areaCode: '',
-    phone: '',
+    areaCode: '36',
+    phone: '704423015',
   })
 
   switch (currentAuthStep) {

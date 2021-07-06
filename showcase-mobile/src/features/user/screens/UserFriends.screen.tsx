@@ -12,6 +12,7 @@ import ProfileImage from '../components/ProfileImage.component'
 
 import {
   FollowStatus,
+  MeDocument,
   useMeQuery,
   User,
   useToggleFollowMutation,
@@ -26,7 +27,9 @@ type FollowItemProps = {
 const FollowItem = ({ userId, user }: FollowItemProps) => {
   const { amIFollowing } = user
   const { avatar, username, displayName } = user.profile
-  const [{ fetching: fetchingToggle }, toggleFollow] = useToggleFollowMutation()
+  const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
+    refetchQueries: [{ query: MeDocument }],
+  })
   const theme = useTheme()
 
   return (
@@ -47,8 +50,8 @@ const FollowItem = ({ userId, user }: FollowItemProps) => {
       <CenterView>
         <FollowButton
           isFollowed={amIFollowing}
-          onPress={() => toggleFollow({ userId })}
-          disabled={fetchingToggle}
+          onPress={() => toggleFollow({ variables: { userId } })}
+          disabled={loadingToggle}
         />
       </CenterView>
     </Surface>
@@ -56,9 +59,9 @@ const FollowItem = ({ userId, user }: FollowItemProps) => {
 }
 
 const UserFriendsScreen = () => {
-  const [{ data, fetching }] = useMeQuery()
+  const { data, loading } = useMeQuery()
 
-  if (fetching) {
+  if (loading) {
     return <LoadingIndicator fullScreen />
   }
 

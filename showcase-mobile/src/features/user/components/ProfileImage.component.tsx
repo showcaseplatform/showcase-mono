@@ -18,7 +18,7 @@ const StyledProfileImage = styled(Image)<{ small?: boolean }>`
 `
 
 const ProfileImage = (props: ProfileImageProps) => {
-  const { source, onClick, small, loading = false, ...rest } = props
+  const { source, onClick, small = false, loading = false, ...rest } = props
   if (loading)
     return (
       <View
@@ -37,7 +37,7 @@ const ProfileImage = (props: ProfileImageProps) => {
       <StyledProfileImage
         resizeMode="cover"
         source={getImageSource(source)}
-        small
+        small={small}
         {...rest}
       />
     </Pressable>

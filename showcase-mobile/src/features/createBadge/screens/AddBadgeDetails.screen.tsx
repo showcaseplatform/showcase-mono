@@ -42,7 +42,7 @@ const defaultValues = {
   isFree: false,
 }
 
-// todo: define schema details
+// todo: define validation schema details
 const schema = yup.object().shape({
   title: yup.string().required(),
   price: yup.number().required(),
@@ -57,7 +57,14 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
   const { imagePath, category, donation } = route.params
   const theme = useTheme()
 
-  const [, upload] = useUploadBadgeFileMutation()
+  const [upload] = useUploadBadgeFileMutation({
+    onCompleted: () => {
+      navigation.navigate('BadgeNavigator', {
+        screen: 'Badges',
+      })
+    },
+    onError: (err) => Alert.alert(JSON.stringify(err.message)),
+  })
 
   const {
     control,
@@ -98,24 +105,15 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
     })
 
     await upload({
-      file: {
-        base64DataURL: file,
-        fileName: _data.title,
-        mimeType: `image/${imagePath.split('.').reverse()[0]}`,
+      variables: {
+        file: {
+          base64DataURL: file,
+          fileName: _data.title,
+          mimeType: `image/${imagePath.split('.').reverse()[0]}`,
+        },
+        data: _data,
       },
-      data: _data,
     })
-      .then((res) => {
-        // todo: in case of success navigate & send a success toast?
-        res.data?.publishBadgeType.id &&
-          navigation.navigate('BadgeNavigator', {
-            screen: 'Badges',
-          })
-      })
-      .catch((err) => {
-        // todo: do something if sad path eg.: fail toast?
-        Alert.alert(err)
-      })
   }
 
   return (

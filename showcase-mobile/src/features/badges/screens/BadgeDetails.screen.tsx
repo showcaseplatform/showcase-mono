@@ -23,7 +23,7 @@ type BadgeDetailsScreenProps = {
 const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const theme = useTheme()
   const { item } = route.params
-  const [{ data, fetching, error }] = useBadgeTypeQuery({
+  const { data, loading, error } = useBadgeTypeQuery({
     variables: { id: item.id },
   })
 
@@ -62,10 +62,9 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       })
   }, [navigation])
 
-  if (fetching) {
+  if (loading) {
     return <LoadingIndicator />
   } else if (data) {
-    // todo: handle maybe BadgeType data
     const {
       price,
       currency,

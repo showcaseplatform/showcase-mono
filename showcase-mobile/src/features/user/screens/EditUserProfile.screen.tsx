@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useState } from 'react'
+import React, { useLayoutEffect, useState } from 'react'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -20,6 +20,7 @@ import MyDatePickerInput from '../../../components/MyDatePickerInput.component'
 import HeaderActionButton from '../../../components/HeaderActionButton.component'
 import ProfileImage from '../components/ProfileImage.component'
 import {
+  MeDocument,
   UpdateProfileInput,
   useMeQuery,
   useUpdateMeMutation,
@@ -52,9 +53,11 @@ const schema = yup.object().shape({
 
 // todo: implement auto-focus on fields
 const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
-  const [{ data, fetching, error }, refetchMe] = useMeQuery()
-  const [{ fetching: updating, error: updateError }, updateMe] =
-    useUpdateMeMutation()
+  const { data } = useMeQuery()
+  const [updateMe, { loading: updating }] = useUpdateMeMutation({
+    onCompleted: () => navigation.goBack(),
+    refetchQueries: [{ query: MeDocument }],
+  })
 
   const { avatar, displayName, username, email, currency, birthDate, bio } =
     data?.me.profile
@@ -76,18 +79,9 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
   const [uploading, setUploading] = useState(false)
   const { pickImage } = useCameraRoll()
 
-  const onSubmit = useCallback(
-    async (formData: UpdateProfileInput) => {
-      await updateMe({ data: formData })
-      if (!error) {
-        await refetchMe({ requestPolicy: 'network-only' })
-      }
-      if (!updateError) {
-        navigation.goBack()
-      }
-    },
-    [error, navigation, refetchMe, updateError, updateMe]
-  )
+  const onSubmit = async (formData: UpdateProfileInput) => {
+    await updateMe({ variables: { file: profileImg, data: formData } })
+  }
 
   // ?: temp file upload
   const onChangeProfileImage = async () => {

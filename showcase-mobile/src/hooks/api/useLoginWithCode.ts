@@ -7,15 +7,16 @@ import { useSetToken } from '../../services/persistence/token'
 
 export default function useLoginWithCode() {
   const setToken = useSetToken()
-  const authWithCodeTuple = useSendAuthCodeMutation()
-  const [authResult] = authWithCodeTuple
+  const [sendAuthCode, { data, loading, error }] = useSendAuthCodeMutation()
 
   useEffect(() => {
-    const token = authResult.data?.verifyPhoneCode.token
+    const token = data?.verifyPhoneCode.token
     if (token) {
       setToken(token)
+    } else {
+      setToken(undefined)
     }
-  }, [authResult.data, setToken])
+  }, [data, setToken])
 
-  return authWithCodeTuple
+  return { sendAuthCode, error, loading }
 }

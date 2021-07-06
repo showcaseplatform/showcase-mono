@@ -25,13 +25,12 @@ const BadgesScreen = ({
 }) => {
   const [category, setCategory] = useState<Category>()
   const [searchQuery, setSearchQuery] = useState<string>('')
-  const [badgesResult] = useBadgeTypesQuery({
+  const { data, loading, error } = useBadgeTypesQuery({
     variables: { category },
   })
-  const { data, fetching, error } = badgesResult
 
   if (error) {
-    return <Error />
+    return <Error error={error} />
   }
 
   return (
@@ -48,7 +47,7 @@ const BadgesScreen = ({
         <CategorySelector onSelect={setCategory} activeCategory={category} />
       </Spacer>
       <View flexGrow={1}>
-        {fetching ? (
+        {loading ? (
           <LoadingIndicator fullScreen />
         ) : (
           <FlatList

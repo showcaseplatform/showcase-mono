@@ -18,7 +18,7 @@ import MyKeyboardAwareScrollView from '../../../components/MyKeyboardAwareScroll
 import MySelectInputComponent from '../../../components/MySelectInput.component'
 import MyDatePickerInput from '../../../components/MyDatePickerInput.component'
 import HeaderActionButton from '../../../components/HeaderActionButton.component'
-import ProfileImage from '../components/ProfileImage.component'
+import ProfileImage from '../../../components/ProfileImage.component'
 import {
   UpdateProfileInput,
   useMeQuery,
@@ -80,7 +80,7 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
     async (formData: UpdateProfileInput) => {
       await updateMe({ data: formData })
       if (!error) {
-        await refetchMe({ requestPolicy: 'network-only' })
+        await refetchMe({ requestPolicy: 'network-only' }) // todo: create similar logic in client
       }
       if (!updateError) {
         navigation.goBack()

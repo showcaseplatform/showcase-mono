@@ -8,7 +8,7 @@ import FollowButton from '../../../components/FollowButton.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
-import ProfileImage from '../components/ProfileImage.component'
+import ProfileImage from '../../../components/ProfileImage.component'
 
 import {
   FollowStatus,

@@ -1,21 +1,21 @@
 import React, { useEffect } from 'react'
 import * as FileSystem from 'expo-file-system'
+import { Button, Divider, Switch } from 'react-native-paper'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
+import { useTheme } from 'styled-components'
 import { Alert, View } from 'react-native'
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { EditorStackParamList } from '../../../infrastructure/navigation/editor.navigator'
+import { translate } from '../../../utils/translator'
 
 import MyKeyboardAwareScrollView from '../../../components/MyKeyboardAwareScrollView.component'
 import { Spacer } from '../../../components/Spacer.component'
 import BadgePreviewImage from '../components/BadgePreview.component'
 import MyTextFieldComponent from '../../../components/MyTextField.component'
 import { Text } from '../../../components/Text.component'
-import { translate } from '../../../utils/translator'
-import { Button, Divider, Switch } from 'react-native-paper'
-import { useTheme } from 'styled-components'
 import { StyledSafeArea } from '../../badges/screens/Badges.styles'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import {
@@ -97,7 +97,6 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
       category: category.label,
       causeId: donation.causeId,
       donationAmount: donation.donationPercent,
-      gif: false,
     }
 
     const file = await FileSystem.readAsStringAsync(imagePath, {
@@ -108,7 +107,6 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
       variables: {
         file: {
           base64DataURL: file,
-          fileName: _data.title,
           mimeType: `image/${imagePath.split('.').reverse()[0]}`,
         },
         data: _data,

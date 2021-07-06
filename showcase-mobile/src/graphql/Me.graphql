@@ -9,7 +9,7 @@ query Me {
     badgeTypesCreated {
       price
       currency
-      image
+      publicUrl
       supply
       sold
     }
@@ -21,7 +21,7 @@ query Me {
         amIFollowing
         profile {
           id
-          avatar
+          avatarUrl
           displayName
           username
         }

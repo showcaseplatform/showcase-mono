@@ -19,12 +19,13 @@ import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import FollowButton from '../../../components/FollowButton.component'
 import {
   BadgeType,
-  useProfileQuery,
+  ProfileDocument,
   UserType,
   useToggleFollowMutation,
 } from '../../../generated/graphql'
 import Error from '../../../components/Error.component'
 import { translate } from '../../../utils/translator'
+import { useQuery } from '@apollo/client'
 
 type ProfileScreenProps = {
   route: RouteProp<BadgeStackParamList, 'Profile'>
@@ -37,12 +38,9 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
 const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   let id = route.params.userId
 
-  const { data, loading, error } = useProfileQuery({
+  const { data, loading, error } = useQuery(ProfileDocument, {
     variables: { id },
-    fetchPolicy: 'network-only',
   })
-
-  console.log(data?.profile)
 
   const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation()
 
@@ -61,14 +59,10 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   )
 
   if (loading) {
-    console.log('im loading')
     return <LoadingIndicator fullScreen />
   } else if (error) {
-    console.log(error)
-
     return <Error error={error} />
   } else if (data && data.profile) {
-    console.log('im not loading')
     return (
       <StyledSafeArea>
         <View style={{ alignItems: 'center' }}>
@@ -77,7 +71,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
               resizeMode="contain"
               source={{
                 uri:
-                  data.profile.avatar ||
+                  data.profile.avatarUrl ||
                   require('../../../../assets/splash.png'), //todo: temp fallback img
               }}
               style={{ width: 100, height: 100, borderRadius: 50 }}

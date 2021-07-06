@@ -69,15 +69,15 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       price,
       currency,
       donationAmount,
-      image,
       creator: { profile },
       cause,
+      publicUrl
     } = data.badgeType
 
     return (
       <>
         <ImageBackground
-          source={{ uri: image }}
+          source={{ uri: publicUrl }}
           style={{
             width: '100%',
             height: '100%',
@@ -86,7 +86,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         >
           <BlurView tint="dark" intensity={85}>
             <Image
-              source={{ uri: image }}
+              source={{ uri: publicUrl }}
               style={{
                 width: '100%',
                 height: '100%',

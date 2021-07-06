@@ -28,10 +28,17 @@ const authMiddleware = new ApolloLink((operation, forward) => {
   return forward(operation)
 })
 
-const logoutLink = onError(({ networkError }) => {
-  if (networkError?.statusCode === 401) {
-    tokenStore.remove()
-  }
+// todo: TEMP 401 handling cuz gql error missing status
+const logoutLink = onError((error) => {
+  error.graphQLErrors &&
+    error.graphQLErrors.map((err) => {
+      if (
+        err.message ===
+        "Access denied! You don't have permission for this action!"
+      ) {
+        tokenStore.remove()
+      }
+    })
 })
 
 const link = ApolloLink.from([

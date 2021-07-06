@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useState } from 'react'
+import * as FileSystem from 'expo-file-system'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -32,6 +33,12 @@ type EditProfileScreenProps = {
   navigation: NavigationProp<UserStackParamList>
 }
 
+// extends ImagePickerResult
+type PickedImageResult = {
+  cancelled: boolean
+  uri: string
+}
+
 const schema = yup.object().shape({
   displayName: yup
     .string()
@@ -55,11 +62,11 @@ const schema = yup.object().shape({
 const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
   const { data } = useMeQuery()
   const [updateMe, { loading: updating }] = useUpdateMeMutation({
-    onCompleted: () => navigation.goBack(),
+    onCompleted: (_) => navigation.goBack(),
     refetchQueries: [{ query: MeDocument }],
   })
 
-  const { avatar, displayName, username, email, currency, birthDate, bio } =
+  const { avatarUrl, displayName, username, email, currency, birthDate, bio } =
     data?.me.profile
 
   const { control, handleSubmit } = useForm<UpdateProfileInput>({
@@ -75,26 +82,49 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
     resolver: yupResolver(schema),
   })
 
-  const [profileImg, setProfileImg] = useState<string | undefined>(avatar)
+  const [pickedImage, setPickedImage] = useState<PickedImageResult | null>(null)
   const [uploading, setUploading] = useState(false)
   const { pickImage } = useCameraRoll()
 
+  React.useEffect(() => {
+    console.log(pickedImage)
+  }, [pickedImage])
+
   const onSubmit = async (formData: UpdateProfileInput) => {
-    await updateMe({ variables: { file: profileImg, data: formData } })
+    let file
+
+    console.log('image path from submit', pickedImage)
+
+    if (pickedImage) {
+      const base64DataURL = await FileSystem.readAsStringAsync(
+        pickedImage.uri,
+        {
+          encoding: FileSystem.EncodingType.Base64,
+        }
+      )
+      const mimeType = `image/${pickedImage.uri.split('.').reverse()[0]}`
+
+      file = {
+        base64DataURL,
+        mimeType,
+      }
+    }
+
+    console.log('file from submit', file)
+
+    await updateMe({
+      variables: {
+        file: file ?? undefined,
+        data: formData,
+      },
+    })
   }
 
-  // ?: temp file upload
-  const onChangeProfileImage = async () => {
-    pickImage().then((res) => {
-      if (!res) {
-        return
-      }
-
-      setUploading(true)
-      setTimeout(() => {
-        setUploading(false)
-        setProfileImg(res?.uri)
-      }, 1000)
+  const onChangeProfileImage = () => {
+    setUploading(true)
+    pickImage().then((value: PickedImageResult) => {
+      setUploading(false)
+      setPickedImage(value)
     })
   }
 
@@ -122,7 +152,7 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
     <MyKeyboardAwareScrollView>
       <Spacer position="y" size="large">
         <ProfileImage
-          source={profileImg}
+          source={pickedImage?.uri || avatarUrl}
           loading={uploading}
           onClick={onChangeProfileImage}
         />

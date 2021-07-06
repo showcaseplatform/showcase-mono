@@ -86,10 +86,6 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
   const [uploading, setUploading] = useState(false)
   const { pickImage } = useCameraRoll()
 
-  React.useEffect(() => {
-    console.log(pickedImage)
-  }, [pickedImage])
-
   const onSubmit = useCallback(
     async (formData: UpdateProfileInput) => {
       let file

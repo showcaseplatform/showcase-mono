@@ -42,7 +42,6 @@ const generateTestBadgeType = (amount: number) => {
   let i = 1
   let testBadgeTypes: BadgeTypeCreateWithoutCreatorInput[] = []
   while (i < amount + 1) {
-    i++
     testBadgeTypes.push({
       id: faker.datatype.uuid(),
       title: `BadgeType Title ${i}`,
@@ -60,6 +59,7 @@ const generateTestBadgeType = (amount: number) => {
       imageHash: faker.datatype.uuid(),
       uri: `https://showcase.to/badge/fake${faker.datatype.number(100000)}`,
     })
+    i++
   }
   return testBadgeTypes
 }

@@ -20,7 +20,7 @@ export class SocialResolver {
   @Mutation((_returns) => Profile)
   async updateProfileCustom(
     @Arg('data', {nullable: true}) updateProfileInput: UpdateProfileInput,
-    @Arg('avatarImg', {nullable: true}) avatarImg: FileUpload,
+    @Arg('file', {nullable: true}) avatarImg: FileUpload,
     @CurrentUser() currentUser: User
   ) {
     return await updateProfile(updateProfileInput, avatarImg, currentUser.id)

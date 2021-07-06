@@ -27,7 +27,9 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
   `${items[0].id}${items[1]?.id}${index}`
 
 const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
-  const { data, loading, error } = useMeQuery()
+  const { data, loading, error } = useMeQuery({
+    fetchPolicy: 'cache-and-network',
+  })
   const theme = useTheme()
 
   const countOfFriends = useMemo(
@@ -86,10 +88,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
       <View style={{ flex: 1, backgroundColor: theme.colors.bg.primary }}>
         <View style={{ alignItems: 'center' }}>
           <Spacer position="y" size="large">
-            <ProfileImage
-              resizeMode="contain"
-              source={data.me.profile?.avatarUrl}
-            />
+            <ProfileImage source={data.me.profile?.avatarUrl} />
           </Spacer>
           <Spacer position="bottom" size="large">
             <Text>{data.me.profile?.displayName}</Text>

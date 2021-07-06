@@ -35,6 +35,7 @@ import {
   AggregateCurrencyRateResolver,
   GroupByCurrencyRateResolver,
   FollowRelationsResolver,
+  BadgeItemRelationsResolver
 } from '@generated/type-graphql'
 import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
 
@@ -165,6 +166,8 @@ const badgeTypeResolvers = [
   FindUniqueBadgeTypeResolver,
 ]
 
+const badgeItemResolvers = [BadgeItemRelationsResolver]
+
 const causeResolvers = [
   FindUniqueCauseResolver,
   FindFirstCauseResolver,
@@ -192,6 +195,7 @@ export const generatedResolvers = [
   ...badgeTypeResolvers,
   ...causeResolvers,
   ...currencyRateResolvers,
-  ...followResolvers
+  ...followResolvers,
+  ...badgeItemResolvers
 ]
 

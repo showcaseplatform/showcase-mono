@@ -1,5 +1,5 @@
-import { S3UploadInput, uploadFileToS3Bucket } from '../services/S3'
-import { FileUpload } from '../types/fileUpload'
+import { uploadFileToS3Bucket } from '../services/S3'
+import { FileUpload } from './types/fileUpload.type'
 import { v4 as uuidv4 } from 'uuid'
 import { GraphQLError } from 'graphql'
 import * as crypto from 'crypto'
@@ -14,8 +14,8 @@ export interface FileUploadInput {
   fileType: FileType
 }
 
-const BADGE_ALLOWED_FILES = ['image/jpeg', 'image/png', 'image/gif']
-const AVATAR_ALLOWED_FILES = ['image/jpeg', 'image/png']
+const BADGE_ALLOWED_FILES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+const AVATAR_ALLOWED_FILES = ['image/jpeg', 'image/jpg', 'image/png']
 
 export const uploadFile = async ({ fileData, fileType }: FileUploadInput) => {
   const { base64DataURL, mimeType: ContentType } = fileData
@@ -30,16 +30,16 @@ export const uploadFile = async ({ fileData, fileType }: FileUploadInput) => {
   switch (fileType) {
     case FileType.badge:
       if (!BADGE_ALLOWED_FILES.includes(ContentType)) {
-        throw new GraphQLError('Only JPEG, PNG, GIF file allowed.')
+        throw new GraphQLError('Only JPG, JPEG, PNG and GIF files are allowed.')
       }
-      gif = fileExtension == 'gif' 
+      gif = fileExtension == 'gif'
       Key = `badges/${uuidv4()}.${fileExtension}`
       hash = crypto.createHash('md5').update(buffer).digest('base64')
       break
 
     case FileType.avatar:
       if (!AVATAR_ALLOWED_FILES.includes(ContentType)) {
-        throw new GraphQLError('Only JPEG and PNG file allowed.')
+        throw new GraphQLError('Only JPG, JPEG and PNG files are allowed.')
       }
 
       Key = `avatars/${uuidv4()}.${fileExtension}`

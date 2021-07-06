@@ -12,7 +12,7 @@ import {
 import { Currency } from '@generated/type-graphql'
 import prisma from '../../services/prisma'
 import { UpdateProfileInput } from './types/updateProfile.type'
-import { FileUpload } from '../../types/fileUpload'
+import { FileUpload } from '../../utils/types/fileUpload.type'
 import { GraphQLError } from 'graphql'
 import { Profile } from '@prisma/client'
 import { FileType, uploadFile } from '../../utils/fileUpload'

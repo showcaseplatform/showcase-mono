@@ -8,7 +8,7 @@ import { purchaseBadge } from '../libs/badge/purchaseBadge'
 import { UserType } from '.prisma/client'
 import { User } from '@prisma/client'
 import { CurrentUser } from '../libs/auth/decorators'
-import { FileUpload } from '../types/fileUpload'
+import { FileUpload } from '../utils/types/fileUpload.type'
 
 @Resolver()
 export class MarketplaceResolver {

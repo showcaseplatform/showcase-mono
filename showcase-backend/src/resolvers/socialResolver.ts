@@ -5,7 +5,7 @@ import { updateProfile } from '../libs/user/updateProfile'
 import { UpdateProfileInput } from '../libs/user/types/updateProfile.type'
 import { User, UserType } from '@prisma/client'
 import { CurrentUser } from '../libs/auth/decorators'
-import { FileUpload } from '../types/fileUpload'
+import { FileUpload } from '../utils/types/fileUpload.type'
 
 @Resolver()
 export class SocialResolver {

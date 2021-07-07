@@ -20,7 +20,7 @@ jobs:
           yarn install
           expo publish --release-channel=pr-${{ github.event.number }}
         env:
-          CYPRESS_BASE_URL: 'https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/'
+          DEV_API: 'https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/'
 
       - uses: unsplash/comment-on-pr@master
         env:

@@ -1,11 +1,14 @@
 import { NavigationProp } from '@react-navigation/core'
 import React, { useState } from 'react'
-import { FlatList, View } from 'react-native'
+import { Button, FlatList, View } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 
 import { Spacer } from '../../../components/Spacer.component'
-import { Category, useBadgeTypesQuery } from '../../../generated/graphql'
+import {
+  Category,
+  usePaginatedBadgeTypesQuery,
+} from '../../../generated/graphql'
 import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
 import BadgeItem from '../components/BadgeItem.component'
 import CategorySelector from '../components/CategorySelector.component'
@@ -17,7 +20,6 @@ import {
 } from './Badges.styles'
 
 // todo: impl backend search quering
-// todo: proper error handling
 const BadgesScreen = ({
   navigation,
 }: {
@@ -25,15 +27,38 @@ const BadgesScreen = ({
 }) => {
   const [category, setCategory] = useState<Category>()
   const [searchQuery, setSearchQuery] = useState<string>('')
-  const { data, loading, error } = useBadgeTypesQuery({
-    variables: { category },
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  const { data, error, loading, fetchMore } = usePaginatedBadgeTypesQuery({
+    variables: {
+      limit: 10,
+      category,
+      after: '',
+    },
   })
+
+  const badges = data?.feedSearch.edges.map((edge) => edge.node)
+  const pageInfo = data?.feedSearch.pageInfo
+
+  const handleFetchMore = React.useCallback(() => {
+    setIsLoadingMore(true)
+    pageInfo?.hasNextPage &&
+      fetchMore({
+        variables: {
+          limit: 10,
+          after: pageInfo?.endCursor,
+        },
+      }).then(() => {
+        setIsLoadingMore(false)
+      })
+  }, [fetchMore, pageInfo?.endCursor, pageInfo?.hasNextPage])
 
   if (error) {
     return <Error error={error} />
   }
 
-  return (
+  return data ? (
     <StyledSafeArea>
       <SearchContainer>
         <StyledSearchbar
@@ -46,16 +71,19 @@ const BadgesScreen = ({
       <Spacer position="y" size="small">
         <CategorySelector onSelect={setCategory} activeCategory={category} />
       </Spacer>
-      <View flexGrow={1}>
+      <Button onPress={handleFetchMore} title="Moa!" />
+      <View style={{ flex: 1 }}>
         {loading ? (
           <LoadingIndicator fullScreen />
         ) : (
           <FlatList
-            data={data?.badgeTypes}
-            keyExtractor={(item) => item.id}
+            data={badges}
+            keyExtractor={({ id }) => id}
             numColumns={2}
-            contentContainerStyle={{ flexGrow: 1 }}
             ListEmptyComponent={EmptyListComponent}
+            refreshing={isLoadingMore}
+            onEndReached={handleFetchMore}
+            onEndReachedThreshold={0.2}
             renderItem={({ item }) => (
               <BadgeItem
                 item={item}
@@ -67,7 +95,7 @@ const BadgesScreen = ({
         )}
       </View>
     </StyledSafeArea>
-  )
+  ) : null
 }
 
 export default BadgesScreen

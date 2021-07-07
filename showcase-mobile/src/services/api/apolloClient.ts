@@ -9,6 +9,7 @@ import { onError } from '@apollo/client/link/error'
 import tokenStore from '../persistence/token'
 
 import { DEV_API } from '@env'
+import { relayStylePagination } from '@apollo/client/utilities'
 
 const httpLink = createHttpLink({ uri: DEV_API })
 
@@ -47,9 +48,17 @@ const link = ApolloLink.from([
   authMiddleware.concat(httpLink),
 ])
 
-const clientA = new ApolloClient({
-  cache: new InMemoryCache(),
+const client = new ApolloClient({
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          feedSearch: relayStylePagination(),
+        },
+      },
+    },
+  }),
   link,
 })
 
-export default clientA
+export default client

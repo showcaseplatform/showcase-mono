@@ -44,7 +44,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   })
 
   const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
-    update(cache, { data }) {
+    update(cache, { data: data_ }) {
       cache.modify({
         id: cache.identify({
           id,
@@ -52,7 +52,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
         }),
         fields: {
           amIFollowing() {
-            return data?.toggleFollow.status === FollowStatus.Accepted
+            return data_?.toggleFollow.status === FollowStatus.Accepted
           },
         },
       })

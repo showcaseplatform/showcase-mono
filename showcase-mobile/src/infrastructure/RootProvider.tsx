@@ -5,14 +5,14 @@ import { ThemeProvider } from 'styled-components/native'
 
 import BottomSheetProvider from '../services/bottomSheet/BottomSheetModal.context'
 import { TokenProvider } from '../services/persistence/token'
-import clientA from '../services/api/apolloClient'
+import client from '../services/api/apolloClient'
 import theme from './theme'
 
 const RootProvider = ({ children }: PropsWithChildren<{}>) => {
   return (
     <ThemeProvider theme={theme}>
       <TokenProvider>
-        <ApolloProvider client={clientA}>
+        <ApolloProvider client={client}>
           <Portal.Host>
             <BottomSheetProvider>{children}</BottomSheetProvider>
           </Portal.Host>

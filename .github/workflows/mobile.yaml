@@ -9,6 +9,10 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 14.x
+      - uses: mydea/action-wait-for-api@v1
+        with:
+          url: 'https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/graphql'
+          expected-status: 200
       - uses: expo/expo-github-action@v5
         with:
           expo-version: 4.x
@@ -18,6 +22,7 @@ jobs:
         working-directory: ./showcase-mobile
         run: |
           yarn install
+          yarn generate
           expo publish --release-channel=pr-${{ github.event.number }}
         env:
           DEV_API: 'https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/'

@@ -14,11 +14,11 @@ jobs:
           expo-version: 4.x
           expo-username: ${{ secrets.EXPO_CLI_USERNAME }}
           expo-password: ${{ secrets.EXPO_CLI_PASSWORD }}
-      - name: npm install, build
+      - name: Install Dependencies
+        working-directory: ./showcase-mobile
         run: |
-          cd showcase-mobile
           yarn install
-      - run: expo publish --release-channel=pr-${{ github.event.number }}
+          expo publish --release-channel=pr-${{ github.event.number }}
         env:
           CYPRESS_BASE_URL: 'https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/'
 

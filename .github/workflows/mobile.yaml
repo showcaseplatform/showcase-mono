@@ -1,5 +1,7 @@
 name: Expo Feature Review
 on: [pull_request]
+  paths:
+      - "showcase-backend/**"
 jobs:
   publish:
     name: Install and publish
@@ -14,7 +16,10 @@ jobs:
           expo-version: 4.x
           expo-username: ${{ secrets.EXPO_CLI_USERNAME }}
           expo-password: ${{ secrets.EXPO_CLI_PASSWORD }}
-      - run: npm ci
+      - name: npm install, build
+        run: |
+          cd showcase-backend
+          yarn install
       - run: expo publish --release-channel=pr-${{ github.event.number }}
         env:
           CYPRESS_BASE_URL: "https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/"

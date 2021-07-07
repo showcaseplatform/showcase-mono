@@ -1,7 +1,5 @@
 name: Expo Feature Review
 on: [pull_request]
-  paths:
-      - "showcase-backend/**"
 jobs:
   publish:
     name: Install and publish
@@ -22,7 +20,7 @@ jobs:
           yarn install
       - run: expo publish --release-channel=pr-${{ github.event.number }}
         env:
-          CYPRESS_BASE_URL: "https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/"
+          CYPRESS_BASE_URL: 'https://showcase-backend-monorepo-pr-${{ github.event.pull_request.number }}.onrender.com/'
 
       - uses: unsplash/comment-on-pr@master
         env:

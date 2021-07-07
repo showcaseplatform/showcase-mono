@@ -19,6 +19,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import FollowButton from '../../../components/FollowButton.component'
 import {
   BadgeType,
+  FollowStatus,
   ProfileDocument,
   UserType,
   useToggleFollowMutation,
@@ -42,7 +43,21 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
     variables: { id },
   })
 
-  const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation()
+  const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
+    update(cache, { data }) {
+      cache.modify({
+        id: cache.identify({
+          id,
+          __typename: 'User',
+        }),
+        fields: {
+          amIFollowing() {
+            return data?.toggleFollow.status === FollowStatus.Accepted
+          },
+        },
+      })
+    },
+  })
 
   const [activeTab, setActiveTab] = useState<'created' | 'bought'>('created')
   const theme = useTheme()

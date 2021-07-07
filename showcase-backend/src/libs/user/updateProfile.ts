@@ -12,10 +12,11 @@ import {
 import { Currency } from '@generated/type-graphql'
 import prisma from '../../services/prisma'
 import { UpdateProfileInput } from './types/updateProfile.type'
-import { FileUpload } from '../../utils/types/fileUpload.type'
+import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { GraphQLError } from 'graphql'
 import { Profile } from '@prisma/client'
-import { FileType, uploadFile } from '../../utils/fileUpload'
+import { uploadFile } from '../../utils/fileUpload'
+import { findProfile } from '../database/profile.repo'
 
 const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {
@@ -92,8 +93,18 @@ const validateCurrency = (currency: Currency) => {
   }
 }
 
+const updateAvatarImg = async (avatarImg: FileUpload, uid: Uid) => {
+  const profile = await findProfile(uid)
+  const { Key: avatarId } = await uploadFile({
+    fileData: avatarImg,
+    fileType: FileType.avatar,
+    updateKey: profile?.avatarId || undefined,
+  })
+  return avatarId
+}
+
 export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUpload, uid: Uid) => {
-  const { bio, email, username, displayName, birthDate, currency } = input
+  const { bio, email, username, displayName, birthDate, currency } = input || {}
 
   const updateData = {} as Partial<Omit<Profile, 'id'>>
 
@@ -122,8 +133,7 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
   }
 
   if (avatarImg) {
-    const { Key: avatarId } = await uploadFile({ fileData: avatarImg, fileType: FileType.avatar })
-    updateData.avatarId = avatarId
+    updateData.avatarId = await updateAvatarImg(avatarImg, uid)
   }
 
   if (Object.keys(updateData).length >= 1) {

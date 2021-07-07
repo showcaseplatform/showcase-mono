@@ -16,7 +16,7 @@ jobs:
           expo-password: ${{ secrets.EXPO_CLI_PASSWORD }}
       - name: npm install, build
         run: |
-          cd showcase-backend
+          cd showcase-mobile
           yarn install
       - run: expo publish --release-channel=pr-${{ github.event.number }}
         env:

@@ -1,5 +1,5 @@
 import { uploadFileToS3Bucket } from '../services/S3'
-import { FileType, FileUpload, FileUploadInput } from './types/fileUpload.type'
+import { FileType, FileUploadInput } from './types/fileUpload.type'
 import { v4 as uuidv4 } from 'uuid'
 import { GraphQLError } from 'graphql'
 import * as crypto from 'crypto'

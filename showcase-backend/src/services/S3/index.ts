@@ -1,13 +1,20 @@
 import S3, { ContentType } from 'aws-sdk/clients/s3'
 import config from './config'
 
+export interface S3UploadInput {
+  Key: string
+  ContentType: ContentType
+  buffer: Buffer
+  hash?: string
+}
+
 const s3 = new S3({
   accessKeyId: config.keyId,
   secretAccessKey: config.key,
   region: config.region,
 })
 
-export function uploadFile({ Key, ContentType, buffer, hash }: { Key: string; ContentType: ContentType; buffer: Buffer; hash: string }) {
+export function uploadFileToS3Bucket({ Key, ContentType, buffer, hash }: S3UploadInput) {
   return s3
     .upload({
       Bucket: config.bucket,

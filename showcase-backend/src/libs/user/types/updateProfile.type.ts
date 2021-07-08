@@ -24,9 +24,6 @@ export class UpdateProfileInput  {
   displayName?: string
 
   @Field({ nullable: true })
-  avatar?: string
-
-  @Field({ nullable: true })
   @IsEmail({}, {message: "Invalid email"})
   email?: string
 

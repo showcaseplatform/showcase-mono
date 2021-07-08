@@ -1,6 +1,6 @@
 import { NavigationProp } from '@react-navigation/core'
 import React, { useState } from 'react'
-import { Button, FlatList, View } from 'react-native'
+import { FlatList, View } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 
@@ -30,29 +30,30 @@ const BadgesScreen = ({
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
 
-  const { data, error, loading, fetchMore } = usePaginatedBadgeTypesQuery({
+  const { data, error, loading } = usePaginatedBadgeTypesQuery({
     variables: {
       limit: 10,
-      category,
       after: '',
+      category,
     },
   })
 
   const badges = data?.feedSearch.edges.map((edge) => edge.node)
-  const pageInfo = data?.feedSearch.pageInfo
+  // const pageInfo = data?.feedSearch.pageInfo
 
-  const handleFetchMore = React.useCallback(() => {
-    setIsLoadingMore(true)
-    pageInfo?.hasNextPage &&
-      fetchMore({
-        variables: {
-          limit: 10,
-          after: pageInfo?.endCursor,
-        },
-      }).then(() => {
-        setIsLoadingMore(false)
-      })
-  }, [fetchMore, pageInfo?.endCursor, pageInfo?.hasNextPage])
+  // const handleFetchMore = React.useCallback(() => {
+  //   setIsLoadingMore(true)
+  //   pageInfo?.hasNextPage &&
+  //     fetchMore({
+  //       variables: {
+  //         limit: 10,
+  //         after: pageInfo?.endCursor,
+  //         category,
+  //       },
+  //     }).then((_) => {
+  //       setIsLoadingMore(false)
+  //     })
+  // }, [category, fetchMore, pageInfo?.endCursor, pageInfo?.hasNextPage])
 
   if (error) {
     return <Error error={error} />
@@ -71,7 +72,6 @@ const BadgesScreen = ({
       <Spacer position="y" size="small">
         <CategorySelector onSelect={setCategory} activeCategory={category} />
       </Spacer>
-      <Button onPress={handleFetchMore} title="Moa!" />
       <View style={{ flex: 1 }}>
         {loading ? (
           <LoadingIndicator fullScreen />
@@ -82,8 +82,8 @@ const BadgesScreen = ({
             numColumns={2}
             ListEmptyComponent={EmptyListComponent}
             refreshing={isLoadingMore}
-            onEndReached={handleFetchMore}
-            onEndReachedThreshold={0.2}
+            // onEndReached={handleFetchMore}
+            // onEndReachedThreshold={0.7}
             renderItem={({ item }) => (
               <BadgeItem
                 item={item}

@@ -5,9 +5,9 @@ import { prisma } from '../../services/prisma'
 import { GraphQLError } from 'graphql'
 import { UserType } from '.prisma/client'
 import { BadgeTypeCreateInput, Currency, Category } from '@generated/type-graphql'
-import { FileUpload } from '../../utils/types/fileUpload.type'
+import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
-import { FileType, uploadFile } from '../../utils/fileUpload'
+import { uploadFile } from '../../utils/fileUpload'
 
 interface InputWithUser {
   user: User

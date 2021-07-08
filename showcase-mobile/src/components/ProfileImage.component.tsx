@@ -1,14 +1,15 @@
 import React from 'react'
 import { View, Image, Pressable, ImageProps } from 'react-native'
 import styled from 'styled-components/native'
-import LoadingIndicator from '../../../components/LoadingIndicator.component'
-import { getImageSource } from '../../../utils/helpers'
+import LoadingIndicator from './LoadingIndicator.component'
+import { getImageSource } from '../utils/helpers'
+import { Maybe } from '../generated/graphql'
 
 interface ProfileImageProps extends Omit<ImageProps, 'source'> {
-  onClick?: () => void
   loading?: boolean
-  source?: string
+  source: Maybe<string | undefined>
   small?: boolean
+  onClick?: () => void
 }
 
 const StyledProfileImage = styled(Image)<{ small?: boolean }>`
@@ -18,7 +19,8 @@ const StyledProfileImage = styled(Image)<{ small?: boolean }>`
 `
 
 const ProfileImage = (props: ProfileImageProps) => {
-  const { source, onClick, small, loading = false, ...rest } = props
+  const { source, small = false, loading = false, onClick, ...rest } = props
+
   if (loading)
     return (
       <View
@@ -36,8 +38,8 @@ const ProfileImage = (props: ProfileImageProps) => {
     <Pressable onPress={onClick}>
       <StyledProfileImage
         resizeMode="cover"
-        source={getImageSource(source)}
-        small
+        source={getImageSource(source as string | undefined)}
+        small={small}
         {...rest}
       />
     </Pressable>

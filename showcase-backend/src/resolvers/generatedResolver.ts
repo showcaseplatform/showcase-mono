@@ -37,7 +37,11 @@ import {
   FollowRelationsResolver,
   BadgeItemRelationsResolver,
 } from '@generated/type-graphql'
-import { IsBadgeItemOwnedByCurrentUser, IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
+import {
+  IsBadgeItemOwnedByCurrentUser,
+  IsBadgeTypeCreatedByCurrentUser,
+  IsCurrentUser,
+} from '../libs/auth/decorators'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {

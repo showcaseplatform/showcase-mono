@@ -3,8 +3,8 @@ import { isThisMonth, isThisWeek, isThisYear, isToday } from 'date-fns'
 import formatDistanceStrict from 'date-fns/formatDistanceStrict'
 
 import { ImageURISource } from 'react-native'
+import { MyBadgeCategory } from '../../types'
 import { MyBadgeType } from '../features/badges/components/BadgeItem.component'
-import { MyBadgeCategory } from '../features/badges/components/CategorySelector.component'
 import { Category, Currency } from '../generated/graphql'
 import { currencySymbols } from './currencies'
 

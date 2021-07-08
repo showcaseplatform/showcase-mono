@@ -1,17 +1,20 @@
 import { Ionicons } from '@expo/vector-icons'
 
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { View, Image, Alert } from 'react-native'
-import ModalHeader from '../components/CauseModalHeader.component'
+import { useTheme } from 'styled-components/native'
 import styled from 'styled-components/native'
 import { Modal } from 'react-native-paper'
-import { Spacer } from '../../../components/Spacer.component'
-import { translate } from '../../../utils/translator'
-import { Text } from '../../../components/Text.component'
-import { CenterView } from '../../../components/CenterView.component'
+import * as WebBrowser from 'expo-web-browser'
+
 import { Cause } from '../../../generated/graphql'
 import { makePercent } from '../../../utils/helpers'
-import { useTheme } from 'styled-components/native'
+import { translate } from '../../../utils/translator'
+
+import ModalHeader from '../components/CauseModalHeader.component'
+import { Spacer } from '../../../components/Spacer.component'
+import { Text } from '../../../components/Text.component'
+import { CenterView } from '../../../components/CenterView.component'
 
 const StyledModal = styled(Modal).attrs({
   contentContainerStyle: {
@@ -29,15 +32,15 @@ const StyledModal = styled(Modal).attrs({
 interface CauseModalProps {
   isOpen: boolean
   cause: Cause
-  closeModal: () => void
   donation: number
+  closeModal: () => void
 }
 
 const CauseModal = ({
   cause,
   isOpen,
-  closeModal,
   donation,
+  closeModal,
 }: CauseModalProps) => {
   const { name, site, image } = cause
   const theme = useTheme()
@@ -45,6 +48,10 @@ const CauseModal = ({
     () => `${makePercent(donation)}% ${translate().causeInfoText}`,
     [donation]
   )
+
+  const handleOpenWithBrowser = useCallback((url: string) => {
+    WebBrowser.openBrowserAsync(url)
+  }, [])
 
   return (
     <StyledModal visible={isOpen} onDismiss={closeModal}>
@@ -64,10 +71,7 @@ const CauseModal = ({
         <Spacer size="medium" />
         <Spacer position="all">
           <CenterView row>
-            <Text
-              variant="link"
-              onPress={() => Alert.alert('this sohuld navigate to the url')}
-            >
+            <Text variant="link" onPress={() => handleOpenWithBrowser(site)}>
               {site}
             </Text>
             <Spacer position="left" />

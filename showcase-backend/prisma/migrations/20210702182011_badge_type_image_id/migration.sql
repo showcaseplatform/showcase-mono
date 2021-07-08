@@ -6,5 +6,5 @@
 
 */
 -- AlterTable
-ALTER TABLE "BadgeType" DROP COLUMN "image",
-ADD COLUMN     "imageId" TEXT NOT NULL;
+-- ALTER TABLE "BadgeType" DROP COLUMN "image",
+-- ADD COLUMN     "imageId" TEXT NOT NULL;

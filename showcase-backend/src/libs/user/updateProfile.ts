@@ -12,6 +12,11 @@ import {
 import { Currency } from '@generated/type-graphql'
 import prisma from '../../services/prisma'
 import { UpdateProfileInput } from './types/updateProfile.type'
+import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
+import { GraphQLError } from 'graphql'
+import { Profile } from '@prisma/client'
+import { uploadFile } from '../../utils/fileUpload'
+import { findProfile } from '../database/profile.repo'
 
 const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {
@@ -28,8 +33,8 @@ const validateEmail = async (email: string, uid: Uid) => {
       email,
     },
     select: {
-      email: true
-    }
+      email: true,
+    },
   })
 
   if (
@@ -43,14 +48,14 @@ const validateEmail = async (email: string, uid: Uid) => {
 }
 
 const validateUsername = async (username: string, uid: Uid) => {
-   // todo: is it neccesary to do this check this in db? or enough to add unique constrain
+  // todo: is it neccesary to do this check this in db? or enough to add unique constrain
   const profileWithSameUsername = await prisma.profile.findMany({
     where: {
       username,
     },
     select: {
-      username: true
-    }
+      username: true,
+    },
   })
 
   if (
@@ -88,10 +93,20 @@ const validateCurrency = (currency: Currency) => {
   }
 }
 
-export const updateProfile = async (input: UpdateProfileInput, uid: Uid) => {
-  const { bio, email, username, displayName, birthDate, avatar, currency } = input
+const updateAvatarImg = async (avatarImg: FileUpload, uid: Uid) => {
+  const profile = await findProfile(uid)
+  const { Key: avatarId } = await uploadFile({
+    fileData: avatarImg,
+    fileType: FileType.avatar,
+    updateKey: profile?.avatarId || undefined,
+  })
+  return avatarId
+}
 
-  const updateData = {} as Partial<UpdateProfileInput>
+export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUpload, uid: Uid) => {
+  const { bio, email, username, displayName, birthDate, currency } = input || {}
+
+  const updateData = {} as Partial<Omit<Profile, 'id'>>
 
   if (bio) {
     updateData.bio = validateBio(bio)
@@ -111,22 +126,14 @@ export const updateProfile = async (input: UpdateProfileInput, uid: Uid) => {
 
   if (birthDate) {
     updateData.birthDate = validateBirthdate(new Date(birthDate))
-    //todo: is it neccesary to store these? maybe replace with fieldResolver if needed
-    // updateData.birthDay = updateData.birthDate.getDate()
-    // updateData.birthMonth = updateData.birthDate.getMonth()
-    // updateData.birthYear = updateData.birthDate.getFullYear()
   }
 
   if (currency) {
     updateData.currency = validateCurrency(currency)
   }
 
-  // todo: update this validation once we are able to upload images from client
-  if (avatar) {
-    updateData.avatar =
-      'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/images%2F' +
-      uid +
-      '?alt=media'
+  if (avatarImg) {
+    updateData.avatarId = await updateAvatarImg(avatarImg, uid)
   }
 
   if (Object.keys(updateData).length >= 1) {
@@ -139,6 +146,6 @@ export const updateProfile = async (input: UpdateProfileInput, uid: Uid) => {
       },
     })
   } else {
-    throw Boom.preconditionFailed('There wasnt any data to update')
+    throw new GraphQLError('There wasnt any data to update')
   }
 }

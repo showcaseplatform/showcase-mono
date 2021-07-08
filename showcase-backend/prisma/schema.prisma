@@ -80,7 +80,7 @@ model Profile {
 
   currency  Currency  @default(USD)
   birthDate DateTime?
-  avatar    String?
+  avatarId  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -115,7 +115,7 @@ model BadgeType {
   currency Currency @default(USD)
   sold     Int      @default(0)
 
-  image     String
+  imageId     String
   imageHash String
 
   causeId        Int?
@@ -200,6 +200,7 @@ model Crypto {
   publicKey           String
 }
 
+// todo: only create balance for creators!
 // todo: use this table once requesting info from receipts cost too much resources
 model Balance {
   id     String @id @default(cuid())

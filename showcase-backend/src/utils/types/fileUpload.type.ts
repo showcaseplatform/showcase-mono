@@ -1,9 +1,18 @@
 import { Field, InputType } from 'type-graphql'
 
+export enum FileType {
+  badge,
+  avatar,
+}
+
+export interface FileUploadInput {
+  fileData: FileUpload
+  fileType: FileType,
+  updateKey?: string
+}
+
 @InputType()
 export class FileUpload {
-  @Field()
-  fileName: string
   @Field()
   base64DataURL: string
   @Field()

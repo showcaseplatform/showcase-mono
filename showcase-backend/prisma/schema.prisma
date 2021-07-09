@@ -37,8 +37,8 @@ model User {
 
   profile Profile?
 
-  badgeTypesCreated        BadgeType[] @relation("badgeTypesCreated")
-  badgeItemsOwned BadgeItem[] @relation("badgeCurrentlyOwned")
+  badgeTypesCreated BadgeType[] @relation("badgeTypesCreated")
+  badgeItemsOwned   BadgeItem[] @relation("badgeCurrentlyOwned")
 
   cryptoWallet Crypto?
   stripeInfo   Stripe?
@@ -115,7 +115,7 @@ model BadgeType {
   currency Currency @default(USD)
   sold     Int      @default(0)
 
-  imageId     String
+  imageId   String
   imageHash String
 
   causeId        Int?
@@ -128,8 +128,8 @@ model BadgeType {
 
   shares Int @default(0)
 
-  gif                 Boolean     @default(false)
-  badgeItems          BadgeItem[]
+  gif        Boolean     @default(false)
+  badgeItems BadgeItem[]
 
   likes BadgeTypeLike[]
   views BadgeTypeView[]
@@ -258,7 +258,7 @@ model Stripe {
   userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
-  stripeId          String @unique 
+  stripeId          String @unique
   lastFourCardDigit String
 
   createdAt DateTime @default(now())

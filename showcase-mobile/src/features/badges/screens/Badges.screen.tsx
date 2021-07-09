@@ -37,13 +37,12 @@ const BadgesScreen = ({
         after: '',
         category,
       },
-      fetchPolicy: 'network-only',
     })
 
   const badges = data?.feedSearch.edges.map((edge) => edge.node)
   const pageInfo = data?.feedSearch.pageInfo
 
-  const handleFetchMore = React.useCallback(() => {
+  const handleFetchMore = () => {
     setIsLoadingMore(true)
     pageInfo?.hasNextPage &&
       fetchMore({
@@ -55,12 +54,12 @@ const BadgesScreen = ({
       }).then((_) => {
         setIsLoadingMore(false)
       })
-  }, [category, fetchMore, pageInfo?.endCursor, pageInfo?.hasNextPage])
+  }
 
   const handleRefresh = () => {
     setIsRefreshing(true)
     refetch({ limit: 10, category }).then(() => {
-      setIsRefreshing(true)
+      setIsRefreshing(false)
     })
   }
 

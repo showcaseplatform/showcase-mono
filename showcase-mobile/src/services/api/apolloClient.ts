@@ -143,17 +143,15 @@ export function relayStylePagination<TNode = Reference>(
         readField,
       }: { args: { data: FeedSearchInput }; isReference: any; readField: any }
     ) {
-
-      console.log('ARGS', args)
       const incomingEdges = incoming.edges
         ? incoming.edges.map((edge) => {
-          if (isReference((edge = { ...edge }))) {
-            // In case edge is a Reference, we read out its cursor field and
-            // store it as an extra property of the Reference object.
-            edge.cursor = readField<string>('cursor', edge)
-          }
-          return edge
-        })
+            if (isReference((edge = { ...edge }))) {
+              // In case edge is a Reference, we read out its cursor field and
+              // store it as an extra property of the Reference object.
+              edge.cursor = readField<string>('cursor', edge)
+            }
+            return edge
+          })
         : []
 
       if (incoming.pageInfo) {

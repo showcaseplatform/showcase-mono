@@ -52,8 +52,6 @@ const generateTestBadgeType = (amount: number) => {
       currency: i % 3 === 0 ? Currency.GBP : i % 3 === 0 ? Currency.EUR : Currency.USD,
       sold: 0,
       shares: 0,
-      soldout: false,
-      removedFromShowcase: false,
       tokenTypeId: faker.datatype.uuid(),
       imageId: i === 4 || i === 5 ? `badges/test-${i}.gif` : `badges/test-${i}.jpg`,
       imageHash: faker.datatype.uuid(),

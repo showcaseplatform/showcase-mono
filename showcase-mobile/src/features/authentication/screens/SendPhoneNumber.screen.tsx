@@ -57,7 +57,7 @@ const SendPhoneNumber = ({
   onValueChange,
   onNext,
 }: SendPhoneNumberProps) => {
-  const [{ fetching, error }, sendPhoneNumber] = useSendPhoneNumberMutation()
+  const [sendPhoneNumber, { loading, error }] = useSendPhoneNumberMutation()
   const [showSubmodalType, setShowSubmodalType] = useState<
     SubmodalType | undefined
   >(undefined)
@@ -83,7 +83,7 @@ const SendPhoneNumber = ({
 
   const handleSubmit = () => {
     isValidPhone &&
-      sendPhoneNumber({ areaCode, phone }).then((r) => {
+      sendPhoneNumber({ variables: { areaCode, phone } }).then((r) => {
         if (!r.error && r.data) {
           onNext()
         }
@@ -137,14 +137,14 @@ const SendPhoneNumber = ({
             onChangeText={(val) => {
               handlePhoneInputChange('phone', val)
             }}
-            editable={!fetching}
+            editable={!loading}
           />
         </View>
 
         <Spacer position="left" size="medium" />
 
         <View>
-          {fetching ? (
+          {loading ? (
             <LoadingIndicator size={40} />
           ) : (
             <InlineSubmitButton

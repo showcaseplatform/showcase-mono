@@ -1,0 +1,36 @@
+query User($id: String!) {
+  user(where: { id: $id }) {
+    id
+    userType
+    amIFollowing
+    profile {
+      id
+      displayName
+      bio
+      username
+      avatarUrl
+    }
+    badgeTypesCreated {
+      id
+      title
+      publicUrl
+    }
+     badgeItemsToShow {
+      id
+      badgeType {
+        id
+        title
+        publicUrl
+      }
+    }
+    badgeItemsForSale {
+      id  
+      badgeType {
+        id
+        title
+        publicUrl
+      }
+    }
+
+  }
+}

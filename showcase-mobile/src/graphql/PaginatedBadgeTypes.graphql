@@ -1,0 +1,20 @@
+query PaginatedBadgeTypes($limit: Int!, $after: String, $category: Category) {
+  feedSearch(
+    data: {
+      forwardPagination: { first: $limit, after: $after }
+      category: $category
+    }
+  ) {
+    edges {
+      cursor
+      node {
+        ...BadgeType_WithBasics
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+      startCursor
+    }
+  }
+}

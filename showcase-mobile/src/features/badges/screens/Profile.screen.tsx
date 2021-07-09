@@ -1,14 +1,15 @@
-import React, { useMemo, useState } from 'react'
 import { FlatList, View } from 'react-native'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
+import React, { useState } from 'react'
 import { Button, Chip } from 'react-native-paper'
 import { Ionicons } from '@expo/vector-icons'
-import { useTheme } from 'styled-components'
+import { useTheme } from 'styled-components/native'
 
 import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
 import { isEven, reshapeBadges } from '../../../utils/helpers'
 import {
   BadgeType,
+  FollowStatus,
   useProfileQuery,
   UserType,
   useToggleFollowMutation,
@@ -24,8 +25,8 @@ import { CenterView } from '../../../components/CenterView.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import FollowButton from '../../../components/FollowButton.component'
 import Error from '../../../components/Error.component'
-import TabSelectorButtonComponent from '../components/TabSelectorButton.component'
 import ProfileImage from '../../../components/ProfileImage.component'
+import TabSelectorButtonComponent from '../components/TabSelectorButton.component'
 
 type ProfileScreenProps = {
   route: RouteProp<BadgeStackParamList, 'Profile'>
@@ -68,10 +69,26 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
 const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   let id = route.params.userId
   const theme = useTheme()
-  const [{ data, fetching, error }] = useProfileQuery({
+
+  const { data, loading, error } = useProfileQuery({
     variables: { id },
   })
-  const [{ fetching: fetchingToggle }, toggleFollow] = useToggleFollowMutation()
+
+  const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
+    update(cache, { data: data_ }) {
+      cache.modify({
+        id: cache.identify({
+          id,
+          __typename: 'User',
+        }),
+        fields: {
+          amIFollowing() {
+            return data_?.toggleFollow.status === FollowStatus.Accepted
+          },
+        },
+      })
+    },
+  })
 
   const [activeTab, setActiveTab] = useState<BadgeTabType>(
     inventoryTabs[1].name
@@ -79,29 +96,30 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   const isCreator = data?.profile?.user.userType === UserType.Creator
 
   function handleToggleFollow() {
-    toggleFollow({ userId: id })
+    toggleFollow({ variables: { userId: id } })
   }
 
+  // !: FIX ME
   const reshapedCreatedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
     data?.profile?.user.badgeTypesCreated || []
   )
-
   const reshapedResellBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.profile?.user.badgeTypesForResell || []
+    data?.profile?.user.badgeTypesCreated || []
   )
-
   const reshapedOwnedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.profile?.user.badgeItemsOwned.badgeType || []
+    data?.profile?.user.badgeTypesCreated || []
   )
 
-  if (fetching) {
+  if (loading) {
     return <LoadingIndicator fullScreen />
+  } else if (error) {
+    return <Error error={error} />
   } else if (data && data.profile) {
     return (
       <StyledSafeArea>
         <View style={{ alignItems: 'center' }}>
           <Spacer position="y" size="large">
-            <ProfileImage source={data.profile.avatar} />
+            <ProfileImage source={data.profile.avatarUrl} />
           </Spacer>
           <Spacer position="bottom" size="large">
             <Text>{data.profile.username || 'placeholder'}</Text>
@@ -120,7 +138,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
           <CenterView row>
             <FollowButton
               isFollowed={data.profile.user.amIFollowing}
-              disabled={fetchingToggle}
+              disabled={loadingToggle}
               onPress={handleToggleFollow}
             />
             <Spacer position="x" size="medium" />
@@ -200,8 +218,6 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
         </View>
       </StyledSafeArea>
     )
-  } else if (error) {
-    return <Error />
   }
 }
 

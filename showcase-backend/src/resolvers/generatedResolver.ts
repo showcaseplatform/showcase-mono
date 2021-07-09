@@ -1,5 +1,3 @@
-import { Authorized, UseMiddleware } from 'type-graphql'
-
 import {
   ResolversEnhanceMap,
   applyResolversEnhanceMap,
@@ -38,8 +36,7 @@ import {
   BadgeItemRelationsResolver,
 } from '@generated/type-graphql'
 import {
-  IsBadgeItemOwnedByCurrentUser,
-  IsBadgeTypeCreatedByCurrentUser,
+  IsBadgeItemOwnedOrCreatedByCurrentUser,
   IsCurrentUser,
 } from '../libs/auth/decorators'
 
@@ -96,11 +93,8 @@ applyRelationResolversEnhanceMap({
     friends: [IsCurrentUser([]) as PropertyDecorator],
     followers: [IsCurrentUser([]) as PropertyDecorator],
   },
-  BadgeType: {
-    receipts: [IsBadgeTypeCreatedByCurrentUser([]) as PropertyDecorator],
-  },
   BadgeItem: {
-    receipt: [IsBadgeItemOwnedByCurrentUser(null) as PropertyDecorator],
+    receipt: [IsBadgeItemOwnedOrCreatedByCurrentUser(null) as PropertyDecorator],
   },
 })
 

@@ -1,4 +1,3 @@
-/* eslint-disable promise/no-nesting */
 import axios from 'axios'
 import { blockchain } from '../../config'
 import { BadgeItemId } from '../../types/badge'
@@ -73,8 +72,7 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
         { sig, price, message, badgeItemId: badge.tokenId },
         uid
       ))
-    
-    // todo: what is  "uri: 'https://showcase.to/badge/' + badgeItemId" used for? should we add a new one to the badgeItem or does this refer only the the badgeType?
+
     return await updateBadgeItem(badgeItemId, {
       forSale: true,
       salePrice: price,

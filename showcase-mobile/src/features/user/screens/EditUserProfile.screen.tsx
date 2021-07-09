@@ -1,4 +1,5 @@
 import React, { useCallback, useLayoutEffect, useState } from 'react'
+import * as FileSystem from 'expo-file-system'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
@@ -20,8 +21,8 @@ import MyDatePickerInput from '../../../components/MyDatePickerInput.component'
 import HeaderActionButton from '../../../components/HeaderActionButton.component'
 import ProfileImage from '../../../components/ProfileImage.component'
 import {
+  MeDocument,
   UpdateProfileInput,
-  useMeQuery,
   useUpdateMeMutation,
 } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
@@ -29,6 +30,12 @@ import LoadingIndicator from '../../../components/LoadingIndicator.component'
 type EditProfileScreenProps = {
   route: RouteProp<UserStackParamList, 'EditUserProfile'>
   navigation: NavigationProp<UserStackParamList>
+}
+
+// extends ImagePickerResult
+type PickedImageResult = {
+  cancelled: boolean
+  uri: string
 }
 
 const schema = yup.object().shape({
@@ -51,13 +58,18 @@ const schema = yup.object().shape({
 })
 
 // todo: implement auto-focus on fields
-const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
-  const [{ data, fetching, error }, refetchMe] = useMeQuery()
-  const [{ fetching: updating, error: updateError }, updateMe] =
-    useUpdateMeMutation()
+const EditUserProfileScreen = ({
+  navigation,
+  route,
+}: EditProfileScreenProps) => {
+  const { user: data } = route.params
+  const [updateMe, { loading: updating }] = useUpdateMeMutation({
+    onCompleted: (_) => navigation.goBack(),
+    refetchQueries: [{ query: MeDocument }],
+  })
 
-  const { avatar, displayName, username, email, currency, birthDate, bio } =
-    data?.me.profile
+  const { avatarUrl, displayName, username, email, currency, birthDate, bio } =
+    data?.profile
 
   const { control, handleSubmit } = useForm<UpdateProfileInput>({
     defaultValues: {
@@ -72,35 +84,45 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
     resolver: yupResolver(schema),
   })
 
-  const [profileImg, setProfileImg] = useState<string | undefined>(avatar)
+  const [pickedImage, setPickedImage] = useState<PickedImageResult | null>(null)
   const [uploading, setUploading] = useState(false)
   const { pickImage } = useCameraRoll()
 
   const onSubmit = useCallback(
     async (formData: UpdateProfileInput) => {
-      await updateMe({ data: formData })
-      if (!error) {
-        await refetchMe({ requestPolicy: 'network-only' }) // todo: create similar logic in client
+      let file
+
+      if (pickedImage?.uri) {
+        const base64DataURL = await FileSystem.readAsStringAsync(
+          pickedImage.uri,
+          {
+            encoding: FileSystem.EncodingType.Base64,
+          }
+        )
+        const mimeType = `image/${pickedImage.uri.split('.').reverse()[0]}`
+
+        file = {
+          base64DataURL,
+          mimeType,
+        }
       }
-      if (!updateError) {
-        navigation.goBack()
-      }
+
+      await updateMe({
+        variables: {
+          file: file ?? undefined,
+          data: formData,
+        },
+      })
     },
-    [error, navigation, refetchMe, updateError, updateMe]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pickedImage]
   )
 
-  // ?: temp file upload
-  const onChangeProfileImage = async () => {
-    pickImage().then((res) => {
-      if (!res) {
-        return
-      }
-
-      setUploading(true)
-      setTimeout(() => {
-        setUploading(false)
-        setProfileImg(res?.uri)
-      }, 1000)
+  const onChangeProfileImage = () => {
+    setUploading(true)
+    pickImage().then((value: PickedImageResult) => {
+      setUploading(false)
+      setPickedImage(value)
     })
   }
 
@@ -121,14 +143,13 @@ const EditUserProfileScreen = ({ navigation }: EditProfileScreenProps) => {
         paddingRight: 10,
       },
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updating])
+  }, [handleSubmit, navigation, onSubmit, updating])
 
   return (
     <MyKeyboardAwareScrollView>
       <Spacer position="y" size="large">
         <ProfileImage
-          source={profileImg}
+          source={pickedImage?.uri || avatarUrl}
           loading={uploading}
           onClick={onChangeProfileImage}
         />

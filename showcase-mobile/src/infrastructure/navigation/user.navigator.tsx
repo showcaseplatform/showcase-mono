@@ -29,7 +29,7 @@ export type UserStackParamList = {
 }
 
 const UserNavigator = () => {
-  const [{ data, fetching }] = useMeQuery()
+  const { data, loading } = useMeQuery()
 
   // todo: temp counters
   const friendsLength = data?.me.friends.filter(
@@ -43,7 +43,7 @@ const UserNavigator = () => {
   // const friendsLength = data?.me.friendsCount
   // const followersLength = data?.me.followersCount
 
-  if (fetching) {
+  if (loading) {
     return <LoadingIndicator fullScreen />
   }
 

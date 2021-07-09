@@ -1,8 +1,6 @@
 query Profile($id: String!) {
   profile(where: { id: $id }) {
     ...Profile_WithBasics
-    ...Profile_WithCreatedBadgeTypes
-    ...Profile_WithResellBadgeTypes
-    ...Profile_WithOwnedBadgeItems
+    # ...Profile_WithCreatedBadgeTypes
   }
 }

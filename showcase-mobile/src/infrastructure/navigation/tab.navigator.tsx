@@ -74,10 +74,10 @@ export const tabBarOptions = {
 const Tab = createBottomTabNavigator<TabStackParamList>()
 
 export const TabNavigator = () => {
-  const [{ data, fetching }] = useMeQuery()
+  const { data, loading } = useMeQuery()
   const isCreator = data?.me.userType === UserType.Creator
 
-  if (fetching) return <LoadingIndicator fullScreen />
+  if (loading) return <LoadingIndicator fullScreen />
 
   return (
     <Tab.Navigator

@@ -4,7 +4,6 @@ type ConfigType = {
   region: string
   keyId: string
   key: string
-  bucket: string
 }
 
 // Define a schema
@@ -23,11 +22,6 @@ const config = convict<ConfigType>({
     format: String,
     default: '',
     env: 'DEV_AWS_SECRET_ACCESS_KEY',
-  },
-  bucket: {
-    format: String,
-    default: '',
-    env: 'DEV_AWS_S3_BUCKET',
   },
 })
 

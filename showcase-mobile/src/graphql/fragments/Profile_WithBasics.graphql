@@ -3,7 +3,7 @@ fragment Profile_WithBasics on Profile {
   displayName
   bio
   username
-  avatar
+  avatarUrl
   user {
     id
     userType

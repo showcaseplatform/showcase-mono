@@ -2,7 +2,7 @@ fragment BadgeType_WithBasics on BadgeType {
   id
   category
   title
-  image
+  publicUrl
   price
   currency
   supply

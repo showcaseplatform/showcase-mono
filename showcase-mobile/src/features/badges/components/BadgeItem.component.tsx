@@ -9,15 +9,15 @@ import { Badge, BadgeImage, BadgeLabelWrapper } from './BadgeItem.styles'
 
 export type BadgeItemProps = {
   item: MyBadgeType
-  onPress: () => void
   withoutInfo?: boolean
   flat?: boolean
+  onPress: () => void
 }
 
 // todo: extract me
 export type MyBadgeType = Pick<
   BadgeType,
-  'image' | 'price' | 'currency' | 'supply' | 'sold' | 'createdAt'
+  'publicUrl' | 'price' | 'currency' | 'supply' | 'sold' | 'createdAt'
 >
 
 export type Cause = {
@@ -29,15 +29,15 @@ export type Cause = {
 
 const BadgeItem = (props: BadgeItemProps) => {
   const { item, onPress, withoutInfo = false, flat = false } = props
-  const { price = 132, currency, image, supply, sold } = item
+  const { price = 0, currency, supply, sold, publicUrl } = item
   const [imgLoaded, setLoaded] = useState(false)
 
   return (
     <Badge flat={flat}>
       <Pressable onPress={onPress}>
-        {image && (
+        {publicUrl && (
           <BadgeImage
-            source={{ uri: image }}
+            source={{ uri: publicUrl }}
             onLoadEnd={() => setLoaded(true)}
           />
         )}

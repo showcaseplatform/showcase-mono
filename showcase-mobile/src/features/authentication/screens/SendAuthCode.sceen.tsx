@@ -27,7 +27,7 @@ const SendAuthCode = ({
   onBack,
   phoneNumber: { phone, areaCode },
 }: SendAuthCodeProps) => {
-  const [{ fetching, error }, sendAuthCode] = useLoginWithCode()
+  const { sendAuthCode, loading, error } = useLoginWithCode()
   const { counter, pauseCountdown } = useCountdown(onBack, 60)
 
   const [authCode, setAuthCode] = useState<string>('')
@@ -44,11 +44,13 @@ const SendAuthCode = ({
   const handleSubmit = () => {
     pauseCountdown()
     isValid &&
-      sendAuthCode({ areaCode, phone, code: authCode }).then((r) => {
-        if (!r.error && r.data) {
-          collapse()
+      sendAuthCode({ variables: { areaCode, phone, code: authCode } }).then(
+        (r) => {
+          if (!r.error && r.data) {
+            collapse()
+          }
         }
-      })
+      )
   }
 
   return (
@@ -79,7 +81,7 @@ const SendAuthCode = ({
             spellCheck={false}
             autoCompleteType="off"
             autoFocus={true}
-            editable={!fetching}
+            editable={!loading}
             autoCorrect={false}
             keyboardType="number-pad"
             maxLength={6}
@@ -90,7 +92,7 @@ const SendAuthCode = ({
         <Spacer position="left" size="medium" />
 
         <View style={{ width: '25%', alignItems: 'flex-start' }}>
-          {fetching ? (
+          {loading ? (
             <LoadingIndicator size={40} />
           ) : (
             <InlineSubmitButton

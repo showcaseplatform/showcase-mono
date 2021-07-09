@@ -26,7 +26,7 @@ const SelectCause: React.FC<SelectCauseProps> = ({ route, navigation }) => {
   const { category, imagePath, image } = route.params
   const theme = useTheme()
 
-  const [causesResult] = useCausesQuery()
+  const { data } = useCausesQuery()
 
   const [donationPercent, setDonationPercent] = useState(5)
   const [selectedCause, setSelectedCause] = useState<number | null>(null)
@@ -80,7 +80,7 @@ const SelectCause: React.FC<SelectCauseProps> = ({ route, navigation }) => {
       <FlatGrid
         flexGrow={1}
         itemDimension={width / 3}
-        data={causesResult.data?.causes}
+        data={data?.causes}
         spacing={0}
         renderItem={({ item }) => (
           <TouchableOpacity

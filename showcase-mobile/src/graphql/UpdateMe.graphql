@@ -1,5 +1,5 @@
-mutation UpdateMe($data: UpdateProfileInput!) {
-  updateProfileCustom(data: $data) {
+mutation UpdateMe($file: FileUpload, $data: UpdateProfileInput!) {
+  updateProfileCustom(file: $file, data: $data) {
     id
   }
 }

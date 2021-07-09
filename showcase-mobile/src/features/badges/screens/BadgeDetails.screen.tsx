@@ -23,7 +23,7 @@ type BadgeDetailsScreenProps = {
 const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const theme = useTheme()
   const { item } = route.params
-  const [{ data, fetching, error }] = useBadgeTypeQuery({
+  const { data, loading, error } = useBadgeTypeQuery({
     variables: { id: item.id },
   })
 
@@ -62,23 +62,22 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       })
   }, [navigation])
 
-  if (fetching) {
+  if (loading) {
     return <LoadingIndicator />
   } else if (data) {
-    // todo: handle maybe BadgeType data
     const {
       price,
       currency,
       donationAmount,
-      image,
       creator: { profile },
       cause,
+      publicUrl
     } = data.badgeType
 
     return (
       <>
         <ImageBackground
-          source={{ uri: image }}
+          source={{ uri: publicUrl }}
           style={{
             width: '100%',
             height: '100%',
@@ -87,7 +86,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         >
           <BlurView tint="dark" intensity={85}>
             <Image
-              source={{ uri: image }}
+              source={{ uri: publicUrl }}
               style={{
                 width: '100%',
                 height: '100%',

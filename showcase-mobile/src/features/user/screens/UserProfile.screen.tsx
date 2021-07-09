@@ -4,15 +4,17 @@ import { NavigationProp, RouteProp } from '@react-navigation/native'
 import { Button, Divider, IconButton } from 'react-native-paper'
 import { useTheme } from 'styled-components/native'
 
+import { BadgeType, FollowStatus, useMeQuery } from '../../../generated/graphql'
+
 import { UserStackParamList } from '../../../infrastructure/navigation/user.navigator'
 import { reshapeBadges } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
+
 import BadgeItem from '../../badges/components/BadgeItem.component'
 import EmptyListForProfile from '../../badges/components/EmptyListForProfile'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 import ProfileImage from '../../../components/ProfileImage.component'
-import { BadgeType, FollowStatus, useMeQuery } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
 
@@ -25,7 +27,9 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
   `${items[0].id}${items[1]?.id}${index}`
 
 const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
-  const [{ data, fetching, error }] = useMeQuery()
+  const { data, loading, error } = useMeQuery({
+    fetchPolicy: 'cache-and-network',
+  })
   const theme = useTheme()
 
   const countOfFriends = useMemo(
@@ -78,17 +82,14 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
         err && console.log(err)
       })
 
-  if (fetching) {
+  if (loading) {
     return <LoadingIndicator fullScreen />
   } else if (data) {
     return (
       <View style={{ flex: 1, backgroundColor: theme.colors.bg.primary }}>
         <View style={{ alignItems: 'center' }}>
           <Spacer position="y" size="large">
-            <ProfileImage
-              resizeMode="contain"
-              source={data.me.profile?.avatar}
-            />
+            <ProfileImage source={data.me.profile?.avatarUrl} />
           </Spacer>
           <Spacer position="bottom" size="large">
             <Text>{data.me.profile?.displayName}</Text>
@@ -190,7 +191,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
       </View>
     )
   } else if (error) {
-    return <Error />
+    return <Error error={error} />
   }
 }
 

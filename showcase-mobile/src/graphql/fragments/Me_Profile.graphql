@@ -6,5 +6,5 @@ fragment Me_Profile on Profile {
   email
   currency
   birthDate
-  avatar
+  avatarUrl
 }

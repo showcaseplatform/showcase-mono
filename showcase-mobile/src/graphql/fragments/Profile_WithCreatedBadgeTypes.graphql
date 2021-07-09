@@ -4,7 +4,7 @@ fragment Profile_WithCreatedBadgeTypes on Profile {
     badgeTypesCreated {
       id
       title
-      image
+      publicUrl
     }
   }
 }

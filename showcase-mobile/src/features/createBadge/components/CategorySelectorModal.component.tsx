@@ -10,13 +10,14 @@ import { BottomSheetWrapper } from '../../../components/ScreenWrapper.component'
 import { useMyBottomSheet } from '../../../utils/useMyBottomSheet'
 import BottomSheetHeader from '../../authentication/components/BottomSheetHeader.component'
 
-import { BadgeCategory, categories } from '../../../utils/helpers'
+import { categories } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 import { TabStackParamList } from '../../../infrastructure/navigation/tab.navigator'
 
 import { CenterView } from '../../../components/CenterView.component'
 import { Text } from '../../../components/Text.component'
 import { Spacer } from '../../../components/Spacer.component'
+import { MyBadgeCategory } from '../../../../types'
 
 const CategorySelectorModal = ({
   navigation,
@@ -39,7 +40,7 @@ const CategorySelectorModal = ({
     }, 200)
   }
 
-  function handleNavigateToEditor(category: BadgeCategory) {
+  function handleNavigateToEditor(category: MyBadgeCategory) {
     collapse()
     setTimeout(() => {
       return navigation.navigate('EditorNavigator', {

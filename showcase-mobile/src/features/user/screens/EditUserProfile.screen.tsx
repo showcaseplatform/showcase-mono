@@ -19,7 +19,7 @@ import MyKeyboardAwareScrollView from '../../../components/MyKeyboardAwareScroll
 import MySelectInputComponent from '../../../components/MySelectInput.component'
 import MyDatePickerInput from '../../../components/MyDatePickerInput.component'
 import HeaderActionButton from '../../../components/HeaderActionButton.component'
-import ProfileImage from '../components/ProfileImage.component'
+import ProfileImage from '../../../components/ProfileImage.component'
 import {
   MeDocument,
   UpdateProfileInput,

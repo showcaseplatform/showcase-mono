@@ -36,6 +36,7 @@ const BadgesScreen = ({
         after: '',
         category,
       },
+      fetchPolicy: 'network-only',
     })
 
   const badges = data?.feedSearch.edges.map((edge) => edge.node)
@@ -74,7 +75,7 @@ const BadgesScreen = ({
         <CategorySelector
           onSelect={(val) => {
             setCategory(val)
-            refetch({ limit: 4, category })
+            refetch({ limit: 10, category, after: pageInfo?.endCursor })
           }}
           activeCategory={category}
         />

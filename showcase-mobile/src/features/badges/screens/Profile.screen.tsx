@@ -1,22 +1,13 @@
-import { FlatList, Image, View } from 'react-native'
+import { FlatList, View } from 'react-native'
+import { useQuery } from '@apollo/client'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import React, { useState } from 'react'
 import { Button, Chip } from 'react-native-paper'
-import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
 import { Ionicons } from '@expo/vector-icons'
+import { useTheme } from 'styled-components/native'
 
-import { StyledSafeArea } from './Badges.styles'
-
-import { Text } from '../../../components/Text.component'
-import { Spacer } from '../../../components/Spacer.component'
-import { useTheme } from 'styled-components'
-import { TouchableOpacity } from 'react-native-gesture-handler'
-import BadgeItem from '../components/BadgeItem.component'
+import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
 import { isEven, reshapeBadges } from '../../../utils/helpers'
-import EmptyListForProfile from '../components/EmptyListForProfile'
-import { CenterView } from '../../../components/CenterView.component'
-import LoadingIndicator from '../../../components/LoadingIndicator.component'
-import FollowButton from '../../../components/FollowButton.component'
 import {
   BadgeType,
   FollowStatus,
@@ -24,20 +15,61 @@ import {
   UserType,
   useToggleFollowMutation,
 } from '../../../generated/graphql'
-import Error from '../../../components/Error.component'
 import { translate } from '../../../utils/translator'
-import { useQuery } from '@apollo/client'
+import { StyledSafeArea } from './Badges.styles'
+
+import { Text } from '../../../components/Text.component'
+import { Spacer } from '../../../components/Spacer.component'
+import BadgeItem from '../components/BadgeItem.component'
+import EmptyListForProfile from '../components/EmptyListForProfile'
+import { CenterView } from '../../../components/CenterView.component'
+import LoadingIndicator from '../../../components/LoadingIndicator.component'
+import FollowButton from '../../../components/FollowButton.component'
+import Error from '../../../components/Error.component'
+import ProfileImage from '../../../components/ProfileImage.component'
+import TabSelectorButtonComponent from '../components/TabSelectorButton.component'
 
 type ProfileScreenProps = {
   route: RouteProp<BadgeStackParamList, 'Profile'>
   navigation: NavigationProp<BadgeStackParamList>
 }
 
+enum BadgeTabType {
+  created = 'created',
+  resell = 'resell',
+  owned = 'owned',
+}
+
+type BadgeTab = {
+  name: BadgeTabType
+  iconName: React.ComponentProps<typeof Ionicons>['name']
+}
+export interface BadgeTabProps extends BadgeTab {
+  isActive: boolean
+  onPress: (tabType: BadgeTabType) => void
+}
+
+const inventoryTabs: BadgeTab[] = [
+  {
+    name: BadgeTabType.created,
+    iconName: 'ios-trophy-outline',
+  },
+  {
+    name: BadgeTabType.resell,
+    iconName: 'ios-cart-outline',
+  },
+  {
+    name: BadgeTabType.owned,
+    iconName: 'library-outline',
+  },
+]
+
 const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
   `${items[0].id}${items[1]?.id}${index}`
 
 const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   let id = route.params.userId
+  const theme = useTheme()
 
   const { data, loading, error } = useQuery(ProfileDocument, {
     variables: { id },
@@ -59,8 +91,10 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
     },
   })
 
-  const [activeTab, setActiveTab] = useState<'created' | 'bought'>('created')
-  const theme = useTheme()
+  const [activeTab, setActiveTab] = useState<BadgeTabType>(
+    inventoryTabs[1].name
+  )
+  const isCreator = data?.profile?.user.userType === UserType.Creator
 
   function handleToggleFollow() {
     toggleFollow({ variables: { userId: id } })
@@ -82,20 +116,12 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
       <StyledSafeArea>
         <View style={{ alignItems: 'center' }}>
           <Spacer position="y" size="large">
-            <Image
-              resizeMode="contain"
-              source={{
-                uri:
-                  data.profile.avatarUrl ||
-                  require('../../../../assets/splash.png'), //todo: temp fallback img
-              }}
-              style={{ width: 100, height: 100, borderRadius: 50 }}
-            />
+            <ProfileImage source={data.profile.avatar} />
           </Spacer>
           <Spacer position="bottom" size="large">
             <Text>{data.profile.username || 'placeholder'}</Text>
           </Spacer>
-          {data.profile.user.userType === UserType.Creator && (
+          {isCreator && (
             <Spacer position="bottom" size="large">
               <Chip
                 icon="check-circle-outline"
@@ -139,31 +165,24 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
         </View>
         <View style={{ flexGrow: 1, width: '100%' }}>
           <CenterView row>
-            <TouchableOpacity
-              onPress={() => setActiveTab('created')}
-              style={{
-                borderBottomWidth: activeTab === 'created' ? 1 : 0,
-                paddingBottom: 10,
-                paddingHorizontal: 15,
-              }}
-            >
-              <Ionicons name="ios-trophy-outline" size={24} color={'#000'} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setActiveTab('bought')}
-              style={{
-                borderBottomWidth: activeTab === 'bought' ? 1 : 0,
-                paddingBottom: 10,
-                paddingHorizontal: 15,
-              }}
-            >
-              <Ionicons name="ios-cart-outline" size={24} color={'#000'} />
-            </TouchableOpacity>
+            {inventoryTabs.map((tab, index) => {
+              return !isCreator && index === 0 ? null : (
+                <TabSelectorButtonComponent
+                  name={tab.name}
+                  iconName={tab.iconName}
+                  isActive={activeTab === tab.name}
+                  onPress={setActiveTab}
+                  key={`${tab.name}-index`}
+                />
+              )
+            })}
           </CenterView>
           <FlatList
             horizontal
             data={
-              activeTab === 'created'
+              activeTab === BadgeTabType.created
+                ? reshapedCreatedBadgeTypes
+                : activeTab === BadgeTabType.owned
                 ? reshapedCreatedBadgeTypes
                 : reshapedResellBadgeTypes
             }

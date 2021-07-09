@@ -77,12 +77,6 @@ export class MyApollo {
           // Try to retrieve a user with the token
           let user: User | null = await AuthLib.getUserByToken(token)
 
-          // Only for testing purposes
-          if (!user && token === 'test') {
-            const users = await prisma.user.findMany()
-            user = users[0]
-          }
-
           return { prisma, user }
         }
       },
@@ -96,12 +90,6 @@ export class MyApollo {
           }
 
           let user: User | null = await AuthLib.getUserByToken(token)
-
-          // Only for testing purposes
-          if (!user && token === 'test') {
-            const users = await prisma.user.findMany()
-            user = users[0]
-          }
 
           return { user }
         },

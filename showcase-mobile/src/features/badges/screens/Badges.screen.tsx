@@ -1,6 +1,6 @@
 import { NavigationProp } from '@react-navigation/core'
 import React, { useState } from 'react'
-import { FlatList, Text, View } from 'react-native'
+import { FlatList, View, RefreshControl } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 
@@ -28,6 +28,7 @@ const BadgesScreen = ({
   const [searchQuery, setSearchQuery] = useState<string>('')
 
   const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const { data, error, loading, fetchMore, refetch } =
     usePaginatedBadgeTypesQuery({
@@ -56,6 +57,13 @@ const BadgesScreen = ({
       })
   }, [category, fetchMore, pageInfo?.endCursor, pageInfo?.hasNextPage])
 
+  const handleRefresh = () => {
+    setIsRefreshing(true)
+    refetch({ limit: 10, category }).then(() => {
+      setIsRefreshing(true)
+    })
+  }
+
   if (error) {
     return <Error error={error} />
   }
@@ -70,7 +78,6 @@ const BadgesScreen = ({
           clearButtonMode="unless-editing"
         />
       </SearchContainer>
-      <Text>feed length: {badges?.length}</Text>
       <Spacer position="y" size="small">
         <CategorySelector
           onSelect={(val) => {
@@ -92,6 +99,12 @@ const BadgesScreen = ({
             refreshing={isLoadingMore}
             onEndReached={handleFetchMore}
             onEndReachedThreshold={0.6}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+              />
+            }
             renderItem={({ item }) => (
               <BadgeItem
                 item={item}

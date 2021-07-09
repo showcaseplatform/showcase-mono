@@ -1,5 +1,4 @@
 import { FlatList, View } from 'react-native'
-import { useQuery } from '@apollo/client'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
 import React, { useState } from 'react'
 import { Button, Chip } from 'react-native-paper'
@@ -11,7 +10,7 @@ import { isEven, reshapeBadges } from '../../../utils/helpers'
 import {
   BadgeType,
   FollowStatus,
-  ProfileDocument,
+  useProfileQuery,
   UserType,
   useToggleFollowMutation,
 } from '../../../generated/graphql'
@@ -71,7 +70,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   let id = route.params.userId
   const theme = useTheme()
 
-  const { data, loading, error } = useQuery(ProfileDocument, {
+  const { data, loading, error } = useProfileQuery({
     variables: { id },
   })
 
@@ -100,11 +99,15 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
     toggleFollow({ variables: { userId: id } })
   }
 
+  // !: FIX ME
   const reshapedCreatedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
     data?.profile?.user.badgeTypesCreated || []
   )
   const reshapedResellBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.profile?.user.badgeTypesForResell || []
+    data?.profile?.user.badgeTypesCreated || []
+  )
+  const reshapedOwnedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
+    data?.profile?.user.badgeTypesCreated || []
   )
 
   if (loading) {
@@ -116,7 +119,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
       <StyledSafeArea>
         <View style={{ alignItems: 'center' }}>
           <Spacer position="y" size="large">
-            <ProfileImage source={data.profile.avatar} />
+            <ProfileImage source={data.profile.avatarUrl} />
           </Spacer>
           <Spacer position="bottom" size="large">
             <Text>{data.profile.username || 'placeholder'}</Text>
@@ -183,7 +186,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
               activeTab === BadgeTabType.created
                 ? reshapedCreatedBadgeTypes
                 : activeTab === BadgeTabType.owned
-                ? reshapedCreatedBadgeTypes
+                ? reshapedOwnedBadgeTypes
                 : reshapedResellBadgeTypes
             }
             keyExtractor={createReshapedBadgeKey}

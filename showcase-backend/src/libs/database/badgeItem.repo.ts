@@ -1,4 +1,6 @@
+import { BadgeItem } from '@prisma/client'
 import { prisma, Prisma } from '../../services/prisma'
+import { BadgeItemOrderByInput } from '@generated/type-graphql'
 
 export const findBadgeItem = async (id: string) => {
   return await prisma.badgeItem.findUnique({
@@ -42,3 +44,12 @@ export const updateBadgeItem = async (
   })
 }
 
+export const findUserBadgeItems = async (
+  where: Partial<BadgeItem>,
+  orderBy: BadgeItemOrderByInput
+) => {
+  return await prisma.badgeItem.findMany({
+    where,
+    orderBy,
+  })
+}

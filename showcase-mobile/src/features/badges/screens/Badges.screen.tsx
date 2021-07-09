@@ -1,5 +1,5 @@
+import React, { useState, useEffect, useCallback } from 'react'
 import { NavigationProp } from '@react-navigation/core'
-import React, { useState } from 'react'
 import { FlatList, View, RefreshControl } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
@@ -30,12 +30,24 @@ const BadgesScreen = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // !: probably memory leak
+  // ?: TEMP solution
+  useEffect(() => {
+    typeof searchQuery === 'string' && handleRefresh()
+  }, [searchQuery, handleRefresh])
+
+  // ?: TEMP solution
+  useEffect(() => {
+    handleRefresh()
+  }, [category, handleRefresh])
+
   const { data, error, loading, fetchMore, refetch } =
     usePaginatedBadgeTypesQuery({
       variables: {
         limit: 10,
         after: '',
         category,
+        search: searchQuery,
       },
     })
 
@@ -56,12 +68,12 @@ const BadgesScreen = ({
       })
   }
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
-    refetch({ limit: 10, category }).then(() => {
+    refetch({ limit: 10, category, search: searchQuery }).then(() => {
       setIsRefreshing(false)
     })
-  }
+  }, [category, searchQuery, refetch])
 
   if (error) {
     return <Error error={error} />

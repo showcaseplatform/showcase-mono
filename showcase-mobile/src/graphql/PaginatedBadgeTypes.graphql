@@ -1,8 +1,9 @@
-query PaginatedBadgeTypes($limit: Int!, $after: String, $category: Category) {
+query PaginatedBadgeTypes($limit: Int!, $after: String, $category: Category, $search: String) {
   feedSearch(
     data: {
       forwardPagination: { first: $limit, after: $after }
       category: $category
+      search: $search
     }
   ) {
     edges {

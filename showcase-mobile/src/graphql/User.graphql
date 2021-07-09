@@ -10,15 +10,27 @@ query User($id: String!) {
       username
       avatarUrl
     }
-    badgeTypesForResell {
-      id
-      title
-      publicUrl
-    }
     badgeTypesCreated {
       id
       title
       publicUrl
     }
+     badgeItemsToShow {
+      id
+      badgeType {
+        id
+        title
+        publicUrl
+      }
+    }
+    badgeItemsForSale {
+      id  
+      badgeType {
+        id
+        title
+        publicUrl
+      }
+    }
+
   }
 }

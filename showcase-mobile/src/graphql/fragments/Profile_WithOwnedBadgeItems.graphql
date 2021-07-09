@@ -1,12 +1,12 @@
 fragment Profile_WithOwnedBadgeItems on Profile {
   user {
     id
-    badgeItemsOwned {
+    badgeItemsToShow {
       id
       badgeType {
         id
         title
-        image
+        publicUrl
       }
     }
   }

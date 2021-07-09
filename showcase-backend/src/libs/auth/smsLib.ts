@@ -34,7 +34,7 @@ class SmsLib {
       throw new GraphQLError(ErrorMessages.MissingVerificationCode)
     }
 
-    if (env === 'development' && code === '000000') {
+    if (env !== 'production' && code === '000000') {
       console.log('❗❗ Code verification check skipped ❗❗')
     } else {
       await myTwilio.checkVerificationToken(validPhone, code)

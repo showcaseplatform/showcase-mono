@@ -1,17 +1,13 @@
-/* eslint-disable promise/no-nesting */
 import axios from 'axios'
-import { v4 } from 'uuid'
-import * as crypto from 'crypto'
 import { blockchain } from '../../config'
 import { Profile, User } from '@generated/type-graphql'
 import { prisma } from '../../services/prisma'
 import { GraphQLError } from 'graphql'
 import { UserType } from '.prisma/client'
-import { v4 as uuidv4 } from 'uuid'
-import { uploadFile } from '../../services/S3'
 import { BadgeTypeCreateInput, Currency, Category } from '@generated/type-graphql'
-import { FileUpload } from '../../types/fileUpload'
+import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
+import { uploadFile } from '../../utils/fileUpload'
 
 interface InputWithUser {
   user: User
@@ -46,7 +42,7 @@ const createTokenTypeOnBlockchain = async ({
   title,
   description,
   category,
-  image,
+  imageId,
   imageHash,
   supply,
 }: Partial<InputWithUser & BadgeTypeCreateInput & { profile: Profile }>): Promise<string> => {
@@ -57,7 +53,7 @@ const createTokenTypeOnBlockchain = async ({
     description: description || 'None',
     creatorname: profile?.username,
     category,
-    image,
+    image: imageId,
     imagehash: imageHash, // todo: camelCase on blockchain server
     supply,
     creatoraddress: user?.cryptoWallet?.address,
@@ -78,8 +74,7 @@ const createTokenTypeOnBlockchain = async ({
 
 export const publishBadgeType = async (
   input: PublishBadgeTypeInput,
-  imageId: string,
-  imageHash: string,
+  fileData: FileUpload,
   user: User
 ) => {
   const profile = await prisma.profile.findUnique({
@@ -97,15 +92,18 @@ export const publishBadgeType = async (
     user,
   })
 
+  // todo: add more userfriendly error handling & upload progress follow
+  const { hash: imageHash, Key: imageId, gif } = await uploadFile({ fileData, fileType: FileType.badge })
+
   // todo: remove blockchain.enabled once server is ready
   const tokenTypeId = blockchain.enabled
     ? await createTokenTypeOnBlockchain({
-      ...input,
-      currency: input.currency as Currency,
-      category: input.category as Category,
-      profile,
-      user,
-    })
+        ...input,
+        currency: input.currency as Currency,
+        category: input.category as Category,
+        profile,
+        user,
+      })
     : imageId
 
   const { causeId, ...restData } = input
@@ -114,8 +112,9 @@ export const publishBadgeType = async (
     data: {
       ...restData,
       imageHash,
-      image: imageId,
-      uri: 'https://showcase.to/badge/' + imageId,
+      imageId,
+      gif,
+      uri: 'https://showcase.to/badge/' + imageId, // todo: check if its ok on showcase.to that imageId includes full path of img (badges/xyz123..)
       creator: { connect: { id: user.id } },
       currency: profile.currency,
       tokenTypeId,
@@ -127,30 +126,4 @@ export const publishBadgeType = async (
   // await sendNotificationToFollowersAboutNewBadge(user.id)
 
   return badgeType
-}
-
-// todo: atm upload service handling bucketName
-// todo: key should have proper file type like: *.png
-export const uploadBadge = async (fileData: FileUpload) => {
-  const { base64DataURL, mimeType } = fileData
-
-  if (mimeType !== 'image/jpeg' && mimeType !== 'image/png') {
-    throw new GraphQLError('Only JPEG and PNG file allowed.')
-  }
-
-  const id = uuidv4()
-  const fileExtension = mimeType.split('/')[1]
-
-  const buffer = Buffer.from(base64DataURL, 'base64')
-
-  const hash = crypto.createHash('md5').update(buffer).digest('base64')
-
-  const uploadedFile = await uploadFile({
-    Key: id,
-    ContentType: fileExtension,
-    buffer,
-    hash,
-  })
-
-  return { hash, uploadedFile }
 }

@@ -48,7 +48,4 @@ export class PublishBadgeTypeInput implements Partial<BadgeTypeCreateInput> {
   @Min(DONATION_MIN_AMOUNT)
   @Max(DONATION_MAX_AMOUNT)
   donationAmount?: number
-
-  @Field()
-  gif: boolean
 }

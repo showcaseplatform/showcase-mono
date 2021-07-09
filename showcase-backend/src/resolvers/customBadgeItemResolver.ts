@@ -1,13 +1,12 @@
 import { FieldResolver, Int, Resolver, Root } from 'type-graphql'
 import { BadgeItem, User } from '@generated/type-graphql'
-import { badgeTypeLikeCount, badgeTypeViewCount } from '../libs/database/badgeType.repo'
 import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
 import { badgeItemLikeCount, badgeItemViewCount } from '../libs/database/badgeItem.repo'
 
 @Resolver((_of) => BadgeItem)
-export class customBadgeItemResolver {
+export class CustomBadgeItemResolver {
   @FieldResolver((_) => Boolean)
   async isViewedByMe(@Root() badgeItem: BadgeItem, @CurrentUser() currentUser: User) {
     const uid = currentUser?.id

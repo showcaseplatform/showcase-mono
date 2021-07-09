@@ -5,9 +5,10 @@ import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
 import { generateSignedUrl } from '../services/S3'
+import { isBadgeTypeSoldOut, isBadgeTypeRemovedFromShowcase } from '../libs/badge/validateBadgeType'
 
 @Resolver((_of) => BadgeType)
-export class customBadgeTypeResolver {
+export class CustomBadgeTypeResolver {
   @FieldResolver((_) => Boolean)
   async isViewedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
     const uid = currentUser?.id
@@ -34,6 +35,15 @@ export class customBadgeTypeResolver {
 
   @FieldResolver((_) => String)
   async publicUrl(@Root() badgeType: BadgeType) {
-    return generateSignedUrl(badgeType.image)
+    return generateSignedUrl(badgeType.imageId)
+  }
+
+  @FieldResolver((_) => Boolean)
+  async removedFromShowcase(@Root() badgeType: BadgeType) {
+    return await isBadgeTypeRemovedFromShowcase(badgeType.id)
+  }
+  @FieldResolver((_) => Boolean)
+  async isSoldOut(@Root() badgeType: BadgeType) {
+    return isBadgeTypeSoldOut(badgeType)
   }
 }

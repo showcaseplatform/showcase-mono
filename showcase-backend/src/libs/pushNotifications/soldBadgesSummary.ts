@@ -4,8 +4,7 @@ import { notificationSender } from '../notification/notificationSenderLib'
 import { NotificationType } from '.prisma/client'
 import { SendNotificationProps } from '../../types/notificaton'
 import prisma from '../../services/prisma'
-import { BadgeType, Receipt } from '@prisma/client'
-
+import { BadgeType, Receipt, BadgeItem } from '@prisma/client'
 
 // todo: currently this notification is not used
 interface BadgesSoldRecordValue {
@@ -20,34 +19,46 @@ const getAllReceiptsFromLastWeek = async () => {
   return await prisma.receipt.findMany({
     where: {
       createdAt: {
-        gt: periodStartDate
-      }
+        gt: periodStartDate,
+      },
     },
     include: {
-      badgeType: true
-    }
+      badgeItem: {
+        include: {
+          badgeType: true,
+        },
+      },
+    },
   })
 }
 
 const getSummaryOfSoldBadgesByCreators = (
   receipts: (Receipt & {
-    badgeType: BadgeType;
-})[]
+    badgeItem: BadgeItem & {
+      badgeType: BadgeType
+    }
+  })[]
 ): Record<Uid, BadgesSoldRecordValue> => {
-  return receipts.reduce((acc, curr) => {
-    if (acc[curr.creatorId]) {
-      if (acc[curr.creatorId][curr.badgeType.currency]) {
-        acc[curr.creatorId][curr.badgeType.currency] += curr.badgeType.price
+  return receipts.reduce<Record<Uid, BadgesSoldRecordValue>>((acc, curr) => {
+    const {
+      badgeItem: {
+        badgeType: { creatorId, currency, price },
+      },
+    } = curr
+
+    if (acc[creatorId]) {
+      if (acc[creatorId][currency]) {
+        acc[creatorId][currency] += price
       } else {
-        acc[curr.creatorId][curr.badgeType.currency] = curr.badgeType.price
+        acc[creatorId][currency] = price
       }
-      acc[curr.creatorId].count += 1
+      acc[creatorId].count += 1
     } else {
-      acc[curr.creatorId] = { [curr.badgeType.currency]: curr.badgeType.price }
-      acc[curr.creatorId].count = 1
+      acc[creatorId][currency] = price
+      acc[creatorId].count = 1
     }
     return acc
-  }, {} as any)
+  }, {})
 }
 
 const getMessagesForCreators = async (dictionary: Record<Uid, BadgesSoldRecordValue>) => {

@@ -129,7 +129,7 @@ const createRecipientEUR = async ({
 export const createTransferwiseAccount = async (
   input: EURAccount | GBPAccount | USDAccount,
   user: User
-) => {
+): Promise<string> => {
   const { currency } = input
   let accountData: Partial<Transferwise>
 

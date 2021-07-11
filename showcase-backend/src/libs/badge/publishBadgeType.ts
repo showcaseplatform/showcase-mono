@@ -9,6 +9,7 @@ import { BadgeTypeCreateInput, Currency, Category } from '@generated/type-graphq
 import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { uploadFile } from '../../utils/fileUpload'
+import { BadgeType } from '@prisma/client'
 
 interface InputWithUser {
   user: User
@@ -33,7 +34,7 @@ const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWi
         },
       })
     } catch (e) {
-      throw new GraphQLError('Invalid donation cause', e)
+      throw new GraphQLError(`Invalid donation cause: ${(e as Error).message}`)
     }
   }
 }
@@ -79,7 +80,7 @@ export const publishBadgeType = async (
   input: PublishBadgeTypeInput,
   fileData: FileUpload,
   user: User
-) => {
+): Promise<BadgeType> => {
   const profile = await prisma.profile.findUnique({
     where: {
       id: user.id,

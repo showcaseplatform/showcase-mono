@@ -71,7 +71,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       donationAmount,
       creator: { profile },
       cause,
-      publicUrl
+      publicUrl,
     } = data.badgeType
 
     return (

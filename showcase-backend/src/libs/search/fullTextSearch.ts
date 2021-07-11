@@ -1,16 +1,23 @@
+import { BadgeType, Profile, Cause } from '@prisma/client'
 import prisma from '../../services/prisma'
 
 const mode = 'insensitive'
 const createdAt = 'desc'
 
 // todo: add pagination once concept is finalized
-export const fullTextSearch = async (search: string) => {
+export const fullTextSearch = async (
+  search: string
+): Promise<{
+  badgeTypes: BadgeType[]
+  profiles: Profile[]
+  causes: Cause[]
+}> => {
   const contains = search
 
   const [badgeTypes = [], profiles = [], causes = []] = await prisma.$transaction([
     searchBadgeTypes(contains),
     searchProfiles(contains),
-    searchCauses(contains)
+    searchCauses(contains),
   ])
   return { badgeTypes, profiles, causes }
 }
@@ -61,7 +68,7 @@ const searchBadgeTypes = (contains: string) => {
     },
     orderBy: {
       createdAt,
-    }
+    },
   })
 }
 

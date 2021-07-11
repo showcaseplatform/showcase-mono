@@ -10,7 +10,7 @@ import { formatApolloErrors } from 'apollo-server-errors'
 import { execute, subscribe } from 'graphql'
 
 // export patch
-export function installSubscriptionHandlers(server: any) {
+export function installSubscriptionHandlers(server: any): void {
   // eslint-disable-next-line
   // @ts-ignore
   const that = this as any

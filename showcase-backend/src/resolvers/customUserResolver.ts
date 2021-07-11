@@ -5,10 +5,10 @@ import { isUserAlreadyFollowed } from '../libs/user/toggleFollow'
 import { friendsCount, followersCount } from '../libs/user/followCount'
 import { UserBadgeItemsForSale, UserBadgeItemsToShow } from '../libs/user/inventory'
 
-@Resolver((_of) => User)
+@Resolver(() => User)
 export class CustomUserResolver {
-  @FieldResolver((_) => Boolean)
-  async amIFollowing(@Root() user: User, @Ctx() ctx: MyContext) {
+  @FieldResolver(() => Boolean)
+  async amIFollowing(@Root() user: User, @Ctx() ctx: MyContext): Promise<boolean> {
     const uid = ctx.user?.id
     if (!uid) {
       return false
@@ -16,25 +16,25 @@ export class CustomUserResolver {
     return await isUserAlreadyFollowed({ uid, followUserId: user.id })
   }
 
-  @FieldResolver((_) => Int)
-  async followersCount(@Root() user: User) {
+  @FieldResolver(() => Int)
+  async followersCount(@Root() user: User): Promise<number> {
     return await followersCount(user.id)
   }
 
-  @FieldResolver((_) => Int)
-  async friendsCount(@Root() user: User) {
+  @FieldResolver(() => Int)
+  async friendsCount(@Root() user: User): Promise<number> {
     return await friendsCount(user.id)
   }
 
   // todo: add custom pagination
-  @FieldResolver((_) => [BadgeItem])
-  async badgeItemsToShow(@Root() user: User) {
+  @FieldResolver(() => [BadgeItem])
+  async badgeItemsToShow(@Root() user: User): Promise<BadgeItem[]> {
     return await UserBadgeItemsToShow(user.id)
   }
 
   // todo: add custom pagination
-  @FieldResolver((_) => [BadgeItem])
-  async badgeItemsForSale(@Root() user: User) {
+  @FieldResolver(() => [BadgeItem])
+  async badgeItemsForSale(@Root() user: User): Promise<BadgeItem[]> {
     return await UserBadgeItemsForSale(user.id)
   }
 }

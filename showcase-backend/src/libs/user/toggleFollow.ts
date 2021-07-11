@@ -1,4 +1,4 @@
-import { FollowStatus } from '.prisma/client'
+import { FollowStatus, Follow } from '.prisma/client'
 import { GraphQLError } from 'graphql'
 import prisma from '../../services/prisma'
 import { Uid } from '../../types/user'
@@ -10,7 +10,10 @@ interface FollowInput {
   followUserId: Uid
 }
 
-export const isUserAlreadyFollowed = async ({ uid, followUserId }: FollowInput) => {
+export const isUserAlreadyFollowed = async ({
+  uid,
+  followUserId,
+}: FollowInput): Promise<boolean> => {
   const follow = await prisma.follow.findUnique({
     where: {
       userId_followerId: {
@@ -39,7 +42,7 @@ const removeFollower = async ({ uid, followUserId }: FollowInput) => {
   return await unFollow(followUserId, uid)
 }
 
-export const toggleFollow = async (followUserId: string, uid: Uid) => {
+export const toggleFollow = async (followUserId: string, uid: Uid): Promise<Follow> => {
   if (followUserId === uid) {
     throw new GraphQLError('Followed user id matches your id')
   }

@@ -1,0 +1,12 @@
+fragment Profile_WithBasics on Profile {
+  id
+  displayName
+  bio
+  username
+  avatarUrl
+  user {
+    id
+    userType
+    amIFollowing
+  }
+}

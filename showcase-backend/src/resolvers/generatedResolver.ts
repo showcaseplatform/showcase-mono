@@ -1,5 +1,3 @@
-import { Authorized, UseMiddleware } from 'type-graphql'
-
 import {
   ResolversEnhanceMap,
   applyResolversEnhanceMap,
@@ -35,8 +33,12 @@ import {
   AggregateCurrencyRateResolver,
   GroupByCurrencyRateResolver,
   FollowRelationsResolver,
+  BadgeItemRelationsResolver,
 } from '@generated/type-graphql'
-import { IsBadgeTypeCreatedByCurrentUser, IsCurrentUser } from '../libs/auth/decorators'
+import {
+  IsBadgeItemOwnedOrCreatedByCurrentUser,
+  IsCurrentUser,
+} from '../libs/auth/decorators'
 
 const resolversEnhanceMap: ResolversEnhanceMap = {
   User: {
@@ -49,85 +51,51 @@ const resolversEnhanceMap: ResolversEnhanceMap = {
     // publicly available with restrictions on properties
   },
   Cause: {
-    // publicly available 
+    // publicly available
   },
   CurrencyRate: {
-    // publicly available 
+    // publicly available
   },
 }
 
 applyResolversEnhanceMap(resolversEnhanceMap)
 
-
 applyModelsEnhanceMap({
   User: {
     fields: {
-      phone: [
-        IsCurrentUser() as PropertyDecorator,
-      ]
-    }
+      phone: [IsCurrentUser() as PropertyDecorator],
+    },
   },
   Profile: {
     fields: {
-      email: [
-        IsCurrentUser() as PropertyDecorator,
-      ],
+      email: [IsCurrentUser() as PropertyDecorator],
     },
   },
- 
-});
+})
 
 applyRelationResolversEnhanceMap({
   User: {
     balance: [
       // UseMiddleware(isOwnedByCurrentUser),
-      IsCurrentUser(null) as PropertyDecorator
+      IsCurrentUser(null) as PropertyDecorator,
     ],
-    cryptoWallet: [
-      IsCurrentUser(null) as PropertyDecorator
-    ],
-    transferwise: [
-      IsCurrentUser(null) as PropertyDecorator
-    ],
-    withdrawals: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    stripeInfo: [
-      IsCurrentUser(null) as PropertyDecorator
-    ],
-    buyReceipts: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    sellReceipts: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    notifications: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    notificationSettings: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    chats: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    sentChatMessages: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    chatMessageReads: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    friends: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
-    followers: [
-      IsCurrentUser([]) as PropertyDecorator
-    ],
+    cryptoWallet: [IsCurrentUser(null) as PropertyDecorator],
+    transferwise: [IsCurrentUser(null) as PropertyDecorator],
+    withdrawals: [IsCurrentUser([]) as PropertyDecorator],
+    stripeInfo: [IsCurrentUser(null) as PropertyDecorator],
+    buyReceipts: [IsCurrentUser([]) as PropertyDecorator],
+    sellReceipts: [IsCurrentUser([]) as PropertyDecorator],
+    notifications: [IsCurrentUser([]) as PropertyDecorator],
+    notificationSettings: [IsCurrentUser([]) as PropertyDecorator],
+    chats: [IsCurrentUser([]) as PropertyDecorator],
+    sentChatMessages: [IsCurrentUser([]) as PropertyDecorator],
+    chatMessageReads: [IsCurrentUser([]) as PropertyDecorator],
+    friends: [IsCurrentUser([]) as PropertyDecorator],
+    followers: [IsCurrentUser([]) as PropertyDecorator],
   },
-  BadgeType: {
-    receipts: [
-      IsBadgeTypeCreatedByCurrentUser([]) as PropertyDecorator
-    ]
-  }
+  BadgeItem: {
+    receipt: [IsBadgeItemOwnedOrCreatedByCurrentUser(null) as PropertyDecorator],
+  },
 })
 
 // todo: make it work :)
@@ -165,6 +133,8 @@ const badgeTypeResolvers = [
   FindUniqueBadgeTypeResolver,
 ]
 
+const badgeItemResolvers = [BadgeItemRelationsResolver]
+
 const causeResolvers = [
   FindUniqueCauseResolver,
   FindFirstCauseResolver,
@@ -182,16 +152,14 @@ const currencyRateResolvers = [
   GroupByCurrencyRateResolver,
 ]
 
-const followResolvers = [
-  FollowRelationsResolver,
-]
+const followResolvers = [FollowRelationsResolver]
 
 export const generatedResolvers = [
   ...userResolvers,
   ...profileResolvers,
   ...badgeTypeResolvers,
+  ...badgeItemResolvers,
   ...causeResolvers,
   ...currencyRateResolvers,
-  ...followResolvers
+  ...followResolvers,
 ]
-

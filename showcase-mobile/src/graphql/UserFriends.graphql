@@ -1,0 +1,6 @@
+query UserFriends($id: String!) {
+  user(where: { id: $id }) {
+    id
+    ...Friends
+  }
+}

@@ -17,9 +17,10 @@ import { AuthLib } from '../libs/auth/authLib'
 import { NotificationSettingsResolver } from '../resolvers/notificationSettingResolver'
 import { myPubSub } from './pubSub'
 import { SearchResolver } from '../resolvers/search.resolver'
-import { customUserResolver } from '../resolvers/customUserResolver'
-import { customBadgeItemResolver } from '../resolvers/customBadgeItemResolver'
-import { customBadgeTypeResolver } from '../resolvers/customBadgeTypeResolver'
+import { CustomUserResolver } from '../resolvers/customUserResolver'
+import { CustomBadgeItemResolver } from '../resolvers/customBadgeItemResolver'
+import { CustomBadgeTypeResolver } from '../resolvers/customBadgeTypeResolver'
+import { CustomProfileResolver } from '../resolvers/customProfileResolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -50,9 +51,10 @@ export class MyApollo {
         ChatResolver,
         NotificationSettingsResolver,
         SearchResolver,
-        customUserResolver,
-        customBadgeTypeResolver,
-        customBadgeItemResolver,
+        CustomUserResolver,
+        CustomBadgeTypeResolver,
+        CustomBadgeItemResolver,
+        CustomProfileResolver,
       ],
       validate: true,
       authChecker: AuthLib.authChecker,

@@ -5,6 +5,7 @@ import { updateProfile } from '../libs/user/updateProfile'
 import { UpdateProfileInput } from '../libs/user/types/updateProfile.type'
 import { User, UserType } from '@prisma/client'
 import { CurrentUser } from '../libs/auth/decorators'
+import { FileUpload } from '../utils/types/fileUpload.type'
 
 @Resolver()
 export class SocialResolver {
@@ -21,9 +22,10 @@ export class SocialResolver {
   @Authorized(UserType.basic, UserType.creator)
   @Mutation(() => Profile)
   async updateProfileCustom(
-    @CurrentUser() currentUser: User,
-    @Arg('data') updateProfileInput: UpdateProfileInput
-  ): Promise<Profile> {
-    return await updateProfile(updateProfileInput, currentUser.id)
+    @Arg('data', { nullable: true }) updateProfileInput: UpdateProfileInput,
+    @Arg('file', { nullable: true }) avatarImg: FileUpload,
+    @CurrentUser() currentUser: User
+  ) {
+    return await updateProfile(updateProfileInput, avatarImg, currentUser.id)
   }
 }

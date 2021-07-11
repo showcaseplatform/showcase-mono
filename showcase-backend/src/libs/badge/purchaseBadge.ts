@@ -10,6 +10,7 @@ import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
 import { getRandomNum } from '../../utils/randoms'
+import { isBadgeTypeSoldOut } from './validateBadgeType'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -148,19 +149,16 @@ const purchaseBadgeTransaction = async ({
       },
       data: {
         sold: newSoldAmount,
-        soldout: newSoldAmount === badgeType.supply,
         badgeItems: {
           create: {
             tokenId,
-            creatorId: badgeType.creatorId,
             ownerId: userId,
             edition: newSoldAmount,
             purchaseDate: new Date(),
             receipt: {
               create: {
-                recipientId: userId,
-                creatorId: badgeType.creatorId,
-                badgeTypeId: badgeType.id,
+                buyerId: userId,
+                sellerId: badgeType.creatorId,
                 stripeChargeId: chargeId,
                 causeId: badgeType.causeId,
                 convertedPrice,
@@ -252,7 +250,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
     throw new GraphQLError('Invalid badge id')
   }
 
-  if (badgeType.sold === badgeType.supply) {
+  if (isBadgeTypeSoldOut(badgeType)) {
     throw new GraphQLError('Out of stock')
   }
 

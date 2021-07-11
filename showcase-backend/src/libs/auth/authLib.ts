@@ -6,7 +6,7 @@ import { jwtClient } from '../../services/jsonWebToken'
 import { findUserById } from '../database/user.repo'
 import { ArgsDictionary } from 'type-graphql'
 import { MyContext } from '../../services/apollo'
-import { GraphQLError } from 'graphql'
+
 interface MethodDecorator {
   args: ArgsDictionary
   context: MyContext

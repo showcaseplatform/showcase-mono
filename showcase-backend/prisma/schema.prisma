@@ -12,16 +12,7 @@ generator client {
 
 generator typegraphql {
   provider = "typegraphql-prisma"
-  // output             = "../src/prisma/generated/type-graphql"
-  // emitTranspiledCode = false
 }
-
-// TODO:
-// what datatype to use for String (postgres detault text) @db.<type>
-// ids: auto increment ID vs uidd vs cuid
-// use cuid to better support  support horizontal scaling and sequential lookup performance.
-// uidd for User badgeType and badgeItem
-// add indexes with @@index
 
 enum Currency {
   USD
@@ -46,10 +37,8 @@ model User {
 
   profile Profile?
 
-  badgeTypesCreated        BadgeType[] @relation("badgeTypesCreated")
-  badgeItemsOriginatedFrom BadgeItem[] @relation("badgeOriginatedFrom")
-
-  badgeItemsOwned BadgeItem[] @relation("badgeCurrentlyOwned")
+  badgeTypesCreated BadgeType[] @relation("badgeTypesCreated")
+  badgeItemsOwned   BadgeItem[] @relation("badgeCurrentlyOwned")
 
   cryptoWallet Crypto?
   stripeInfo   Stripe?
@@ -80,7 +69,6 @@ model User {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-// todo: is it neccesary to have separete id here? 👉 create profile with user.id
 model Profile {
   id   String @id
   user User   @relation(fields: [id], references: [id])
@@ -92,7 +80,7 @@ model Profile {
 
   currency  Currency  @default(USD)
   birthDate DateTime?
-  avatar    String?
+  avatarId  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -114,7 +102,8 @@ enum Category {
 }
 
 model BadgeType {
-  id        String @id
+  id String @id @default(uuid())
+
   creator   User   @relation(name: "badgeTypesCreated", fields: [creatorId], references: [id])
   creatorId String
 
@@ -126,7 +115,7 @@ model BadgeType {
   currency Currency @default(USD)
   sold     Int      @default(0)
 
-  image     String
+  imageId   String
   imageHash String
 
   causeId        Int?
@@ -139,12 +128,8 @@ model BadgeType {
 
   shares Int @default(0)
 
-  soldout             Boolean     @default(false)
-
-  removedFromShowcase Boolean     @default(false) //todo: set this to true when all badgeItems all badges get removed => should be a calculated field
-  gif                 Boolean     @default(false)
-  badgeItems          BadgeItem[]
-  receipts            Receipt[]
+  gif        Boolean     @default(false)
+  badgeItems BadgeItem[]
 
   likes BadgeTypeLike[]
   views BadgeTypeView[]
@@ -160,9 +145,6 @@ model BadgeItem {
 
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String
-
-  creator   User   @relation(name: "badgeOriginatedFrom", fields: [creatorId], references: [id])
-  creatorId String
 
   owner   User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id])
   ownerId String
@@ -218,6 +200,7 @@ model Crypto {
   publicKey           String
 }
 
+// todo: only create balance for creators!
 // todo: use this table once requesting info from receipts cost too much resources
 model Balance {
   id     String @id @default(cuid())
@@ -246,19 +229,14 @@ model CurrencyRate {
 model Receipt {
   id String @id @default(cuid())
 
-  recipient   User   @relation(name: "buyReceipts", fields: [recipientId], references: [id])
-  recipientId String
+  buyer   User   @relation(name: "buyReceipts", fields: [buyerId], references: [id])
+  buyerId String
 
-  // todo: not neccesary to store this here
-  creator   User   @relation(name: "sellReceipts", fields: [creatorId], references: [id])
-  creatorId String
+  seller   User   @relation(name: "sellReceipts", fields: [sellerId], references: [id])
+  sellerId String
 
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
   badgeItemId String
-
-  // todo: not neccesary to store this here
-  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
-  badgeTypeId String
 
   stripeChargeId String
 
@@ -275,13 +253,12 @@ model Receipt {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-// todo: is it possible to add multiple bank card to an account?
 model Stripe {
   id     String @id @default(cuid())
   userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
-  stripeId          String @unique // todo: should stripeId be unique here? 
+  stripeId          String @unique
   lastFourCardDigit String
 
   createdAt DateTime @default(now())
@@ -365,11 +342,8 @@ model BadgeTypeView {
   @@id([userId, badgeTypeId])
 }
 
-// todo: are these statuses enough?
 enum FollowStatus {
-  // Pending
   Accepted
-  // Declined
   Unfollowed
 }
 
@@ -388,9 +362,10 @@ model Follow {
 enum NotificationType {
   NEW_BADGE_PUBLISHED
   NEW_FOLLOWER_ADDED
-  NEW_MESSAGE_RECEIVED
   SOLD_BADGES_SUMMARY
   MOST_VIEWED_BADGE
+  NEW_MESSAGE_RECEIVED
+  NEW_FRIEND_MESSAGE_RECEIVED
 }
 
 model Notification {

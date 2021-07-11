@@ -1,16 +1,19 @@
-/* eslint-disable promise/no-nesting */
 import axios from 'axios'
 import { blockchain } from '../../config'
 // import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
 import { Profile, User } from '@generated/type-graphql'
 import { prisma } from '../../services/prisma'
-import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { GraphQLError } from 'graphql'
 import { UserType } from '.prisma/client'
+import { BadgeTypeCreateInput, Currency, Category } from '@generated/type-graphql'
+import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
+import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
+import { uploadFile } from '../../utils/fileUpload'
 
-interface InputWithUser extends PublishBadgeTypeInput {
+interface InputWithUser {
   user: User
-  profile: Profile
+  donationAmount: number
+  causeId: number
 }
 
 // todo: does user musst have a crypto account?
@@ -42,10 +45,10 @@ const createTokenTypeOnBlockchain = async ({
   title,
   description,
   category,
-  image,
+  imageId,
   imageHash,
   supply,
-}: Partial<InputWithUser>): Promise<string> => {
+}: Partial<InputWithUser & BadgeTypeCreateInput & { profile: Profile }>): Promise<string> => {
   const data = {
     token: blockchain.authToken,
     uri: 'https://showcase.to/badge/' + id,
@@ -53,7 +56,7 @@ const createTokenTypeOnBlockchain = async ({
     description: description || 'None',
     creatorname: profile?.username,
     category,
-    image,
+    image: imageId,
     imagehash: imageHash, // todo: camelCase on blockchain server
     supply,
     creatoraddress: user?.cryptoWallet?.address,
@@ -72,7 +75,11 @@ const createTokenTypeOnBlockchain = async ({
   }
 }
 
-export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User) => {
+export const publishBadgeType = async (
+  input: PublishBadgeTypeInput,
+  fileData: FileUpload,
+  user: User
+) => {
   const profile = await prisma.profile.findUnique({
     where: {
       id: user.id,
@@ -83,20 +90,42 @@ export const publishBadgeType = async (input: PublishBadgeTypeInput, user: User)
     throw new GraphQLError('Invalid user')
   }
 
-  await validateInputs({ ...input, user })
+  await validateInputs({
+    ...input,
+    user,
+  })
+
+  // todo: add more userfriendly error handling & upload progress follow
+  const {
+    hash: imageHash,
+    Key: imageId,
+    gif,
+  } = await uploadFile({ fileData, fileType: FileType.badge })
 
   // todo: remove blockchain.enabled once server is ready
   const tokenTypeId = blockchain.enabled
-    ? await createTokenTypeOnBlockchain({ ...input, profile, user })
-    : input.id
+    ? await createTokenTypeOnBlockchain({
+        ...input,
+        currency: input.currency as Currency,
+        category: input.category as Category,
+        profile,
+        user,
+      })
+    : imageId
+
+  const { causeId, ...restData } = input
 
   const badgeType = await prisma.badgeType.create({
     data: {
-      ...input,
-      uri: 'https://showcase.to/badge/' + input.id,
-      creatorId: user.id,
-      currency: input.currency || profile.currency,
+      ...restData,
+      imageHash,
+      imageId,
+      gif,
+      uri: 'https://showcase.to/badge/' + imageId, // todo: check if its ok on showcase.to that imageId includes full path of img (badges/xyz123..)
+      creator: { connect: { id: user.id } },
+      currency: profile.currency,
       tokenTypeId,
+      cause: causeId ? { connect: { id: causeId } } : undefined,
     },
   })
 

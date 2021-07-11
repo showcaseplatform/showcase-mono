@@ -1,0 +1,13 @@
+fragment Profile_WithResellBadgeTypes on Profile {
+  user {
+    id
+    badgeItemsForSale {
+      id  
+      badgeType {
+        id
+        title
+        publicUrl
+      }
+    }
+  }
+}

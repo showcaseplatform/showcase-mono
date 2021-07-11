@@ -1,0 +1,5 @@
+query BadgeTypes($category: Category) {
+  badgeTypes(where: { category: { equals: $category } }) {
+    ...BadgeType_WithBasics
+  }
+}

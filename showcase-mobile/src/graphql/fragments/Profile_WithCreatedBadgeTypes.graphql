@@ -1,0 +1,10 @@
+fragment Profile_WithCreatedBadgeTypes on Profile {
+  user {
+    id
+    badgeTypesCreated {
+      id
+      title
+      publicUrl
+    }
+  }
+}

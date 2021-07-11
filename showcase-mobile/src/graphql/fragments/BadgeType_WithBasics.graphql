@@ -1,0 +1,25 @@
+fragment BadgeType_WithBasics on BadgeType {
+  id
+  category
+  title
+  publicUrl
+  price
+  currency
+  supply
+  sold
+  createdAt
+  donationAmount
+  creator {
+    id
+    profile {
+      id
+      displayName
+    }
+  }
+  cause {
+    id
+    image
+    name
+    site
+  }
+}

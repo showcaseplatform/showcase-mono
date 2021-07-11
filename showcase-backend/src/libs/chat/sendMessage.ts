@@ -87,13 +87,14 @@ export const sendMessage = async (
     const notificationMessages = recipients.map((id) => {
       return {
         recipientId: id,
-        displayName: senderProfile.displayName,
+        senderId: user.id,
+        senderDisplayName: senderProfile.displayName,
         message,
         pushData: newMessage,
       }
     })
 
-    // no await here!
+    // no await here, to return before new message notification send is resolved
     senderProfile && sendNewMessageReceivedNotifcations(notificationMessages)
   }
 

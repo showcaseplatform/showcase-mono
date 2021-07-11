@@ -1,4 +1,3 @@
-/* eslint-disable promise/no-nesting */
 import axios from 'axios'
 import { blockchain } from '../../config'
 import { BadgeItemId } from '../../types/badge'

@@ -7,34 +7,44 @@ import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
 import { generateSignedUrl } from '../services/S3'
 import { isBadgeTypeSoldOut, isBadgeTypeRemovedFromShowcase } from '../libs/badge/validateBadgeType'
 
-@Resolver((_of) => BadgeType)
+@Resolver(() => BadgeType)
 export class CustomBadgeTypeResolver {
-  @FieldResolver((_) => Boolean)
-  async isViewedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
+  @FieldResolver(() => Boolean)
+  async isViewedByMe(
+    @Root() badgeType: BadgeType,
+    @CurrentUser() currentUser: User
+  ): Promise<boolean> {
     const uid = currentUser?.id
-    if (!uid) return false
+    if (!uid) {
+      return false
+    }
     return await checkIfBadgeAlreadyViewed({ marketplace: true, badgeId: badgeType.id }, uid)
   }
 
-  @FieldResolver((_) => Boolean)
-  async isLikedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
+  @FieldResolver(() => Boolean)
+  async isLikedByMe(
+    @Root() badgeType: BadgeType,
+    @CurrentUser() currentUser: User
+  ): Promise<boolean> {
     const uid = currentUser?.id
-    if (!uid) return false
+    if (!uid) {
+      return false
+    }
     return await checkIfBadgeAlreadyLiked({ marketplace: true, badgeId: badgeType.id }, uid)
   }
 
-  @FieldResolver((_) => Int)
-  async likeCount(@Root() badgeType: BadgeType) {
+  @FieldResolver(() => Int)
+  async likeCount(@Root() badgeType: BadgeType): Promise<number> {
     return await badgeTypeLikeCount(badgeType.id)
   }
 
-  @FieldResolver((_) => Int)
-  async viewCount(@Root() badgeType: BadgeType) {
+  @FieldResolver(() => Int)
+  async viewCount(@Root() badgeType: BadgeType): Promise<number> {
     return await badgeTypeViewCount(badgeType.id)
   }
 
-  @FieldResolver((_) => String)
-  async publicUrl(@Root() badgeType: BadgeType) {
+  @FieldResolver(() => String)
+  async publicUrl(@Root() badgeType: BadgeType): Promise<string> {
     return generateSignedUrl(badgeType.imageId)
   }
 

@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { blockchain } from '../../config'
+// import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
 import { Profile, User } from '@generated/type-graphql'
 import { prisma } from '../../services/prisma'
 import { GraphQLError } from 'graphql'
@@ -8,6 +9,7 @@ import { BadgeTypeCreateInput, Currency, Category } from '@generated/type-graphq
 import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { uploadFile } from '../../utils/fileUpload'
+import { BadgeType } from '@prisma/client'
 
 interface InputWithUser {
   user: User
@@ -17,20 +19,22 @@ interface InputWithUser {
 
 // todo: does user musst have a crypto account?
 const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWithUser>) => {
-  if (!user || user.userType != UserType.creator) {
+  if (!user || user.userType !== UserType.creator) {
     throw new GraphQLError('You are not a verified creator')
   }
 
   if (causeId || donationAmount) {
     try {
-      if (!donationAmount) throw new GraphQLError('Invalid donation amount')
+      if (!donationAmount) {
+        throw new GraphQLError('Invalid donation amount')
+      }
       await prisma.cause.findUnique({
         where: {
           id: causeId,
         },
       })
     } catch (e) {
-      throw new GraphQLError('Invalid donation cause', e)
+      throw new GraphQLError(`Invalid donation cause: ${(e as Error).message}`)
     }
   }
 }
@@ -76,7 +80,7 @@ export const publishBadgeType = async (
   input: PublishBadgeTypeInput,
   fileData: FileUpload,
   user: User
-) => {
+): Promise<BadgeType> => {
   const profile = await prisma.profile.findUnique({
     where: {
       id: user.id,
@@ -93,7 +97,11 @@ export const publishBadgeType = async (
   })
 
   // todo: add more userfriendly error handling & upload progress follow
-  const { hash: imageHash, Key: imageId, gif } = await uploadFile({ fileData, fileType: FileType.badge })
+  const {
+    hash: imageHash,
+    Key: imageId,
+    gif,
+  } = await uploadFile({ fileData, fileType: FileType.badge })
 
   // todo: remove blockchain.enabled once server is ready
   const tokenTypeId = blockchain.enabled

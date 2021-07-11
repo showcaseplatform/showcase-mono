@@ -10,14 +10,18 @@ export class CustomBadgeItemResolver {
   @FieldResolver((_) => Boolean)
   async isViewedByMe(@Root() badgeItem: BadgeItem, @CurrentUser() currentUser: User) {
     const uid = currentUser?.id
-    if (!uid) return false
+    if (!uid) {
+      return false
+    }
     return await checkIfBadgeAlreadyViewed({ marketplace: false, badgeId: badgeItem.id }, uid)
   }
 
   @FieldResolver((_) => Boolean)
   async isLikedByMe(@Root() badgeItem: BadgeItem, @CurrentUser() currentUser: User) {
     const uid = currentUser?.id
-    if (!uid) return false
+    if (!uid) {
+      return false
+    }
     return await checkIfBadgeAlreadyLiked({ marketplace: false, badgeId: badgeItem.id }, uid)
   }
 

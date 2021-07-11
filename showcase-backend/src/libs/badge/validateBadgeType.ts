@@ -3,7 +3,7 @@ import { BadgeType } from '@generated/type-graphql'
 import { BadgeTypeId } from '../../types/badge'
 
 export const isBadgeTypeSoldOut = (badgeType: BadgeType) => {
-    return  badgeType.supply === badgeType.sold
+  return badgeType.supply === badgeType.sold
 }
 
 export const isBadgeTypeRemovedFromShowcase = async (id: BadgeTypeId) => {
@@ -22,7 +22,7 @@ export const isBadgeTypeRemovedFromShowcase = async (id: BadgeTypeId) => {
 
   const badgeItems = badgeTypeWithItems?.badgeItems || []
 
-  if (badgeItems.length == 0 || !isBadgeTypeSoldOut(badgeTypeWithItems)) {
+  if (badgeItems.length === 0 || !isBadgeTypeSoldOut(badgeTypeWithItems)) {
     return false
   } else {
     const validBadgeItems = badgeItems?.filter((badge) => {

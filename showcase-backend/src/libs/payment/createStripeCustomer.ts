@@ -13,7 +13,9 @@ export const createStripeCustomer = async (input: CreateStripeCustomerInput, use
     },
   })
 
-  if (!profile || !profile.email || !user.phone) throw new GraphQLError('User profile is missing email or phone')
+  if (!profile || !profile.email || !user.phone) {
+    throw new GraphQLError('User profile is missing email or phone')
+  }
 
   const stripeCustomer = await stripe.customers.create({
     metadata: {
@@ -29,22 +31,22 @@ export const createStripeCustomer = async (input: CreateStripeCustomerInput, use
 
   const stripeDataToSave = {
     stripeId: stripeCustomer.id,
-    lastFourCardDigit: lastfour
+    lastFourCardDigit: lastfour,
   }
 
   console.log('Created stripe customer:', { stripeCustomer })
 
   await prisma.stripe.upsert({
     where: {
-      id: user.id
+      id: user.id,
     },
     create: {
       ...stripeDataToSave,
-      userId:  user.id,
+      userId: user.id,
     },
     update: {
-      ...stripeDataToSave
-    }
+      ...stripeDataToSave,
+    },
   })
 
   return 'Card successfully added and linked with stripe account'

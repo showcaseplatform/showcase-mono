@@ -38,7 +38,7 @@ class MyTwilio {
     const verification = await this.client.verify
       .services(this.sid)
       .verificationChecks.create({ to, code })
-    if (verification.status != 'approved') {
+    if (verification.status !== 'approved') {
       throw new GraphQLError('Invalid verification token check')
     }
   }

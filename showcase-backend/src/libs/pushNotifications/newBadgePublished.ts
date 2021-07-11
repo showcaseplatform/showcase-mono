@@ -16,21 +16,25 @@ const getCreatorDetails = async (uid: Uid) => {
     },
   })
 
-  if (!creatorProfile?.profile?.displayName)
+  if (!creatorProfile?.profile?.displayName) {
     throw new GraphQLError('Creator profile details werent found')
+  }
 
-  const followerUids = creatorProfile.followers.map(follow => follow.followerId)
+  const followerUids = creatorProfile.followers.map((follow) => follow.followerId)
 
   return { displayName: creatorProfile.profile.displayName, followerUids }
 }
 
-const getMessagesForFollowers = (publisherName: string, followerUids: Uid[]): SendNotificationProps[] => {
-  return followerUids.map(uid => {
+const getMessagesForFollowers = (
+  publisherName: string,
+  followerUids: Uid[]
+): SendNotificationProps[] => {
+  return followerUids.map((uid) => {
     return {
       type: NotificationType.NEW_BADGE_PUBLISHED,
       recipientId: uid,
       title: `${publisherName} just dropped a new badge! 👀`,
-      message: ''
+      message: '',
     }
   })
 }

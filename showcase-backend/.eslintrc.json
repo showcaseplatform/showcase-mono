@@ -1,4 +1,5 @@
 {
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     // Required for certain syntax usages
     "ecmaVersion": 2018,
@@ -6,10 +7,11 @@
   },
   "env": {
     "node": true,
-    "es6": true
+    "es6": true,
+    "jest": true
   },
-  "plugins": ["promise", "prettier"],
-  "extends": ["prettier"],
+  "plugins": ["promise", "typescript", "prettier", "no-only-tests"],
+  "extends": ["plugin:@typescript-eslint/recommended", "prettier"],
   "rules": {
     // Removed rule "disallow the use of console" from recommended eslint rules
     "no-console": "off",
@@ -34,6 +36,8 @@
 
     // Warn if return statements do not either always or never specify values
     "consistent-return": 1,
+
+    "curly": "error",
 
     // Warn if no return statements in callbacks of array methods
     "array-callback-return": 1,
@@ -66,7 +70,7 @@
     "no-floating-decimal": 2,
 
     // Warn against shorthand type conversions
-    "no-implicit-coercion": 1,
+    "no-implicit-coercion": 0,
 
     // Warn against function declarations and expressions inside loop statements
     "no-loop-func": 1,
@@ -122,6 +126,5 @@
 
     // Warn against nested then() or catch() statements
     "promise/no-nesting": 1
-
   }
 }

@@ -16,7 +16,11 @@ const BADGE_ALLOWED_FILES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'
 const AVATAR_PATH = 'avatars/'
 const AVATAR_ALLOWED_FILES = ['image/jpeg', 'image/jpg', 'image/png']
 
-export const uploadFile = async ({ fileData, fileType, updateKey }: FileUploadInput) => {
+type UploadFunction = (
+  props: FileUploadInput
+) => Promise<{ hash: string; Key: string; gif: boolean }>
+
+export const uploadFile: UploadFunction = async ({ fileData, fileType, updateKey }) => {
   const { base64DataURL, mimeType: ContentType } = fileData
 
   const fileExtension = ContentType.split('/')[1]
@@ -31,7 +35,7 @@ export const uploadFile = async ({ fileData, fileType, updateKey }: FileUploadIn
       if (!BADGE_ALLOWED_FILES.includes(ContentType)) {
         throw new GraphQLError(FileUploadErrorMessages.BadgeWrongFileType)
       }
-      gif = fileExtension == 'gif'
+      gif = fileExtension === 'gif'
       Key = `${BADGE_PATH + uuidv4()}.${fileExtension}`
       hash = crypto.createHash('md5').update(buffer).digest('base64')
       break

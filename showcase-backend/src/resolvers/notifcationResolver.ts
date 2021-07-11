@@ -1,4 +1,4 @@
-import { Arg, Authorized, Ctx, Mutation, Resolver, Root, Subscription } from 'type-graphql'
+import { Arg, Authorized, Mutation, Resolver, Root, Subscription } from 'type-graphql'
 import { notificationMarker } from '../libs/notification/notificationMarker'
 import { Notification, User } from '@generated/type-graphql'
 import {
@@ -6,7 +6,7 @@ import {
   removeNotifcationToken,
 } from '../libs/notification/updateNotifcationToken'
 import { NotificationToken } from '../types/user'
-import { MarkAsReadInfoUnion } from '../libs/notification/types/notificationMarker.type'
+import { MarkAsReadInfoUnion, MarkerInfo } from '../libs/notification/types/notificationMarker.type'
 import { UserType } from '@prisma/client'
 import { NEW_NOTIFCATION } from '../services/pubSub'
 import { NotificationSubscriptionPayload } from '../libs/notification/types/notificationSubscriptionPayload.type'
@@ -16,19 +16,21 @@ import { CurrentUser } from '../libs/auth/decorators'
 export class NotificationResolver {
   @Authorized(UserType.basic, UserType.creator)
   @Mutation(() => MarkAsReadInfoUnion)
-  async markAsRead(@Arg('notificationId') notificationId: string) {
+  async markAsRead(
+    @Arg('notificationId') notificationId: string
+  ): Promise<MarkerInfo | Notification> {
     return await notificationMarker.markOneAsRead(notificationId)
   }
 
   @Authorized(UserType.basic, UserType.creator)
   @Mutation(() => [Notification])
-  async markAllAsRead(@CurrentUser() currentUser: User) {
+  async markAllAsRead(@CurrentUser() currentUser: User): Promise<Notification[]> {
     return await notificationMarker.markAllAsRead(currentUser.id)
   }
 
   @Authorized(UserType.basic, UserType.creator)
   @Mutation(() => User)
-  async removeNotifcationToken(@CurrentUser() currentUser: User) {
+  async removeNotifcationToken(@CurrentUser() currentUser: User): Promise<User> {
     return await removeNotifcationToken(currentUser.id)
   }
 
@@ -37,7 +39,7 @@ export class NotificationResolver {
   async addNotifcationToken(
     @Arg('notificationToken') notificationToken: NotificationToken,
     @CurrentUser() currentUser: User
-  ) {
+  ): Promise<User> {
     return await addNotifcationToken(notificationToken, currentUser.id)
   }
 

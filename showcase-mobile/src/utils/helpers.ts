@@ -34,7 +34,7 @@ export const reshapeBadges: <T>(arr: T[], shapeLength?: number) => T[][] = (
 ) => {
   const copyArr = [...arr]
   const newArr = []
-  while (arr.length) {
+  while (copyArr.length) {
     newArr.push(copyArr.splice(0, shapeLength))
   }
   return newArr

@@ -60,14 +60,15 @@ const BadgesScreen = ({
     setIsLoadingMore(false)
   }
 
-  const handleSearchQueryChange = (val: string) => {
+  // todo: debounce me
+  const handleSearchQueryChange = async (val: string) => {
     setSearchQuery(val)
-    handleRefresh()
+    await refetch({ limit: 10, category, search: val })
   }
 
-  const handleCategoryChange = (val: Category | undefined) => {
+  const handleCategoryChange = async (val: Category | undefined) => {
     setCategory(val)
-    refetch({ limit: 10, category, search: searchQuery })
+    await refetch({ limit: 10, category: val, search: searchQuery })
   }
 
   const badges = data?.feedSearch.edges.map((edge) => edge.node)

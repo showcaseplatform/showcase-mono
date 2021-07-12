@@ -21,7 +21,7 @@ type FollowItemProps = {
 
 const FollowItem = ({ user, onPress }: FollowItemProps) => {
   const { amIFollowing } = user
-  const { avatar, username, displayName } = user.profile
+  const { avatarUrl, username, displayName } = user.profile
   const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
     refetchQueries: [{ query: MeDocument }],
   })
@@ -37,7 +37,7 @@ const FollowItem = ({ user, onPress }: FollowItemProps) => {
           paddingVertical: 12,
         }}
       >
-        <ProfileImage source={avatar as string | undefined} small />
+        <ProfileImage source={avatarUrl as string | undefined} small />
         <Spacer position="right" size="large" />
         <View flexGrow={1} justifyContent="space-evenly">
           <Text>{displayName}</Text>

@@ -63,7 +63,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   }, [navigation])
 
   if (loading) {
-    return <LoadingIndicator />
+    return <LoadingIndicator fullScreen />
   } else if (data) {
     const {
       price,

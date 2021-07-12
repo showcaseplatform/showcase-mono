@@ -169,7 +169,7 @@ export const categories: MyBadgeCategory[] = [
   },
   {
     id: 5,
-    label: Category.Gaming,
+    label: Category.Sports,
     iconName: 'ios-basketball',
     gradientColors: ['#ffa62e', '#ea4d2c'],
   },

@@ -5,8 +5,8 @@ import { RouteProp, NavigationProp } from '@react-navigation/native'
 import { FollowStatus, useMeQuery } from '../../../generated/graphql'
 import { UserStackParamList } from '../../../infrastructure/navigation/user.navigator'
 
+import EmptyListComponent from '../../../components/EmptyList.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
-import EmptyListForProfile from '../../badges/components/EmptyListForProfile'
 import FollowItem from './components/FollowItem.component'
 
 type UserFriendsScreenProps = {
@@ -40,7 +40,9 @@ const UserFriendsScreen = ({ navigation }: UserFriendsScreenProps) => {
           }
         />
       )}
-      ListEmptyComponent={<EmptyListForProfile />}
+      ListEmptyComponent={
+        <EmptyListComponent text="no friends yet" iconName="people-outline" />
+      }
     />
   )
 }

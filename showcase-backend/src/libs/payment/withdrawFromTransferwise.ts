@@ -32,22 +32,23 @@ const updateUserBalance = async (
 }
 
 const headers = {
-    Authorization: `Bearer ${transferWise.token}`,
+  Authorization: `Bearer ${transferWise.token}`,
 }
 
 const validateUserFinancialInfo = async (
   { currency, amount }: WithdrawFromTransferwiseInput,
   user: User
 ) => {
-  // todo: maybe re-calculate balance at this point? 
+  // todo: maybe re-calculate balance at this point?
   const userBalance = await prisma.balance.findUnique({
     where: {
       id: user.id,
     },
   })
 
-  if (!userBalance) throw new GraphQLError('User doesnt have a balance')
-
+  if (!userBalance) {
+    throw new GraphQLError('User doesnt have a balance')
+  }
 
   // todo: unit test this
   const recentWithdrawals = await prisma.withdrawal.findMany({
@@ -91,7 +92,7 @@ const getTransferwiseQuoteId = async ({ currency, amount }: WithdrawFromTransfer
       targetAmount: amount,
       type: 'BALANCE_PAYOUT',
     },
-    headers
+    headers,
   })
 
   if (quoteResponse?.data?.id) {
@@ -129,7 +130,7 @@ const executeTransfer = async ({ quote, customerTransactionId, targetAccount }: 
         sourceOfFundsOther: 'Showcase badge sales',
       },
     },
-    headers
+    headers,
   })
 
   if (transferResponse?.data?.id) {
@@ -153,10 +154,10 @@ const checkIfTransactionCompleted = async (transactionId: string) => {
     data: {
       type: 'BALANCE',
     },
-    headers
+    headers,
   })
 
-  if (fundResponse?.data?.status != 'COMPLETED') {
+  if (fundResponse?.data?.status !== 'COMPLETED') {
     throw new GraphQLError(
       fundResponse.data.errorCode || 'Error processing payment to your account'
     )
@@ -167,7 +168,7 @@ const getEstimatedDeliveryDate = async (transactionId: string) => {
   const etaResponse = await axios({
     method: 'get',
     url: 'https://api.sandbox.transferwise.tech/v1/delivery-estimates/' + transactionId,
-    headers
+    headers,
   })
 
   if (etaResponse?.data?.estimatedDeliveryDate) {
@@ -191,7 +192,7 @@ export const withdrawFromTransferwise = async (
 
   const customerTransactionId = uuidv4()
 
-  let withdrawalData: WithdrawalCreateInput = {
+  const withdrawalData: WithdrawalCreateInput = {
     owner: {
       connect: {
         id: user.id,
@@ -206,7 +207,9 @@ export const withdrawFromTransferwise = async (
   }
 
   try {
-    if (updatedBalance[currency] < 0) throw new GraphQLError('Insufficuent fund amount')
+    if (updatedBalance[currency] < 0) {
+      throw new GraphQLError('Insufficuent fund amount')
+    }
     const transactionId = await executeTransfer({ quote, customerTransactionId, targetAccount })
     await checkIfTransactionCompleted(transactionId)
 

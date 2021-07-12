@@ -13,7 +13,7 @@ import { FileUpload } from '../utils/types/fileUpload.type'
 @Resolver()
 export class MarketplaceResolver {
   @Authorized(UserType.creator)
-  @Mutation((_returns) => BadgeType)
+  @Mutation(() => BadgeType)
   async publishBadgeType(
     @Arg('file') file: FileUpload,
     @Arg('data') publishBadgeTypeInput: PublishBadgeTypeInput,
@@ -23,7 +23,7 @@ export class MarketplaceResolver {
   }
 
   @Authorized(UserType.basic, UserType.creator)
-  @Mutation((_returns) => BadgeItem)
+  @Mutation(() => BadgeItem)
   async purchaseBadge(
     @Arg('data') purchaseBadgeInput: PurchaseBadgeInput,
     @CurrentUser() currentUser: User

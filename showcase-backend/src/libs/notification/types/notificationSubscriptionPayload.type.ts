@@ -3,7 +3,7 @@ import { ObjectType, Field } from 'type-graphql'
 
 @ObjectType()
 export class NotificationSubscriptionPayload {
-  @Field((_) => NotificationType)
+  @Field(() => NotificationType)
   type: NotificationType
 
   @Field()

@@ -41,7 +41,10 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
     },
   })
 
-  if (userWithBadgeItems?.badgeItemsOwned?.length && userWithBadgeItems?.badgeItemsOwned?.length > 0) {
+  if (
+    userWithBadgeItems?.badgeItemsOwned?.length &&
+    userWithBadgeItems?.badgeItemsOwned?.length > 0
+  ) {
     throw new GraphQLError('You already purchased this badge')
   }
 }
@@ -298,7 +301,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
     let USDPrice = 0
 
     if (badgeType.price > 0) {
-      let USDmultiplier = 1 / currenciesData[badgeType.currency]
+      const USDmultiplier = 1 / currenciesData[badgeType.currency]
       USDPrice = parseFloat((badgeType.price * USDmultiplier).toFixed(2))
       const totalPrice = badgeType.price
       // todo: why is this set to 0.9 by default?

@@ -8,7 +8,7 @@ export type BadgeTypeCursor = BadgeTypeId
 
 @InputType()
 export class ForwardPaginationInput {
-  @Field((_) => Int)
+  @Field(() => Int)
   @Min(0)
   first: number
 
@@ -18,7 +18,7 @@ export class ForwardPaginationInput {
 
 @InputType()
 export class BackwardPaginationInput {
-  @Field((_) => Int)
+  @Field(() => Int)
   @Min(0)
   last: number
 
@@ -31,7 +31,7 @@ export class FeedSearchInput {
   @Field({ nullable: true })
   search?: string
 
-  @Field((_) => Category, { nullable: true })
+  @Field(() => Category, { nullable: true })
   category?: Category
 
   @Field({ nullable: true })
@@ -46,7 +46,7 @@ export class BadgeTypeEdge {
   @Field()
   cursor: BadgeTypeCursor
 
-  @Field((_) => BadgeType)
+  @Field(() => BadgeType)
   node: BadgeType
 }
 
@@ -64,9 +64,9 @@ export class PageInfo {
 
 @ObjectType()
 export class FeedSearchResponse {
-  @Field((_) => [BadgeTypeEdge])
+  @Field(() => [BadgeTypeEdge])
   edges: BadgeTypeEdge[]
 
-  @Field((_) => PageInfo)
+  @Field(() => PageInfo)
   pageInfo: PageInfo
 }

@@ -41,7 +41,7 @@ export class MyApollo {
   async init() {
     const schema = await buildSchema({
       resolvers: [
-        ...(generatedResolvers as unknown as NonEmptyArray<Function>), //todo: find nicer solution
+        ...(generatedResolvers as unknown as NonEmptyArray<() => unknown>), //todo: find nicer solution
         MarketplaceResolver,
         InventoryResolver,
         SocialResolver,
@@ -54,7 +54,7 @@ export class MyApollo {
         CustomUserResolver,
         CustomBadgeTypeResolver,
         CustomBadgeItemResolver,
-        CustomProfileResolver
+        CustomProfileResolver,
       ],
       validate: true,
       authChecker: AuthLib.authChecker,

@@ -18,13 +18,15 @@ export enum AuthError {
 export class AuthLib {
   static getUserByToken = async (token: string) => {
     try {
-      if (!token) return null
+      if (!token) {
+        return null
+      }
 
       const { id } = jwtClient.verifyToken(token.replace('Bearer ', ''))
 
       const user = await findUserById(id)
 
-      if (user && user.isBanned != true) {
+      if (user && user.isBanned !== true) {
         return user
       } else {
         return null
@@ -50,7 +52,7 @@ export class AuthLib {
 
     if (areaCode === '44') {
       currency = Currency.GBP
-    } else if (EUROPEAN_COUNTRY_CODES.indexOf(areaCode + '') > -1) {
+    } else if (EUROPEAN_COUNTRY_CODES.indexOf(String(areaCode)) > -1) {
       currency = Currency.EUR
     }
 
@@ -69,8 +71,8 @@ export class AuthLib {
           create: {
             EUR: 0,
             GBP: 0,
-            USD: 0
-          }
+            USD: 0,
+          },
         },
       },
     })

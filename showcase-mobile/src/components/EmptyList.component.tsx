@@ -7,11 +7,13 @@ import { Spacer } from './Spacer.component'
 
 const EmptyListComponent = ({
   text = 'no badges found :(',
+  iconName = 'ios-images-outline',
 }: {
-  text: string
+  text?: string
+  iconName?: React.ComponentProps<typeof Ionicons>['name']
 }) => (
   <CenterView flex={1}>
-    <Ionicons name="ios-images-outline" size={42} />
+    <Ionicons name={iconName} size={42} />
     <Spacer size="large" />
     <Text>{text}</Text>
   </CenterView>

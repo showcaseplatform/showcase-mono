@@ -13,6 +13,7 @@ import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.n
 import BadgeItem from '../components/BadgeItem.component'
 import CategorySelector from '../components/CategorySelector.component'
 import Error from '../../../components/Error.component'
+import { Text } from '../../../components/Text.component'
 import {
   StyledSafeArea,
   SearchContainer,
@@ -112,6 +113,13 @@ const BadgesScreen = ({
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
               />
+            }
+            ListFooterComponent={
+              !pageInfo?.hasNextPage ? (
+                <Spacer position="bottom" size="large">
+                  <Text center>end of feed</Text>
+                </Spacer>
+              ) : null
             }
             renderItem={({ item }) => (
               <BadgeItem

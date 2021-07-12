@@ -112,11 +112,13 @@ const checkBadgeOwnedOnBlockchain = async (badgeItemId: BadgeItemId): Promise<bo
 }
 
 const randomBadgeInspection = (marketplace: boolean): boolean => {
-  if (marketplace) return false
+  if (marketplace) {
+    return false
+  }
 
-  let min = Math.ceil(1)
-  let max = Math.floor(51)
-  let randomNum = Math.floor(Math.random() * (max - min + 1)) + min
+  const min = Math.ceil(1)
+  const max = Math.floor(51)
+  const randomNum = Math.floor(Math.random() * (max - min + 1)) + min
 
   return randomNum === 51
 }

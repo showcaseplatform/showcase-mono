@@ -71,7 +71,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       donationAmount,
       creator: { profile },
       cause,
-      publicUrl
+      publicUrl,
     } = data.badgeType
 
     return (
@@ -174,7 +174,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       </>
     )
   } else if (error) {
-    return <Error />
+    return <Error error={error} />
   }
 }
 

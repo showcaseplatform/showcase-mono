@@ -10,7 +10,7 @@ import { formatApolloErrors } from 'apollo-server-errors'
 import { execute, subscribe } from 'graphql'
 
 // export patch
-export function installSubscriptionHandlers(server: any) {
+export function installSubscriptionHandlers(server: any): void {
   // eslint-disable-next-line
   // @ts-ignore
   const that = this as any
@@ -28,12 +28,7 @@ export function installSubscriptionHandlers(server: any) {
       )
     }
   }
-  const {
-    onDisconnect,
-    onConnect,
-    keepAlive,
-    path,
-  } = that.subscriptionServerOptions
+  const { onDisconnect, onConnect, keepAlive, path } = that.subscriptionServerOptions
   const { schema } = that
   if (that.schema === undefined) {
     throw new Error('Schema undefined during creation of subscription server.')

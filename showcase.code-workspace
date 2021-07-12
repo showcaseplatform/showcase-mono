@@ -5,11 +5,11 @@
       "path": "."
     },
     {
-      "name": "Core Backend",
+      "name": "Backend",
       "path": "showcase-backend"
     },
     {
-      "name": "Core Frontend",
+      "name": "Mobile",
       "path": "showcase-mobile"
     }
   ],

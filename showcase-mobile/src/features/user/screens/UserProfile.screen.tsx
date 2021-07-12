@@ -171,18 +171,17 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
             renderItem={({ item: itemArr }) => (
               <View>
                 {itemArr.map((item) => (
-                  <View>
-                    <BadgeItem
-                      item={item}
-                      key={item.id}
-                      onPress={() =>
-                        navigation.navigate('BadgeNavigator', {
-                          screen: 'BadgeDetails',
-                          params: { item },
-                        })
-                      }
-                    />
-                  </View>
+                  <BadgeItem
+                    item={item}
+                    key={item.id}
+                    withoutInfo
+                    onPress={() =>
+                      navigation.navigate('BadgeNavigator', {
+                        screen: 'BadgeDetails',
+                        params: { item },
+                      })
+                    }
+                  />
                 ))}
               </View>
             )}

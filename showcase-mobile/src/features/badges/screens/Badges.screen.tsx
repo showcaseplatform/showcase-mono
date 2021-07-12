@@ -1,5 +1,5 @@
+import React, { useState, useCallback } from 'react'
 import { NavigationProp } from '@react-navigation/core'
-import React, { useState } from 'react'
 import { FlatList, View, RefreshControl } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
@@ -36,32 +36,43 @@ const BadgesScreen = ({
         limit: 10,
         after: '',
         category,
+        search: searchQuery,
       },
     })
 
-  const badges = data?.feedSearch.edges.map((edge) => edge.node)
-  const pageInfo = data?.feedSearch.pageInfo
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    await refetch({ limit: 10, category, search: searchQuery })
+    setIsRefreshing(false)
+  }, [category, searchQuery, refetch])
 
-  const handleFetchMore = () => {
+  const handleFetchMore = async () => {
     setIsLoadingMore(true)
     pageInfo?.hasNextPage &&
-      fetchMore({
+      (await fetchMore({
         variables: {
           limit: 4,
           after: pageInfo?.endCursor,
           category,
+          search: searchQuery,
         },
-      }).then((_) => {
-        setIsLoadingMore(false)
-      })
+      }))
+    setIsLoadingMore(false)
   }
 
-  const handleRefresh = () => {
-    setIsRefreshing(true)
-    refetch({ limit: 10, category }).then(() => {
-      setIsRefreshing(false)
-    })
+  // todo: debounce me
+  const handleSearchQueryChange = async (val: string) => {
+    setSearchQuery(val)
+    await refetch({ limit: 10, category, search: val })
   }
+
+  const handleCategoryChange = async (val: Category | undefined) => {
+    setCategory(val)
+    await refetch({ limit: 10, category: val, search: searchQuery })
+  }
+
+  const badges = data?.feedSearch.edges.map((edge) => edge.node)
+  const pageInfo = data?.feedSearch.pageInfo
 
   if (error) {
     return <Error error={error} />
@@ -72,17 +83,14 @@ const BadgesScreen = ({
       <SearchContainer>
         <StyledSearchbar
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearchQueryChange}
           placeholder="Search Showcase"
           clearButtonMode="unless-editing"
         />
       </SearchContainer>
       <Spacer position="y" size="small">
         <CategorySelector
-          onSelect={(val) => {
-            setCategory(val)
-            refetch({ limit: 10, category, after: pageInfo?.endCursor })
-          }}
+          onSelect={handleCategoryChange}
           activeCategory={category}
         />
       </Spacer>

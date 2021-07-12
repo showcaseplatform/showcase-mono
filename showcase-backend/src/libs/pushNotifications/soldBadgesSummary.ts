@@ -62,7 +62,7 @@ const getSummaryOfSoldBadgesByCreators = (
 }
 
 const getMessagesForCreators = async (dictionary: Record<Uid, BadgesSoldRecordValue>) => {
-  let inputMessages: SendNotificationProps[] = []
+  const inputMessages: SendNotificationProps[] = []
   for (const [uid, value] of Object.entries(dictionary)) {
     const title = `Weekly recap:`
     const message = `You sold ${value.count} badges this week for a total of ${

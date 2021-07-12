@@ -40,7 +40,9 @@ export class PaymentResolver {
     @Arg('inputGBP', { nullable: true }) inputGBP?: GBPAccount
   ) {
     const input = inputUSD || inputEUR || inputGBP
-    if (!input) throw new GraphQLError('Please provide an input data')
+    if (!input) {
+      throw new GraphQLError('Please provide an input data')
+    }
     return await createTransferwiseAccount(input, currentUser)
   }
 
@@ -48,7 +50,7 @@ export class PaymentResolver {
   @Mutation((_returns) => String)
   async withdrawFromTransferwise(
     @Arg('data') input: WithdrawFromTransferwiseInput,
-    @CurrentUser() currentUser: User,
+    @CurrentUser() currentUser: User
   ) {
     return await withdrawFromTransferwise(input, currentUser)
   }

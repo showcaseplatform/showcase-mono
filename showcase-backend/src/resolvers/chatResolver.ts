@@ -1,13 +1,5 @@
 import { User, UserType } from '@prisma/client'
-import {
-  Mutation,
-  Arg,
-  Resolver,
-  Ctx,
-  Authorized,
-  Subscription,
-  Root,
-} from 'type-graphql'
+import { Mutation, Arg, Resolver, Authorized, Subscription, Root } from 'type-graphql'
 import { sendMessage } from '../libs/chat/sendMessage'
 import { NewChatMessageInput, ExistingChatMessageInput } from '../libs/chat/types/sendMessage.type'
 import { ChatMessage, ChatParticipant } from '@generated/type-graphql'
@@ -22,31 +14,36 @@ import { CurrentUser } from '../libs/auth/decorators'
 @Resolver()
 export class ChatResolver {
   @Authorized(UserType.basic, UserType.creator)
-  @Mutation((_returns) => ChatMessage)
+  @Mutation(() => ChatMessage)
   async sendMessage(
     @CurrentUser() currentUser: User,
     @Arg('newChatInput', { nullable: true }) newChatInput?: NewChatMessageInput,
     @Arg('existingChatInput', { nullable: true }) existingChatInput?: ExistingChatMessageInput
-  ) {
+  ): Promise<ChatMessage> {
     const input = newChatInput || existingChatInput
-    if (!input) throw new GraphQLError('Please provide an input data')
+    if (!input) {
+      throw new GraphQLError('Please provide an input data')
+    }
     const message = await sendMessage(input, currentUser)
     await myPubSub.publish(NEW_CHAT_MESSAGE, message)
     return message
   }
 
   @Authorized(UserType.basic, UserType.creator)
-  @Mutation((_returns) => [ChatMessage])
-  async readChatMessages(@Arg('chatId') chatId: string, @CurrentUser() currentUser: User) {
+  @Mutation(() => [ChatMessage])
+  async readChatMessages(
+    @Arg('chatId') chatId: string,
+    @CurrentUser() currentUser: User
+  ): Promise<ChatMessage[]> {
     return await readChatMessages(chatId, currentUser)
   }
 
   @Authorized(UserType.basic, UserType.creator)
-  @Mutation((_returns) => ChatParticipant)
+  @Mutation(() => ChatParticipant)
   async addNewChatParticipant(
     @Arg('data') input: AddNewChatParticipantInput,
     @CurrentUser() currentUser: User
-  ) {
+  ): Promise<ChatParticipant> {
     return await addNewChatParticipant(input, currentUser)
   }
 

@@ -78,7 +78,7 @@ const BadgesScreen = ({
     return <Error error={error} />
   }
 
-  return data ? (
+  return (
     <StyledSafeArea>
       <SearchContainer>
         <StyledSearchbar
@@ -106,6 +106,7 @@ const BadgesScreen = ({
             refreshing={isLoadingMore}
             onEndReached={handleFetchMore}
             onEndReachedThreshold={0.6}
+            contentContainerStyle={{ flexGrow: 1 }}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
@@ -123,8 +124,6 @@ const BadgesScreen = ({
         )}
       </View>
     </StyledSafeArea>
-  ) : (
-    <LoadingIndicator />
   )
 }
 

@@ -11,12 +11,12 @@ import { reshapeBadges } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 
 import BadgeItem from '../../badges/components/BadgeItem.component'
-import EmptyListForProfile from '../../badges/components/EmptyListForProfile'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 import ProfileImage from '../../../components/ProfileImage.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
+import EmptyListComponent from '../../../components/EmptyList.component'
 
 type UserProfileScreenProps = {
   route: RouteProp<UserStackParamList, 'UserProfile'>
@@ -167,7 +167,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
             data={reshapedCreatedBadgeTypes}
             keyExtractor={createReshapedBadgeKey}
             contentContainerStyle={{ flexGrow: 1, paddingVertical: 8 }}
-            ListEmptyComponent={EmptyListForProfile}
+            ListEmptyComponent={<EmptyListComponent text="No Badges yet." />}
             renderItem={({ item: itemArr }) => (
               <View>
                 {itemArr.map((item) => (

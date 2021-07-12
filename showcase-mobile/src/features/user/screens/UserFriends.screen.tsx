@@ -17,7 +17,7 @@ import {
   User,
   useToggleFollowMutation,
 } from '../../../generated/graphql'
-import EmptyListForProfile from '../../badges/components/EmptyListForProfile'
+import EmptyListComponent from '../../../components/EmptyList.component'
 
 type FollowItemProps = {
   userId: string
@@ -74,7 +74,7 @@ const UserFriendsScreen = () => {
       data={acceptedFriends}
       keyExtractor={(friend) => friend.userId}
       renderItem={({ item: friend }) => <FollowItem {...friend} />}
-      ListEmptyComponent={<EmptyListForProfile />}
+      ListEmptyComponent={<EmptyListComponent text="No Badges yet." />}
     />
   )
 }

@@ -14,6 +14,7 @@ import { StyledSafeArea } from '../../badges/screens/Badges.styles'
 import { translate } from '../../../utils/translator'
 import { FlatGrid } from 'react-native-super-grid'
 import { useCausesQuery } from '../../../generated/graphql'
+import LoadingIndicator from '../../../components/LoadingIndicator.component'
 
 type SelectCauseProps = {
   route: RouteProp<EditorStackParamList, 'SelectCause'>
@@ -26,7 +27,7 @@ const SelectCause: React.FC<SelectCauseProps> = ({ route, navigation }) => {
   const { category, imagePath, image } = route.params
   const theme = useTheme()
 
-  const { data } = useCausesQuery()
+  const { data, loading } = useCausesQuery({ fetchPolicy: 'cache-first' })
 
   const [donationPercent, setDonationPercent] = useState(5)
   const [selectedCause, setSelectedCause] = useState<number | null>(null)
@@ -77,31 +78,35 @@ const SelectCause: React.FC<SelectCauseProps> = ({ route, navigation }) => {
           {translate().causeChooseInfo}
         </Text>
       </Spacer>
-      <FlatGrid
-        flexGrow={1}
-        itemDimension={width / 3}
-        data={data?.causes}
-        spacing={0}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={{
-              padding: 20,
-              borderWidth: 1,
-              borderColor:
-                selectedCause === item.id
-                  ? theme.colors.ui.accent
-                  : 'transparent',
-            }}
-            onPress={() => handleToggleSelect(item.id)}
-          >
-            <Image
-              source={{ uri: item.image }}
-              resizeMode="contain"
-              style={{ width: '100%', height: undefined, aspectRatio: 1 / 1 }}
-            />
-          </TouchableOpacity>
-        )}
-      />
+      {loading ? (
+        <LoadingIndicator fullScreen />
+      ) : (
+        <FlatGrid
+          flexGrow={1}
+          itemDimension={width / 3}
+          data={data?.causes}
+          spacing={0}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={{
+                padding: 20,
+                borderWidth: 1,
+                borderColor:
+                  selectedCause === item.id
+                    ? theme.colors.ui.accent
+                    : 'transparent',
+              }}
+              onPress={() => handleToggleSelect(item.id)}
+            >
+              <Image
+                source={{ uri: item.image }}
+                resizeMode="contain"
+                style={{ width: '100%', height: undefined, aspectRatio: 1 / 1 }}
+              />
+            </TouchableOpacity>
+          )}
+        />
+      )}
 
       <Spacer position="x" size="large">
         <Slider

@@ -14,6 +14,8 @@
 ☐ Android cause widget round styling issue
 ☐ FollowButton component ui stuck in loading (disabled) state after first onPress
 ☐ AWS S3 does not receive file Type properly (empty)
+☐ Edit user profile: keyboard overlaps input fields (KeyboardAware view)
+☐ Memory leak in badgesScreen - search useEffect
 ✔ CreateBadgeButton can be "overclicked" (badge in the background is activated on click upper bart of the button) @done(21-06-21 07:56)
 ✔ Follow - Unfollow button loading state is over before the data has been changed (ui glitch) @done(21-06-17 10:21)
 ✘ badges screen - if search input exists then category selected -> results flashing once @cancelled(21-05-06 11:39)
@@ -29,8 +31,6 @@
 ☐ RN-styledcomps vs RN-paper theming vs unthemed space/sizing should use the same theme file / format (spacing with and without 'px' )
 ☐ detailed camera / image gallery permission implementation
 ☐ Lift Editor's state into a separate Context (choosen category, imagePath, maybe filter settings as well)
-✘ AppSettings should be moved into server or env, eg.: donation details (min, max, default) @cancelled(21-06-21 07:54)
-✘ should handle Dimensions @cancelled(21-06-21 07:54)
 ☐ BadgeDetails screen loading states handling
   ☐ load cause image
   ☐ load main image
@@ -43,6 +43,8 @@
 ✔ build a screen comp with basic settings eg.: bg @done(21-05-06 11:28)
 ✔ enter phone and enter auth screens are built with Stylesheet, replace it with styled comps @done(21-05-06 11:26)
 ✔ Text component: sort out styled / rn / paper types @done(21-04-28 06:34)
+✘ AppSettings should be moved into server or env, eg.: donation details (min, max, default) @cancelled(21-06-21 07:54)
+✘ should handle Dimensions @cancelled(21-06-21 07:54)
 ✘ bring StyledSafeArea to a common place @cancelled(21-05-06 11:27) - replaced with another common comp
 ✘ extract header components @cancelled(21-04-28 06:31)
 

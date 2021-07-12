@@ -174,7 +174,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       </>
     )
   } else if (error) {
-    return <Error />
+    return <Error error={error} />
   }
 }
 

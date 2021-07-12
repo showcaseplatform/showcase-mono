@@ -1,6 +1,7 @@
 import S3, { ContentType } from 'aws-sdk/clients/s3'
-import config from './config'
+import s3Config from './config'
 import { env } from '../../config'
+import { AVATAR_PATH, BADGE_PATH } from '../../utils/fileUpload'
 
 export interface S3UploadInput {
   Key: string
@@ -10,9 +11,9 @@ export interface S3UploadInput {
 }
 
 const s3 = new S3({
-  accessKeyId: config.keyId,
-  secretAccessKey: config.key,
-  region: config.region,
+  accessKeyId: s3Config.keyId,
+  secretAccessKey: s3Config.key,
+  region: s3Config.region,
 })
 
 const MyBucket = { Bucket: `showcase.to-${env}` }
@@ -21,7 +22,7 @@ export const createS3Bucket = () => {
   const params: S3.CreateBucketRequest = {
     ...MyBucket,
     CreateBucketConfiguration: {
-      LocationConstraint: 'eu-west-1',
+      LocationConstraint: s3Config.region,
     },
     ACL: 'public-read',
   }
@@ -44,7 +45,7 @@ const findOrCreateS3Bucket = () => {
         console.log(`❗❗ ${err.message} ❗❗`)
         await createS3Bucket()
       } else {
-        console.log(`✅ ${MyBucket.Bucket} S3 bucketExists check completed`)
+        console.log(`✅ S3 bucketExists check completed: ${MyBucket.Bucket} is ready to use`)
       }
     })
     .promise()
@@ -73,4 +74,30 @@ export function generateSignedUrl(Key: string, expiryInSec?: number) {
   }
 
   return s3.getSignedUrl('getObject', params)
+}
+
+// export const resetS3Bucket = () => {
+
+//   const params: S3.CopyObjectRequest = {
+//     CopySource: {
+//       ...MyBucket,
+//     }
+//   }
+//   s3.copyObject(params, (err, data) => {
+
+//   })
+// }
+
+export const getListOfS3BucketObjects = async () => {
+  const response = await s3.listObjectsV2({ ...MyBucket }).promise()
+  const keyList = response.Contents?.map(({ Key }) => Key)
+  const avatars =
+    keyList?.filter((key) => {
+      return key?.split('/')[0] === AVATAR_PATH
+    }) || []
+  const badges =
+    keyList?.filter((key) => {
+      return key?.split('/')[0] === BADGE_PATH
+    }) || []
+  return { avatars, badges }
 }

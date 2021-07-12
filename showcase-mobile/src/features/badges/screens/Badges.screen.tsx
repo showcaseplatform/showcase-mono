@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import { NavigationProp } from '@react-navigation/core'
 import { FlatList, View, RefreshControl } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
@@ -30,17 +30,6 @@ const BadgesScreen = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // !: probably memory leak
-  // ?: TEMP solution
-  useEffect(() => {
-    typeof searchQuery === 'string' && handleRefresh()
-  }, [searchQuery, handleRefresh])
-
-  // ?: TEMP solution
-  useEffect(() => {
-    handleRefresh()
-  }, [category, handleRefresh])
-
   const { data, error, loading, fetchMore, refetch } =
     usePaginatedBadgeTypesQuery({
       variables: {
@@ -51,29 +40,38 @@ const BadgesScreen = ({
       },
     })
 
-  const badges = data?.feedSearch.edges.map((edge) => edge.node)
-  const pageInfo = data?.feedSearch.pageInfo
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true)
+    await refetch({ limit: 10, category, search: searchQuery })
+    setIsRefreshing(false)
+  }, [category, searchQuery, refetch])
 
-  const handleFetchMore = () => {
+  const handleFetchMore = async () => {
     setIsLoadingMore(true)
     pageInfo?.hasNextPage &&
-      fetchMore({
+      (await fetchMore({
         variables: {
           limit: 4,
           after: pageInfo?.endCursor,
           category,
+          search: searchQuery,
         },
-      }).then((_) => {
-        setIsLoadingMore(false)
-      })
+      }))
+    setIsLoadingMore(false)
   }
 
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true)
-    refetch({ limit: 10, category, search: searchQuery }).then(() => {
-      setIsRefreshing(false)
-    })
-  }, [category, searchQuery, refetch])
+  const handleSearchQueryChange = (val: string) => {
+    setSearchQuery(val)
+    handleRefresh()
+  }
+
+  const handleCategoryChange = (val: Category | undefined) => {
+    setCategory(val)
+    refetch({ limit: 10, category, search: searchQuery })
+  }
+
+  const badges = data?.feedSearch.edges.map((edge) => edge.node)
+  const pageInfo = data?.feedSearch.pageInfo
 
   if (error) {
     return <Error error={error} />
@@ -84,17 +82,14 @@ const BadgesScreen = ({
       <SearchContainer>
         <StyledSearchbar
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearchQueryChange}
           placeholder="Search Showcase"
           clearButtonMode="unless-editing"
         />
       </SearchContainer>
       <Spacer position="y" size="small">
         <CategorySelector
-          onSelect={(val) => {
-            setCategory(val)
-            refetch({ limit: 10, category, after: pageInfo?.endCursor })
-          }}
+          onSelect={handleCategoryChange}
           activeCategory={category}
         />
       </Spacer>

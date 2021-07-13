@@ -61,6 +61,7 @@ const config = convict<ConfigType>({
       env: 'TRANSFERWISE_TOKEN',
     },
   },
+  // todo: remove this if we are give up on stripe
   stripe: {
     doc: 'Key to initialize stripe package',
     format: String,

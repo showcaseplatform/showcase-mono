@@ -1,10 +1,9 @@
 import { blockchain } from '../../config'
-import axios from 'axios'
 import { Uid } from '../../types/user'
-import Boom from 'boom'
 import prisma from '../../services/prisma'
 import { CountViewInput, ViewInfo } from './types/countView.type'
 import { BadgeItemId } from '../../types/badge'
+import { checkBadgeOwnedOnBlockchain } from '../../services/blockchain'
 
 export const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
@@ -76,39 +75,6 @@ const removeBadgeFromShowCase = async ({
   })
 
   console.log(`❗❗❗ Badge removed from showcase: `, { badgeItemId }, { uid })
-}
-
-const checkBadgeOwnedOnBlockchain = async (badgeItemId: BadgeItemId): Promise<boolean> => {
-  const badge = await prisma.badgeItem.findUnique({
-    where: {
-      id: badgeItemId,
-    },
-    include: {
-      owner: {
-        include: {
-          cryptoWallet: {
-            select: {
-              address: true,
-            },
-          },
-        },
-      },
-    },
-  })
-  if (!badge) {
-    throw Boom.badData('Badge id not found', { badgeItemId })
-  }
-
-  const data = {
-    badgeid: badgeItemId,
-    badgeowner: badge.ownerId,
-    token: blockchain.authToken,
-  }
-
-  const response = await axios.post(blockchain.server + '/verifyOwnershipOfBadge', data)
-  console.log('Blockchain response: ', { response })
-
-  return !!response?.data?.isOwner
 }
 
 const randomBadgeInspection = (marketplace: boolean): boolean => {

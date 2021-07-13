@@ -1,6 +1,6 @@
 import { Resolver, Ctx, Mutation, Arg, Authorized } from 'type-graphql'
-import { CreateStripeCustomerInput } from '../libs/payment/types/createStripeCustomer.type'
-import { createStripeCustomer } from '../libs/payment/createStripeCustomer'
+import { AddPaymentInfoInput } from '../libs/payment/types/createStripeCustomer.type'
+import { addPaymentInfo } from '../libs/payment/addPaymentInfo'
 import { CreateCryptoWalletInput } from '../libs/payment/types/createCryptoWallet.type'
 import { createCryptoWallet } from '../libs/payment/createCryptoWallet'
 import { createTransferwiseAccount } from '../libs/payment/createTransferwiseAccount'
@@ -15,11 +15,11 @@ import { CurrentUser } from '../libs/auth/decorators'
 export class PaymentResolver {
   @Authorized(UserType.basic, UserType.creator)
   @Mutation((_returns) => String)
-  async createStripeCustomer(
-    @Arg('data') input: CreateStripeCustomerInput,
+  async addPaymentInfo(
+    @Arg('data') input: AddPaymentInfoInput,
     @CurrentUser() currentUser: User
   ) {
-    return await createStripeCustomer(input, currentUser)
+    return await addPaymentInfo(input, currentUser)
   }
 
   @Authorized(UserType.basic, UserType.creator)

@@ -6,7 +6,6 @@ import { InputWrapper, ErrorText } from './MyTextField.component'
 
 interface Props extends PickerSelectProps {
   placeholder: string // must be required https://github.com/lawnstarter/react-native-picker-select/issues/207
-  onBlur: () => void
   numberSelect?: boolean
   error?: FieldError
   hasErrorField?: boolean
@@ -17,10 +16,10 @@ export default function ({
   value,
   placeholder,
   error,
-  onValueChange,
-  onBlur,
   numberSelect,
   hasErrorField,
+  onValueChange,
+  onClose,
 }: Props) {
   return (
     <InputWrapper>
@@ -34,7 +33,7 @@ export default function ({
             : value
         }
         onValueChange={onValueChange}
-        onClose={onBlur}
+        onClose={onClose}
         style={{
           inputIOS: {
             borderRadius: 5,

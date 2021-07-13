@@ -25,7 +25,7 @@ export const PublicTabNavigator = () => {
     () =>
       expand({
         children: <AuthenticationFlow />,
-        snapPoints: [0, '60%'],
+        snapPoints: [0, '60%', '80%'],
       }),
     [expand]
   )

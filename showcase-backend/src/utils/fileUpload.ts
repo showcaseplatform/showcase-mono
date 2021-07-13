@@ -1,4 +1,4 @@
-import { uploadFileToS3Bucket } from '../services/S3'
+import { myS3 } from '../services/S3/s3'
 import { FileType, FileUploadInput } from './types/fileUpload.type'
 import { v4 as uuidv4 } from 'uuid'
 import { GraphQLError } from 'graphql'
@@ -9,6 +9,8 @@ enum FileUploadErrorMessages {
   AvatarWrongFileType = 'Only JPG, JPEG and PNG files are allowed.',
   MissingFileType = 'FileType musst be specified',
 }
+
+export const CAUSES_PATH = 'causes'
 
 export const BADGE_PATH = 'badges'
 const BADGE_ALLOWED_FILES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
@@ -51,7 +53,7 @@ export const uploadFile: UploadFunction = async ({ fileData, fileType, updateKey
       throw new GraphQLError(FileUploadErrorMessages.MissingFileType)
   }
 
-  await uploadFileToS3Bucket({
+  await myS3.uploadFileToS3Bucket({
     Key,
     ContentType,
     buffer,

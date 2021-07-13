@@ -4,7 +4,7 @@ import {
   BadgeTypeCreateWithoutCreatorInput,
   BadgeItemCreateWithoutBadgeTypeInput,
 } from '@generated/type-graphql'
-import { getListOfS3BucketObjects } from '../../src/services/S3'  
+import { myS3, seedBucket } from '../../src/services/S3/s3'  
 import Bluebird from 'bluebird'
 
 const generateRandomNumbers = () => {
@@ -36,7 +36,7 @@ export class UserSeeder {
   }
 
   initBucketOBjects = async () => {
-    const { avatars, badges } = await getListOfS3BucketObjects()
+    const { avatars, badges } = await myS3.getListOfS3BucketObjects(seedBucket)
     this.badges = badges || []
     this.avatars = avatars || []
   }

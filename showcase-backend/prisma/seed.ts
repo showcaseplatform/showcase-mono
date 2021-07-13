@@ -4,17 +4,14 @@ import { cleanDb } from './cleanDb'
 import { addCausesFixture } from './fixtures/causes.fixture'
 import { UserSeeder } from './fixtures/creators.fixture'
 import { addCurrencyRatesFixture } from './fixtures/currencyRates.fixture'
+// import { myS3 } from '../src/services/S3/s3'
 
 const prisma = new PrismaClient()
-
-// todo: create seed bucket on S3
-// todo: delete / empty env bucket
-// todo: copy images from seed bucket to env bucket
-// todo: get files names from bucket and loop over this array while creating users
 
 const userSeeder = new UserSeeder(prisma, 5, 3)
 
 const createTestDb = async () => {
+  // await myS3.resetS3Bucket()
   await cleanDb(prisma)
   await addCurrencyRatesFixture(prisma)
   await addCausesFixture(prisma)

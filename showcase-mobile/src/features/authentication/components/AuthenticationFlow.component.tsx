@@ -13,7 +13,7 @@ const AuthenticationFlow = () => {
     AuthStep.ENTER_PHONE
   )
   const [phoneNumber, setPhone] = useState<PhoneInputProps>({
-    areaCode: '',
+    areaCode: '1',
     phone: '',
   })
 

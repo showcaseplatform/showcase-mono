@@ -113,10 +113,8 @@ const SendPhoneNumber = ({
             onValueChange={(val) =>
               handlePhoneInputChange('areaCode', val.toString())
             }
-            onClose={() => {
-              phoneInputRef.current &&
-                !phoneInputRef.current?.isFocused &&
-                phoneInputRef.current.focus()
+            onDonePress={() => {
+              phoneInputRef.current && phoneInputRef.current.focus()
             }}
             placeholder="your area code"
             numberSelect

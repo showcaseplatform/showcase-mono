@@ -21,22 +21,17 @@ const NullScreen = () => null
 export const PublicTabNavigator = () => {
   const { expand } = useMyBottomSheet()
 
-  const showAuthModal = useCallback(
-    () =>
-      expand({
-        children: <AuthenticationFlow />,
-        snapPoints: [0, '60%', '80%'],
-      }),
-    [expand]
-  )
   const authListener = useCallback(
     () => ({
       tabPress: (e: any) => {
         e.preventDefault()
-        showAuthModal()
+        expand({
+          children: <AuthenticationFlow />,
+          snapPoints: [0, '60%', '80%'],
+        })
       },
     }),
-    [showAuthModal]
+    [expand]
   )
 
   return (

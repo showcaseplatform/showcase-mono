@@ -19,7 +19,7 @@ export default function ({
   numberSelect,
   hasErrorField,
   onValueChange,
-  onClose,
+  onDonePress,
 }: Props) {
   return (
     <InputWrapper>
@@ -33,7 +33,7 @@ export default function ({
             : value
         }
         onValueChange={onValueChange}
-        onClose={onClose}
+        onDonePress={onDonePress}
         style={{
           inputIOS: {
             borderRadius: 5,

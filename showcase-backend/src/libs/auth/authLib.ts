@@ -4,13 +4,6 @@ import prisma from '../../services/prisma'
 import { createRandomNames } from '../../utils/randoms'
 import { jwtClient } from '../../services/jsonWebToken'
 import { findUserById } from '../database/user.repo'
-import { ArgsDictionary } from 'type-graphql'
-import { MyContext } from '../../services/apollo'
-
-interface MethodDecorator {
-  args: ArgsDictionary
-  context: MyContext
-}
 
 export enum AuthError {
   isOwnUser = "Not user's profile",

@@ -84,7 +84,7 @@ const SendPhoneNumber = ({
   const handleSubmit = () => {
     isValidPhone &&
       sendPhoneNumber({ variables: { areaCode, phone } }).then((r) => {
-        if (!r.error && r.data) {
+        if (!r.errors && r.data) {
           onNext()
         }
       })
@@ -113,8 +113,10 @@ const SendPhoneNumber = ({
             onValueChange={(val) =>
               handlePhoneInputChange('areaCode', val.toString())
             }
-            onBlur={() => {
-              phoneInputRef.current?.focus()
+            onClose={() => {
+              phoneInputRef.current &&
+                !phoneInputRef.current?.isFocused &&
+                phoneInputRef.current.focus()
             }}
             placeholder="your area code"
             numberSelect
@@ -138,6 +140,7 @@ const SendPhoneNumber = ({
               handlePhoneInputChange('phone', val)
             }}
             editable={!loading}
+            inputRef={phoneInputRef}
           />
         </View>
 
@@ -161,7 +164,6 @@ const SendPhoneNumber = ({
       {error && (
         <Spacer>
           <Text color="error" variant="caption" center>
-            {/* {error} */}
             {translate().sendingSMSError}
           </Text>
         </Spacer>

@@ -20,6 +20,7 @@ import { StyledSafeArea } from '../../badges/screens/Badges.styles'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import {
   BadgeType,
+  MeDocument,
   PublishBadgeTypeInput,
   useUploadBadgeFileMutation,
 } from '../../../generated/graphql'
@@ -64,6 +65,7 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
       })
     },
     onError: (err) => Alert.alert(JSON.stringify(err.message)),
+    refetchQueries: [{ query: MeDocument }],
   })
 
   const {

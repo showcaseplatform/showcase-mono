@@ -40,8 +40,8 @@ export const reshapeBadges: <T>(arr: T[], shapeLength?: number) => T[][] = (
   return newArr
 }
 
-export const delay = (t: number) =>
-  new Promise((resolve) => setTimeout(resolve, t))
+export const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms))
 
 export function makePriceTag(price: number, currency: Currency) {
   if (typeof price !== 'number' || !currency) {

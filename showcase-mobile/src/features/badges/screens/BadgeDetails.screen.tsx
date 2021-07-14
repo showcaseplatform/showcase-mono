@@ -14,6 +14,8 @@ import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
 import { useBadgeTypeQuery } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
+import { useMyModal } from '../../../utils/useMyModal'
+import { ModalType } from '../../../../types/enum'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -30,6 +32,8 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const [showCauseModal, setShowCauseModal] = useState(false)
   const handleCloseModal = () => setShowCauseModal(false)
   const handleOpenModal = () => setShowCauseModal(true)
+
+  const { handleModal } = useMyModal()
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -48,7 +52,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   }, [navigation])
 
   // hide bottom tab navigator
-  // todo: consider to refactor navigation stacks
+  // todo: consider to refactor navigation stacks to avoid hide/show glitches
   useEffect(() => {
     const parent = navigation.dangerouslyGetParent()
     parent &&
@@ -150,7 +154,9 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             <Button
               mode="contained"
               color={theme.colors.ui.accent}
-              onPress={() => console.log('hello')}
+              onPress={() =>
+                handleModal(ModalType.ADD_PAYMENT, { itemId: item.id })
+              }
               style={{ borderRadius: 30 }}
               contentStyle={{ paddingHorizontal: 8 }}
               uppercase
@@ -159,18 +165,18 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             </Button>
           </View>
         </View>
-        {cause && donationAmount && (
-          <Provider>
-            <Portal>
+        <Provider>
+          <Portal>
+            {cause && donationAmount && (
               <CauseModal
                 isOpen={showCauseModal}
                 closeModal={handleCloseModal}
                 cause={cause}
                 donation={donationAmount}
               />
-            </Portal>
-          </Provider>
-        )}
+            )}
+          </Portal>
+        </Provider>
       </>
     )
   } else if (error) {

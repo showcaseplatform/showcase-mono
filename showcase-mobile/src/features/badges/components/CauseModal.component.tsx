@@ -8,7 +8,7 @@ import { Cause } from '../../../generated/graphql'
 import { makePercent } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 
-import ModalHeader from '../components/CauseModalHeader.component'
+import ModalHeader from '../../../components/ModalHeader.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 import { CenterView } from '../../../components/CenterView.component'

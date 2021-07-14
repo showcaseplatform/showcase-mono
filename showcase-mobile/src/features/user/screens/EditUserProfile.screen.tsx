@@ -216,15 +216,11 @@ const EditUserProfileScreen = ({
       <Controller
         name="currency"
         control={control}
-        render={({
-          field: { onChange, onBlur, value },
-          fieldState: { error },
-        }) => (
+        render={({ field: { onChange, value }, fieldState: { error } }) => (
           <MySelectInputComponent
             placeholder={translate().balanceCurrencyLabel}
             items={currencies}
             value={value}
-            onBlur={onBlur}
             onValueChange={(val) => onChange(val)}
             error={error}
             hasErrorField

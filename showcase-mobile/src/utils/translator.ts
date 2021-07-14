@@ -1,4 +1,5 @@
 const englishTranslations = {
+  submitButton: 'Submit',
   followButton: 'Follow',
   unfollowButton: 'Following',
   paymentMethodHeader: 'Your Payment Method',

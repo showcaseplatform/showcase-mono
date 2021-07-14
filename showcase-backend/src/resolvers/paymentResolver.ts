@@ -1,5 +1,5 @@
-import { Resolver, Ctx, Mutation, Arg, Authorized } from 'type-graphql'
-import { AddPaymentInfoInput } from '../libs/payment/types/createStripeCustomer.type'
+import { Resolver, Mutation, Arg, Authorized } from 'type-graphql'
+import { AddPaymentInfoInput } from '../libs/payment/types/addPaymentInfo.type'
 import { addPaymentInfo } from '../libs/payment/addPaymentInfo'
 import { CreateCryptoWalletInput } from '../libs/payment/types/createCryptoWallet.type'
 import { createCryptoWallet } from '../libs/payment/createCryptoWallet'

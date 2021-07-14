@@ -1,7 +1,8 @@
 import prisma from '../../services/prisma'
-import { AddPaymentInfoInput } from './types/createStripeCustomer.type'
+import { AddPaymentInfoInput } from './types/addPaymentInfo.type'
 import { User } from '@generated/type-graphql'
 import { GraphQLError } from 'graphql'
+import { UserType } from '@prisma/client'
 
 export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User) => {
   const { idToken, lastfour } = input
@@ -16,6 +17,8 @@ export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User) => 
     throw new GraphQLError('User profile is missing email or phone')
   }
 
+
+  // todo: connect user with payment service provider here
   // const stripeCustomer = await stripe.customers.create({
   //   metadata: {
   //     uid: user.id,
@@ -33,17 +36,25 @@ export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User) => 
     lastFourCardDigit: lastfour,
   }
 
-  await prisma.paymentInfo.upsert({
+  const updatedUserType = user.userType == UserType.basic ? {userType: UserType.collector} : undefined
+
+  await prisma.user.update({
     where: {
-      id: user.id,
+      id: user.id
     },
-    create: {
-      ...paymentInfoToSave,
-      userId: user.id,
-    },
-    update: {
-      ...paymentInfoToSave,
-    },
+    data: {
+      ...updatedUserType,
+      paymentInfo: {
+        upsert: {
+          create: {
+            ...paymentInfoToSave,
+          },
+          update: {
+            ...paymentInfoToSave,
+          },
+        }
+      }
+    }
   })
 
   return 'Card successfully added and linked with stripe account'

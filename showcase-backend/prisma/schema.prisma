@@ -21,8 +21,9 @@ enum Currency {
 }
 
 enum UserType {
-  basic
-  creator
+  basic // only auth
+  collector // basic + paymentInfo
+  creator // invite only
 }
 
 model User {
@@ -41,7 +42,7 @@ model User {
   badgeItemsOwned   BadgeItem[] @relation("badgeCurrentlyOwned")
 
   cryptoWallet Crypto?
-  paymentInfo   PaymentInfo?
+  paymentInfo  PaymentInfo?
   balance      Balance?
   transferwise Transferwise?
   withdrawals  Withdrawal[]
@@ -258,13 +259,12 @@ model PaymentInfo {
   userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
-  idToken          String @unique
+  idToken           String @unique
   lastFourCardDigit String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
-
 
 model Transferwise {
   id     String @id @default(cuid())

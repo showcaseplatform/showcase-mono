@@ -156,7 +156,7 @@ const AddPaymentCardForm = () => {
           }) => (
             <MyTextField
               onBlur={onBlur}
-              onChangeText={(val) => onChange(parseInt(val))}
+              onChangeText={(val) => onChange(val && parseInt(val))}
               value={value.toString()}
               error={error}
               placeholder={translate().inputCardNumber}
@@ -177,7 +177,7 @@ const AddPaymentCardForm = () => {
               }) => (
                 <MyTextField
                   onBlur={onBlur}
-                  onChangeText={(val) => onChange(parseInt(val))}
+                  onChangeText={(val) => onChange(val && parseInt(val))}
                   value={value.toString()}
                   error={error}
                   placeholder={translate().inputCVC}
@@ -222,7 +222,7 @@ const AddPaymentCardForm = () => {
               }) => (
                 <MyTextField
                   onBlur={onBlur}
-                  onChangeText={(val) => onChange(parseInt(val))}
+                  onChangeText={(val) => onChange(val && parseInt(val))}
                   value={value.toString()}
                   error={error}
                   placeholder={translate().inputExpYear}
@@ -333,7 +333,7 @@ const AddPaymentCardForm = () => {
           }) => (
             <MyTextField
               onBlur={onBlur}
-              onChangeText={(val) => onChange(parseInt(val))}
+              onChangeText={(val) => onChange(val && parseInt(val))}
               value={value.toString()}
               error={error}
               placeholder={translate().inputAddressZip}

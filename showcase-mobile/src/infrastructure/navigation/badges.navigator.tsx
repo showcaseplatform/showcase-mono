@@ -44,8 +44,7 @@ export const BadgesNavigator = () => (
     <BadgesStack.Screen
       name="Profile"
       component={ProfileScreen}
-      options={({ route }) => ({
-        title: route.params?.userId,
+      options={() => ({
         headerShown: true,
         headerBackTitleVisible: false,
         headerTintColor: '#000',

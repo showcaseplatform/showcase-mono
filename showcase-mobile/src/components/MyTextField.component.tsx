@@ -8,6 +8,7 @@ interface MyTextFieldProps extends TextInputProps {
   error?: FieldError
   icon?: boolean // replace with an Icon component if it's required
   hasErrorField?: boolean
+  inputRef?: React.MutableRefObject<TextInput | null>
 }
 
 export const InputWrapper = styled(View)`
@@ -51,7 +52,9 @@ export default function (props: MyTextFieldProps) {
     error,
     icon,
     hasErrorField = false,
+    inputRef,
   } = props
+
   return (
     <InputWrapper>
       <View flexDirection="row" alignItems="center">
@@ -59,6 +62,7 @@ export default function (props: MyTextFieldProps) {
           onBlur={onBlur}
           onChangeText={onChangeText}
           value={value}
+          ref={(r) => inputRef?.current !== undefined && (inputRef.current = r)}
           {...props}
         />
         {icon && (

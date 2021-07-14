@@ -8,7 +8,7 @@ import { CenterView } from '../../../components/CenterView.component'
 import { TabStackParamList } from '../../../infrastructure/navigation/tab.navigator'
 import { translate } from '../../../utils/translator'
 import { useMyBottomSheet } from '../../../utils/useMyBottomSheet'
-import CategorySelectorModal from './CategorySelectorModal.component'
+import CategorySelectorBottomSheet from './CategorySelectorModal.component'
 
 const StyledTouchableWithoutFeedback = styled.TouchableOpacity`
   width: 68px;
@@ -31,7 +31,7 @@ const CreateBadgeButton = () => {
 
   const showCategorySelectorSheet = useCallback(() => {
     expand({
-      children: <CategorySelectorModal navigation={navigation} />,
+      children: <CategorySelectorBottomSheet navigation={navigation} />,
       snapPoints: [0, '80%'],
     })
   }, [expand, navigation])

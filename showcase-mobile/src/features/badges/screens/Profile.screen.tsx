@@ -1,6 +1,6 @@
+import React, { useState, useLayoutEffect } from 'react'
 import { FlatList, View } from 'react-native'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
-import React, { useState } from 'react'
 import { Button, Chip } from 'react-native-paper'
 import { Ionicons } from '@expo/vector-icons'
 import { useTheme } from 'styled-components/native'
@@ -10,9 +10,9 @@ import { isEven, reshapeBadges } from '../../../utils/helpers'
 import {
   BadgeType,
   FollowStatus,
-  useProfileQuery,
   UserType,
   useToggleFollowMutation,
+  useUserQuery,
 } from '../../../generated/graphql'
 import { translate } from '../../../utils/translator'
 import { StyledSafeArea } from './Badges.styles'
@@ -20,13 +20,13 @@ import { StyledSafeArea } from './Badges.styles'
 import { Text } from '../../../components/Text.component'
 import { Spacer } from '../../../components/Spacer.component'
 import BadgeItem from '../components/BadgeItem.component'
-import EmptyListForProfile from '../components/EmptyListForProfile'
 import { CenterView } from '../../../components/CenterView.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import FollowButton from '../../../components/FollowButton.component'
 import Error from '../../../components/Error.component'
 import ProfileImage from '../../../components/ProfileImage.component'
 import TabSelectorButtonComponent from '../components/TabSelectorButton.component'
+import EmptyListComponent from '../../../components/EmptyList.component'
 
 type ProfileScreenProps = {
   route: RouteProp<BadgeStackParamList, 'Profile'>
@@ -70,9 +70,24 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   let id = route.params.userId
   const theme = useTheme()
 
-  const { data, loading, error } = useProfileQuery({
+  const { data, loading, error } = useUserQuery({
     variables: { id },
   })
+
+  const isCreator = data?.user?.userType === UserType.Creator
+
+  const [activeTab, setActiveTab] = useState<BadgeTabType>(
+    inventoryTabs[isCreator ? 0 : 1].name
+  )
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: data?.user?.profile?.displayName,
+      headerRightContainerStyle: {
+        paddingRight: 10,
+      },
+    })
+  }, [data?.user?.profile?.displayName, navigation])
 
   const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
     update(cache, { data: data_ }) {
@@ -90,39 +105,34 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
     },
   })
 
-  const [activeTab, setActiveTab] = useState<BadgeTabType>(
-    inventoryTabs[1].name
-  )
-  const isCreator = data?.profile?.user.userType === UserType.Creator
-
   function handleToggleFollow() {
     toggleFollow({ variables: { userId: id } })
   }
 
-  // !: FIX ME
+  // !: badgeType vs BadgeItem types are conflicting (they are the same structure)
   const reshapedCreatedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.profile?.user.badgeTypesCreated || []
+    data?.user?.badgeTypesCreated || []
   )
   const reshapedResellBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.profile?.user.badgeTypesCreated || []
+    data?.user?.badgeItemsForSale || []
   )
   const reshapedOwnedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.profile?.user.badgeTypesCreated || []
+    data?.user?.badgeItemsToShow || []
   )
 
   if (loading) {
     return <LoadingIndicator fullScreen />
   } else if (error) {
     return <Error error={error} />
-  } else if (data && data.profile) {
+  } else if (data && data.user) {
     return (
       <StyledSafeArea>
         <View style={{ alignItems: 'center' }}>
           <Spacer position="y" size="large">
-            <ProfileImage source={data.profile.avatarUrl} />
+            <ProfileImage source={data.user.profile?.avatarUrl} />
           </Spacer>
           <Spacer position="bottom" size="large">
-            <Text>{data.profile.username || 'placeholder'}</Text>
+            <Text>{data.user.profile?.username || 'placeholder'}</Text>
           </Spacer>
           {isCreator && (
             <Spacer position="bottom" size="large">
@@ -137,7 +147,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
           )}
           <CenterView row>
             <FollowButton
-              isFollowed={data.profile.user.amIFollowing}
+              isFollowed={data.user.amIFollowing}
               disabled={loadingToggle}
               onPress={handleToggleFollow}
             />
@@ -162,7 +172,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
           </CenterView>
           <View style={{ paddingHorizontal: 20, margin: 25 }}>
             <Text variant="hint" style={{ textAlign: 'center' }}>
-              {data.profile.bio}
+              {data.user.profile?.bio}
             </Text>
           </View>
         </View>
@@ -191,7 +201,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
             }
             keyExtractor={createReshapedBadgeKey}
             contentContainerStyle={{ flexGrow: 1, paddingVertical: 8 }}
-            ListEmptyComponent={EmptyListForProfile}
+            ListEmptyComponent={<EmptyListComponent text="No Badges yet." />}
             renderItem={({ item }) => (
               <View>
                 <BadgeItem

@@ -13,6 +13,7 @@ query Me {
       publicUrl
       supply
       sold
+      title
     }
     friends {
       userId

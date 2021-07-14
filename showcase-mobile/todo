@@ -39,6 +39,7 @@
 ☐ Profile screen should handle longer (~infinite) bio text
 ☐ MyFriend screen items may navigate to user's profile
 ☐ Edit User Profile cache handling into client
+☐ Badge list footer could be look nicer or offer some functionality eg.: follow more creators
 ✔ create a reuseable fetch client @done(21-05-10 18:04)
 ✔ build a screen comp with basic settings eg.: bg @done(21-05-06 11:28)
 ✔ enter phone and enter auth screens are built with Stylesheet, replace it with styled comps @done(21-05-06 11:26)

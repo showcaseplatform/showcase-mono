@@ -21,6 +21,7 @@ import { CustomUserResolver } from '../resolvers/customUserResolver'
 import { CustomBadgeItemResolver } from '../resolvers/customBadgeItemResolver'
 import { CustomBadgeTypeResolver } from '../resolvers/customBadgeTypeResolver'
 import { CustomProfileResolver } from '../resolvers/customProfileResolver'
+import { CustomCauseResolver } from '../resolvers/customCauseResolver'
 export interface MyContext {
   prisma: PrismaClient | null
   user: User | null
@@ -55,6 +56,7 @@ export class MyApollo {
         CustomBadgeTypeResolver,
         CustomBadgeItemResolver,
         CustomProfileResolver,
+        CustomCauseResolver,
       ],
       validate: true,
       authChecker: AuthLib.authChecker,

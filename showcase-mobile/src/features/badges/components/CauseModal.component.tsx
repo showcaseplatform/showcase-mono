@@ -42,7 +42,7 @@ const CauseModal = ({
   donation,
   closeModal,
 }: CauseModalProps) => {
-  const { name, site, image } = cause
+  const { name, site, imageUrl } = cause
   const theme = useTheme()
   const donationText = useMemo(
     () => `${makePercent(donation)}% ${translate().causeInfoText}`,
@@ -58,7 +58,7 @@ const CauseModal = ({
       <ModalHeader title={translate().causeModalHeader} onClose={closeModal} />
       <CenterView flex={1}>
         <Image
-          source={{ uri: image }}
+          source={{ uri: imageUrl }}
           resizeMode="contain"
           style={{
             width: '60%',

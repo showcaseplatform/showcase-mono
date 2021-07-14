@@ -26,6 +26,7 @@ describe('Adding payment information to a user', () => {
 
     const user = await addPaymentInfo(inputData, inputUser)
 
+    expect(user.id).toBe(inputUserId)
     expect(user.userType).not.toBe(UserType.basic)
   })
 
@@ -41,6 +42,7 @@ describe('Adding payment information to a user', () => {
 
     const user = await addPaymentInfo(inputData, inputUser)
 
+    expect(user.id).toBe(inputUserId)
     expect(user.userType).toBe(inputUserType)
   })
 })

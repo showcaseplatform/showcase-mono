@@ -1,5 +1,12 @@
 import convict from 'convict'
 
+// import config to make sure its linked with dotenv
+import * as dotenv from 'dotenv'
+import { join } from 'path'
+process.chdir(join(__dirname, '../../..'))
+const dotenvPath = join(__dirname, '../../..', '.env')
+dotenv.config({ path: dotenvPath })
+
 type ConfigType = {
   region: string
   keyId: string

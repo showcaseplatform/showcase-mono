@@ -8,6 +8,8 @@ import { findUserById } from '../database/user.repo'
 export enum AuthError {
   isOwnUser = "Not user's profile",
 }
+
+export const allUserTypes =  Object.keys(UserType)
 export class AuthLib {
   static getUserByToken = async (token: string) => {
     try {

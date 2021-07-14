@@ -7,18 +7,16 @@ import { createTransferwiseAccount } from '../libs/payment/createTransferwiseAcc
 import { EURAccount, GBPAccount, USDAccount } from '../libs/payment/types/payoutAccount.type'
 import { withdrawFromTransferwise } from '../libs/payment/withdrawFromTransferwise'
 import { WithdrawFromTransferwiseInput } from '../libs/payment/types/withdrawFromTransferwise.type'
-import { User, UserType } from '@prisma/client'
+import { User, UserType } from '@generated/type-graphql'
 import { GraphQLError } from 'graphql'
 import { CurrentUser } from '../libs/auth/decorators'
+import { allUserTypes } from '../libs/auth/authLib'
 
 @Resolver()
 export class PaymentResolver {
-  @Authorized(UserType.basic, UserType.creator)
-  @Mutation((_returns) => String)
-  async addPaymentInfo(
-    @Arg('data') input: AddPaymentInfoInput,
-    @CurrentUser() currentUser: User
-  ) {
+  @Authorized(...allUserTypes)
+  @Mutation((_returns) => User)
+  async addPaymentInfo(@Arg('data') input: AddPaymentInfoInput, @CurrentUser() currentUser: User) {
     return await addPaymentInfo(input, currentUser)
   }
 

@@ -4,7 +4,7 @@ import { User } from '@generated/type-graphql'
 import { GraphQLError } from 'graphql'
 import { UserType } from '@prisma/client'
 
-export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User) => {
+export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User): Promise<User> => {
   const { idToken, lastfour } = input
 
   const profile = await prisma.profile.findUnique({
@@ -16,7 +16,6 @@ export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User) => 
   if (!profile || !profile.email || !user.phone) {
     throw new GraphQLError('User profile is missing email or phone')
   }
-
 
   // todo: connect user with payment service provider here
   // const stripeCustomer = await stripe.customers.create({
@@ -36,11 +35,12 @@ export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User) => 
     lastFourCardDigit: lastfour,
   }
 
-  const updatedUserType = user.userType == UserType.basic ? {userType: UserType.collector} : undefined
+  const updatedUserType =
+    user.userType == UserType.basic ? { userType: UserType.collector } : undefined
 
-  await prisma.user.update({
+  return await prisma.user.update({
     where: {
-      id: user.id
+      id: user.id,
     },
     data: {
       ...updatedUserType,
@@ -52,10 +52,8 @@ export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User) => 
           update: {
             ...paymentInfoToSave,
           },
-        }
-      }
-    }
+        },
+      },
+    },
   })
-
-  return 'Card successfully added and linked with stripe account'
 }

@@ -32,7 +32,7 @@ class MyS3 {
     this.findOrCreateS3Bucket()
   }
 
-  createS3Bucket = () => {
+  createS3Bucket = async () => {
     const params: S3.CreateBucketRequest = {
       ...this.envBucket,
       CreateBucketConfiguration: {
@@ -40,31 +40,29 @@ class MyS3 {
       },
       ACL: this.ACL,
     }
-    return this.s3
-      .createBucket(params, (err, _) => {
-        if (err) {
-          console.log('❗❗ s3.createBucket failed ❗❗')
-          console.error({ err })
-        } else {
-          console.log('✅ New S3 bucket created with name: ', this.envBucket.Bucket)
-        }
-      })
-      .promise()
+    const {
+      $response: { data: _, error },
+    } = await this.s3.createBucket(params).promise()
+
+    if (error) {
+      console.log('❗❗ s3.createBucket failed ❗❗')
+      console.error({ error })
+    } else {
+      console.log('✅ New S3 bucket created with name: ', this.envBucket.Bucket)
+    }
   }
 
-  findOrCreateS3Bucket = () => {
-    return this.s3
-      .waitFor('bucketExists', this.envBucket, async (err, _) => {
-        if (err) {
-          console.log(`❗❗ ${err.message} ❗❗`)
-          await this.createS3Bucket()
-        } else {
-          console.log(
-            `✅ S3 bucketExists check completed: ${this.envBucket.Bucket} is ready to use`
-          )
-        }
-      })
-      .promise()
+  findOrCreateS3Bucket = async () => {
+    const {
+      $response: { data: _, error },
+    } = await this.s3.waitFor('bucketExists', this.envBucket).promise()
+
+    if (error) {
+      console.log(`❗❗ findOrCreateS3Bucket: ${error.message} ❗❗`)
+      await this.createS3Bucket()
+    } else {
+      console.log(`✅ S3 bucketExists check completed: ${this.envBucket.Bucket} is ready to use`)
+    }
   }
 
   uploadFileToS3Bucket = ({ Key, ContentType, buffer, hash }: S3UploadInput) => {
@@ -110,11 +108,11 @@ class MyS3 {
     return { objectList, avatars, badges, causes }
   }
 
-  deleteS3BucketObjects = async () => {
+  deleteS3EnvBucketObjects = async () => {
     const { objectList } = await this.getListOfS3BucketObjects(this.envBucket)
 
     if (objectList.length === 0) {
-      console.log(`❗❗ ${this.envBucket.Bucket} bucket is empty ❗❗`)
+      console.log(`⚠️ No objects found to delete, ${this.envBucket.Bucket} bucket is empty`)
       return
     }
 
@@ -127,21 +125,21 @@ class MyS3 {
       Delete: { Objects: [...deleteObjects] },
     }
 
-    await this.s3
-      .deleteObjects(params, (err, _) => {
-        if (err) {
-          console.log(`❗❗ Failed to delete objects from ${this.envBucket.Bucket} ❗❗`, { err })
-          throw err
-        } else {
-          console.log(`✅ Objects successfully deleted from: ${this.envBucket.Bucket}`)
-        }
-      })
-      .promise()
+    const {
+      $response: { data: _, error },
+    } = await this.s3.deleteObjects(params).promise()
+
+    if (error) {
+      console.log(`❗❗ Failed to delete objects from ${this.envBucket.Bucket} ❗❗`, { error })
+      throw error
+    } else {
+      console.log(`✅ Objects successfully deleted from: ${this.envBucket.Bucket}`)
+    }
   }
 
   resetS3Bucket = async () => {
     try {
-      await this.deleteS3BucketObjects()
+      await this.deleteS3EnvBucketObjects()
       const { objectList: seedObjectList } = await this.getListOfS3BucketObjects(this.seedBucket)
       await Bluebird.map(seedObjectList, async ({ Key }) => {
         if (Key) {
@@ -151,13 +149,13 @@ class MyS3 {
             Key,
           }
 
-          await this.s3
-            .copyObject(params, (err, _) => {
-              if (err) {
-                throw err
-              }
-            })
-            .promise()
+          const {
+            $response: { data: _, error },
+          } = await this.s3.copyObject(params).promise()
+
+          if (error) {
+            throw error
+          }
         }
       })
 

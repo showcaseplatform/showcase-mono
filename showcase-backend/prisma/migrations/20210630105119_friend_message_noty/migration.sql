@@ -1,2 +1,0 @@
--- AlterEnum
-ALTER TYPE "NotificationType" ADD VALUE 'NEW_FRIEND_MESSAGE_RECEIVED';

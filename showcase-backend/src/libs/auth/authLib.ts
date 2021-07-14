@@ -9,7 +9,7 @@ export enum AuthError {
   isOwnUser = "Not user's profile",
 }
 
-export const allUserTypes =  Object.keys(UserType)
+export const allUserTypes = Object.keys(UserType) as UserType[]
 export class AuthLib {
   static getUserByToken = async (token: string) => {
     try {

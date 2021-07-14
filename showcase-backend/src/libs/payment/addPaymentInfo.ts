@@ -5,7 +5,7 @@ import { GraphQLError } from 'graphql'
 import { UserType } from '@prisma/client'
 
 export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User): Promise<User> => {
-  const { idToken, lastfour } = input
+  const { idToken, lastFourCardDigit } = input || {}
 
   const profile = await prisma.profile.findUnique({
     where: {
@@ -32,7 +32,7 @@ export const addPaymentInfo = async (input: AddPaymentInfoInput, user: User): Pr
 
   const paymentInfoToSave = {
     idToken,
-    lastFourCardDigit: lastfour,
+    lastFourCardDigit,
   }
 
   const updatedUserType =

@@ -1,18 +1,64 @@
-import { UserType } from '@prisma/client'
+import { UserType, User, Currency, Profile } from '@prisma/client'
 import { Uid } from '../types/user'
 import { getRandomNum } from '../utils/randoms'
 import { prismaMock } from './prismaMock'
 
-export const mockFindUniqueUser = (id: Uid) =>
-  prismaMock.user.findUnique.mockResolvedValue({
+const userBaseProps: User = {
+  id: `${getRandomNum()}`,
+  phone: `3670978${getRandomNum()}`,
+  userType: UserType.basic,
+  isBanned: false,
+  kycVerified: false,
+  notificationToken: `${getRandomNum()}`,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}
+
+const profileBaseProps: Profile = {
+  id: `${getRandomNum()}`,
+  displayName: `Test Name`,
+  username: `Test Username`,
+  bio: `Test bio`,
+  email: `test@test.to`,
+  avatarId: `test-1.jpg`,
+  currency: Currency.USD,
+  birthDate: new Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}
+
+export const getDefaultUser = (id: Uid, userType?: UserType): User => {
+  return {
+    ...userBaseProps,
     id,
-    isBanned: false,
-    userType: UserType.basic,
-    kycVerified: false,
-    phone: `3670978${getRandomNum()}`,
-    notificationToken: `${getRandomNum()}`,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    userType: userType || UserType.basic,
+  }
+}
+
+export const mockFindUniqueUser = (id: Uid, userType?: UserType) =>
+  prismaMock.user.findUnique.mockResolvedValue({
+    ...userBaseProps,
+    id,
+    userType: userType || UserType.basic,
+  })
+
+export const mockCreateUser = (phone: string, userType?: UserType) =>
+  prismaMock.user.create.mockResolvedValue({
+    ...userBaseProps,
+    phone,
+    userType: userType || UserType.basic,
+  })
+export const mockUpdateUser = (id: string, userType?: UserType) =>
+  prismaMock.user.update.mockResolvedValue({
+    ...userBaseProps,
+    id,
+    userType: userType || UserType.basic,
+  })
+
+export const mockFindUniqueProfile = (id: Uid) =>
+  prismaMock.profile.findUnique.mockResolvedValue({
+    ...profileBaseProps,
+    id,
   })
 
 export const mockCreateBadgeTypeLike = (badgeTypeId: string, userId: Uid) =>
@@ -27,16 +73,4 @@ export const mockCreateBadgeItemLike = (badgeItemId: string, userId: Uid) =>
     userId,
     badgeItemId,
     createdAt: new Date(),
-  })
-
-export const mockUser = (phoneNumber: string) =>
-  prismaMock.user.create.mockResolvedValue({
-    id: `${getRandomNum()}`,
-    phone: phoneNumber,
-    userType: UserType.basic,
-    isBanned: false,
-    kycVerified: false,
-    notificationToken: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   })

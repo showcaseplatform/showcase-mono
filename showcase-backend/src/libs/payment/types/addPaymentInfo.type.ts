@@ -8,5 +8,5 @@ export class AddPaymentInfoInput {
 
   @Field()
   @Length(4, 4)
-  lastfour: string
+  lastFourCardDigit: string
 }

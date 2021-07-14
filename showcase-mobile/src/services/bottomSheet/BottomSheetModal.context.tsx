@@ -17,24 +17,23 @@ import {
 
 const BottomSheetProvider = ({ children }: PropsWithChildren<{}>) => {
   const bottomSheetRef = useRef<BottomSheet>(null)
-  const [options, setOptions] = useState<BottomSheetProps | null>(null)
-  const snapPoints = useMemo(() => options?.snapPoints || [0, '70%'], [options])
+  const [options, setOptions] = useState<BottomSheetProps | undefined>(
+    undefined
+  )
 
   useEffect(() => {
     if (options) {
-      bottomSheetRef.current?.expand()
+      bottomSheetRef.current?.snapTo(1)
     } else {
       bottomSheetRef.current?.collapse()
     }
   }, [options])
 
-  const collapseBottomSheet = useCallback(() => setOptions(null), [])
+  const collapseBottomSheet = useCallback(() => setOptions(undefined), [])
 
   const handleSheetChanges = useCallback(
     (index: number) => {
-      if (index === 0) {
-        collapseBottomSheet()
-      }
+      index > 0 ? bottomSheetRef.current?.snapTo(index) : collapseBottomSheet()
     },
     [collapseBottomSheet]
   )
@@ -52,7 +51,7 @@ const BottomSheetProvider = ({ children }: PropsWithChildren<{}>) => {
       {children}
       <BottomSheet
         index={-1}
-        snapPoints={snapPoints}
+        snapPoints={options?.snapPoints || [0, '60%', '80%']}
         ref={bottomSheetRef}
         onChange={handleSheetChanges}
         backdropComponent={BottomSheetBackdrop}

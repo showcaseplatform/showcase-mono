@@ -19,7 +19,7 @@ import { Text } from '../../../components/Text.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { MyBadgeCategory } from '../../../../types'
 
-const CategorySelectorModal = ({
+const CategorySelectorBottomSheet = ({
   navigation,
 }: {
   navigation: NavigationProp<TabStackParamList>
@@ -94,4 +94,4 @@ const CategorySelectorModal = ({
   )
 }
 
-export default CategorySelectorModal
+export default CategorySelectorBottomSheet

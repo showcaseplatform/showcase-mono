@@ -1,10 +1,10 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import { GLSnapshot } from 'expo-gl'
 import React from 'react'
+import { MyBadgeCategory } from '../../../types'
 import AddBadgeDetails from '../../features/createBadge/screens/AddBadgeDetails.screen'
 import CreateBadge from '../../features/createBadge/screens/CreateBadge.screen'
 import SelectCause from '../../features/createBadge/screens/SelectCause.screen'
-import { MyBadgeCategory } from '../../features/badges/components/CategorySelector.component'
 import { translate } from '../../utils/translator'
 
 const EditorStack = createStackNavigator<EditorStackParamList>()

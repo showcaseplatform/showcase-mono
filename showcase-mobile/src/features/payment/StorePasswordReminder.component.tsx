@@ -7,22 +7,36 @@ import { useMyModal } from '../../utils/useMyModal'
 import { Spacer } from '../../components/Spacer.component'
 import { Button } from 'react-native-paper'
 import { useTheme } from 'styled-components/native'
-import { delay } from '../../utils/helpers'
+import { delay, makePriceTag } from '../../utils/helpers'
 import { CenterView } from '../../components/CenterView.component'
+import { useBadgeTypeQuery } from '../../generated/graphql'
 
 const StorePasswordReminder = () => {
   const { flowData, handleModal } = useMyModal()
   const theme = useTheme()
 
-  const onSubmit = () => {
+  const { data, refetch } = useBadgeTypeQuery({
+    variables: {
+      id: flowData.itemId || '',
+    },
+  })
+
+  const onSubmit = async () => {
     // get latest price of the item
     // on confirm send the pruchasing request
 
-    //// !: text is missing from translator
+    await refetch()
 
+    // !: text is missing from translator
+    // !: improve price handling asap backend is ready
     Alert.alert(
       'Please confirm the price?',
-      `Would you like to buy badgeItem.id: ${flowData.itemId} for palceholder price?`,
+      `Would you like to buy badgeItem.id: ${
+        flowData.itemId
+      } for ${makePriceTag(
+        data?.badgeType?.price,
+        data?.badgeType?.currency
+      )}?`,
       [
         {
           text: "Why ya' askin?! Sure",

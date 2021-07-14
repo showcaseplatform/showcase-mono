@@ -15,11 +15,11 @@ import MySelectInputComponent from '../../components/MySelectInput.component'
 import MyTextField from '../../components/MyTextField.component'
 import { Spacer } from '../../components/Spacer.component'
 
-import { AddPaymentInfoInput } from '../../generated/graphql'
-import { delay } from '../../utils/helpers'
+import { useAddPaymentMutation } from '../../generated/graphql'
 import { Alert } from 'react-native'
 import { useMyModal } from '../../utils/useMyModal'
 import { ModalType } from '../../../types/enum'
+import { delay } from '../../utils/helpers'
 
 // type PaymentFormData = Pick<PaymentInfo,'lastFourCardDigit'>
 type AddPaymentCardInputs = {
@@ -38,7 +38,7 @@ type AddPaymentCardInputs = {
 
 // todo: card validator
 const schema = yup.object().shape({
-  cardNumber: yup.number().max(36).required(),
+  cardNumber: yup.number().required(),
   cvc: yup.number().required(),
   expirationMonth: yup.number().min(2).max(2).lessThan(13).required(),
   expirationYear: yup
@@ -57,10 +57,10 @@ const schema = yup.object().shape({
   country: yup.string().required(),
 })
 
-// !: fix number - string input types
 const AddPaymentCardForm = () => {
   const theme = useTheme()
   const { handleModal } = useMyModal()
+  const [addPayment, { loading }] = useAddPaymentMutation()
   const { control, handleSubmit, formState } = useForm<AddPaymentCardInputs>({
     defaultValues: {
       // cardNumber: undefined,
@@ -74,7 +74,7 @@ const AddPaymentCardForm = () => {
       // state: '',
       // zip: undefined,
       // country: undefined,
-      cardNumber: 1,
+      cardNumber: 1000008888,
       cvc: 1,
       expirationMonth: 11,
       expirationYear: 22,
@@ -84,13 +84,13 @@ const AddPaymentCardForm = () => {
       city: 'C',
       state: 'D',
       zip: 4281,
-      country: 'Yoo',
+      country: 'US',
     },
     resolver: yupResolver(schema),
     mode: 'onBlur',
   })
 
-  const onSubmit = async (_formData: AddPaymentInfoInput) => {
+  const onSubmit = async (_formData: AddPaymentCardInputs) => {
     // send info to a payment service than receive payment auth token
 
     // TEMP
@@ -101,11 +101,33 @@ const AddPaymentCardForm = () => {
     }))
 
     if (paymentCredentials) {
-      // save token
-      // handle expiry
+      const getLastFour = (number: number) => {
+        let arr
+        arr = number.toString().split('')
+
+        return arr.splice(arr.length - 4, arr.length - 1).join('')
+      }
+
+      // !: resolver fails with 'Error: User profile is missing email or phone'
+      // const data = {
+      //   idToken: paymentCredentials.token,
+      //   lastfour: getLastFour(_formData.cardNumber),
+      // }
+
+      // console.log('data', data)
+
+      // const result = await addPayment({
+      //   variables: { data },
+      // })
+
+      // console.log('res', result)
+
       Alert.alert(
-        JSON.stringify(paymentCredentials),
-        'please choose the next step',
+        // `your last 4 digits: ${result.data?.addPaymentInfo.paymentInfo?.lastFourCardDigit}. Please choose the next step`,
+        'Please choose the next step',
+        `your last 4 digits: ${getLastFour(_formData.cardNumber)} token: ${
+          paymentCredentials.token
+        }`,
         [
           {
             text: 'create password',
@@ -134,8 +156,8 @@ const AddPaymentCardForm = () => {
           }) => (
             <MyTextField
               onBlur={onBlur}
-              onChangeText={(val) => onChange(val)}
-              value={value}
+              onChangeText={(val) => onChange(parseInt(val))}
+              value={value.toString()}
               error={error}
               placeholder={translate().inputCardNumber}
               hasErrorField
@@ -155,8 +177,8 @@ const AddPaymentCardForm = () => {
               }) => (
                 <MyTextField
                   onBlur={onBlur}
-                  onChangeText={(val) => onChange(val)}
-                  value={value}
+                  onChangeText={(val) => onChange(parseInt(val))}
+                  value={value.toString()}
                   error={error}
                   placeholder={translate().inputCVC}
                   hasErrorField
@@ -178,7 +200,7 @@ const AddPaymentCardForm = () => {
                 <MyTextField
                   onBlur={onBlur}
                   onChangeText={(val) => onChange(val)}
-                  value={value}
+                  value={value.toString()}
                   error={error}
                   placeholder={translate().inputExpMonth}
                   hasErrorField
@@ -200,8 +222,8 @@ const AddPaymentCardForm = () => {
               }) => (
                 <MyTextField
                   onBlur={onBlur}
-                  onChangeText={(val) => onChange(val)}
-                  value={value}
+                  onChangeText={(val) => onChange(parseInt(val))}
+                  value={value.toString()}
                   error={error}
                   placeholder={translate().inputExpYear}
                   hasErrorField
@@ -311,8 +333,8 @@ const AddPaymentCardForm = () => {
           }) => (
             <MyTextField
               onBlur={onBlur}
-              onChangeText={(val) => onChange(val)}
-              value={value}
+              onChangeText={(val) => onChange(parseInt(val))}
+              value={value.toString()}
               error={error}
               placeholder={translate().inputAddressZip}
               hasErrorField

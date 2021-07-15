@@ -58,7 +58,6 @@ const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   return badge.tokenTypeId.slice(0, -10) + newLastDigits
 }
 
-
 const getUserProfileWithFinancialInfo = async (id: Uid) => {
   return await prisma.user.findUnique({
     where: {
@@ -97,14 +96,18 @@ const purchaseBadgeTransaction = async ({
         badgeItems: {
           create: {
             tokenId,
-            ownerId: userId,
+            owner: {
+              connect: {
+                id: userId,
+              },
+            },
             edition: newSoldAmount,
             purchaseDate: new Date(),
             receipt: {
               create: {
                 buyerId: userId,
                 sellerId: badgeType.creatorId,
-                causeId: badgeType.causeId,
+                causeId: badgeType.causeId || null,
                 chargeId,
                 convertedPrice,
                 convertedCurrency,
@@ -114,13 +117,16 @@ const purchaseBadgeTransaction = async ({
             },
           },
         },
-        cause: {
-          update: {
-            [`balance${badgeType.currency}`]: {
-              increment: causeFullAmount || 0,
-            },
-          },
-        },
+        cause:
+          badgeType.causeId && causeFullAmount
+            ? {
+                update: {
+                  [`balance${badgeType.currency}`]: {
+                    increment: causeFullAmount,
+                  },
+                },
+              }
+            : undefined,
       },
       include: {
         badgeItems: {
@@ -156,7 +162,7 @@ const purchaseBadgeTransaction = async ({
 }
 
 export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
-  const { badgeTypeId, currencyRate, displayedPrice } = input
+  const { badgeTypeId } = input || {}
 
   const user = await getUserProfileWithFinancialInfo(uid)
 
@@ -213,14 +219,15 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const multiplier = (1 / currenciesData[badgeType.currency]) * userCurrencyRate
   const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
 
-  if (calculatedPrice !== displayedPrice && badgeType.price !== 0) {
-    throw new GraphQLError('Wrong price displayed')
-  }
+  // todo:  uncomment this when display badges in user's currency is implemented
+  // if (calculatedPrice !== displayedPrice && badgeType.price !== 0) {
+  //   throw new GraphQLError('Wrong price displayed')
+  // }
 
-  if (currenciesData[user.profile.currency] !== currencyRate) {
-    console.log(currenciesData[user.profile.currency], currencyRate)
-    throw new GraphQLError('Transaction currency conversion rate dont match!')
-  }
+  // if (currenciesData[user.profile.currency] !== currencyRate) {
+  //   console.log(currenciesData[user.profile.currency], currencyRate)
+  //   throw new GraphQLError('Transaction currency conversion rate dont match!')
+  // }
 
   // todo: uncomment when strip integration is tested
   // const { chargeId } = await stripe.chargeStripeAccount({
@@ -236,7 +243,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   try {
     // todo: uncomment when strip integration is tested
     // todo: remove blockchain.enabled once server is ready
-    const transactionHash  = blockchain.enabled
+    const { transactionHash } = blockchain.enabled
       ? await mintNewBadgeOnBlockchain(newBadgeTokenId, user?.cryptoWallet?.address)
       : { transactionHash: 'fake_hash' + getRandomNum() }
 
@@ -276,6 +283,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
     return updatedBadgeType.badgeItems[0]
   } catch (error) {
     // await stripe.refundPayment(chargeId)
-    throw new GraphQLError('Purchase failed to execute,')
+    console.error({ error })
+    throw new GraphQLError('Purchase failed to execute')
   }
 }

@@ -15,11 +15,14 @@ import MySelectInputComponent from '../../components/MySelectInput.component'
 import MyTextField from '../../components/MyTextField.component'
 import { Spacer } from '../../components/Spacer.component'
 
-import { useAddPaymentMutation } from '../../generated/graphql'
+import {
+  useAddPaymentMutation,
+  useBadgeTypeQuery,
+} from '../../generated/graphql'
 import { Alert } from 'react-native'
 import { useMyModal } from '../../utils/useMyModal'
 import { ModalType } from '../../../types/enum'
-import { delay } from '../../utils/helpers'
+import { delay, makePriceTag } from '../../utils/helpers'
 
 // type PaymentFormData = Pick<PaymentInfo,'lastFourCardDigit'>
 type AddPaymentCardInputs = {
@@ -59,8 +62,14 @@ const schema = yup.object().shape({
 
 const AddPaymentCardForm = () => {
   const theme = useTheme()
-  const { handleModal } = useMyModal()
-  const [addPayment, { loading }] = useAddPaymentMutation()
+  const { handleModal, flowData } = useMyModal()
+  const [addPayment] = useAddPaymentMutation()
+  const { data: badgeTypeData, refetch: refetchBadgeType } = useBadgeTypeQuery({
+    variables: {
+      id: flowData.itemId || '',
+    },
+  })
+
   const { control, handleSubmit, formState } = useForm<AddPaymentCardInputs>({
     defaultValues: {
       // cardNumber: undefined,
@@ -109,26 +118,36 @@ const AddPaymentCardForm = () => {
       }
 
       // !: resolver fails with 'Error: User profile is missing email or phone'
-      // const data = {
-      //   idToken: paymentCredentials.token,
-      //   lastfour: getLastFour(_formData.cardNumber),
-      // }
+      const data = {
+        idToken: paymentCredentials.token,
+        lastFourCardDigit: getLastFour(_formData.cardNumber),
+      }
 
-      // console.log('data', data)
+      const result = await addPayment({
+        variables: { data },
+      })
 
-      // const result = await addPayment({
-      //   variables: { data },
-      // })
-
-      // console.log('res', result)
+      await refetchBadgeType()
 
       Alert.alert(
-        // `your last 4 digits: ${result.data?.addPaymentInfo.paymentInfo?.lastFourCardDigit}. Please choose the next step`,
         'Please choose the next step',
-        `your last 4 digits: ${getLastFour(_formData.cardNumber)} token: ${
-          paymentCredentials.token
-        }`,
+        `Payment service token saved. Your last 4 digits: ${
+          result.data?.addPaymentInfo.paymentInfo?.lastFourCardDigit
+        }. Would you like to buy badgeItem.id: ${
+          flowData.itemId
+        } for ${makePriceTag(
+          badgeTypeData?.badgeType?.price,
+          badgeTypeData?.badgeType?.currency
+        )}?`,
         [
+          {
+            text: "Why ya' askin?! Sure",
+            // do the purchase
+            onPress: () => {
+              delay(1500)
+              handleModal()
+            },
+          },
           {
             text: 'create password',
             onPress: () => handleModal(ModalType.CREATE_PASSWORD),

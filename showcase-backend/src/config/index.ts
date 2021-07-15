@@ -20,11 +20,6 @@ type ConfigType = {
     token: string
     from: string
   }
-  algolia: {
-    id: string
-    adminKey: string
-    searchKey: string
-  }
   expo: {
     server: string
     token: string
@@ -88,7 +83,6 @@ const config = convict<ConfigType>({
       env: 'BLOCKCHAIN_ENABLED',
     },
   },
-  // todo: twilio got replaced with authy-client
   twilio: {
     account: {
       doc: 'Twillio account id',
@@ -107,27 +101,6 @@ const config = convict<ConfigType>({
       format: String,
       default: '',
       env: 'TWILIO_FROM',
-    },
-  },
-  // todo: remove algolia completely
-  algolia: {
-    id: {
-      doc: 'Algolia ID',
-      format: String,
-      default: '',
-      env: 'ALGOLIA_ID',
-    },
-    adminKey: {
-      doc: 'Algolia admin key',
-      format: String,
-      default: '',
-      env: 'ALGOLIA_ADMIN_KEY',
-    },
-    searchKey: {
-      doc: 'Algolia search key',
-      format: String,
-      default: '',
-      env: 'ALGOLIA_SEARCH_KEY',
     },
   },
   expo: {
@@ -184,7 +157,6 @@ export const transferWise = properties.transferWise
 export const stripe = properties.stripe
 export const blockchain = properties.blockchain
 export const twilio = properties.twilio
-export const algolia = properties.algolia
 export const expo = properties.expo
 export const openExchange = properties.openExchange
 export const jwt = properties.jwt

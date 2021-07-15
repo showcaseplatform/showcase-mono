@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "start:dev": "ts-node-dev --respawn --rs src/index.ts",
+    "start:db": "yarn run postgresql && yarn run prisma:push && yarn run prisma:seed",
     "build": "npx rimraf dist && npx tsc -p tsconfig.build.json",
     "lint": "eslint --ext ts src",
     "db": "npm run postgresql && npm run reset",
@@ -20,7 +21,9 @@
     "prisma:studio": "npx prisma studio",
     "prisma:push": "npx prisma db push",
     "prisma:ci": "npx prisma migrate deploy",
-    "reset": "npm run prisma:generate && npm run build && npm run prisma:reset && npm run prisma:migrate && npm run prisma:seed"
+    "reset": "npm run prisma:generate && npm run build && npm run prisma:reset && npm run prisma:migrate && npm run prisma:seed",
+    "reset:bucket": "ts-node prisma/resetBucket.ts",
+    "ts-node": "ts-node --compiler-options \"{\\\"module\\\":\\\"commonjs\\\"}\""
   },
   "engines": {
     "node": "14"

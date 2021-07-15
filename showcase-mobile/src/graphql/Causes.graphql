@@ -2,6 +2,6 @@ query Causes {
   causes {
     id
     name
-    image
+    imageUrl
   }
 }

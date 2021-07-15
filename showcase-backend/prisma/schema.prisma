@@ -352,7 +352,7 @@ model Follow {
   user       User         @relation(name: "followers", fields: [userId], references: [id])
   followerId String
   follower   User         @relation(name: "friends", fields: [followerId], references: [id])
-  status     FollowStatus
+  status     FollowStatus @default(Accepted)
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @default(now()) @updatedAt
 

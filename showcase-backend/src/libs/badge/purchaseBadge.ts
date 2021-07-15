@@ -9,6 +9,7 @@ import { getRandomNum } from '../../utils/randoms'
 import { isBadgeTypeSoldOut } from './validateBadgeType'
 import { blockchain } from '../../config'
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
+import { findUserWithFinancialInfo } from '../database/user.repo'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -23,6 +24,13 @@ interface PurchaseTransactionInput {
   convertedCurrency: Currency
   convertedRate: number
   USDPrice: number
+}
+
+enum ErrorMessages {
+  badgeAlreadyOwned = 'You already purchased this badge.',
+  financialInfoMissing = 'Financial information missing',
+  spendingLimitReached = 'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.',
+  transactionFailed = 'Purchase transaction failed to execute'
 }
 
 const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
@@ -43,7 +51,7 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
     userWithBadgeItems?.badgeItemsOwned?.length &&
     userWithBadgeItems?.badgeItemsOwned?.length > 0
   ) {
-    throw new GraphQLError('You already purchased this badge')
+    throw new GraphQLError(ErrorMessages.badgeAlreadyOwned)
   }
 }
 
@@ -56,20 +64,6 @@ const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   }
 
   return badge.tokenTypeId.slice(0, -10) + newLastDigits
-}
-
-const getUserProfileWithFinancialInfo = async (id: Uid) => {
-  return await prisma.user.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      profile: true,
-      cryptoWallet: true,
-      balance: true,
-      paymentInfo: true,
-    },
-  })
 }
 
 const purchaseBadgeTransaction = async ({
@@ -164,30 +158,19 @@ const purchaseBadgeTransaction = async ({
 export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const { badgeTypeId } = input || {}
 
-  const user = await getUserProfileWithFinancialInfo(uid)
+  const user = await findUserWithFinancialInfo(uid)
 
-  if (!user || !user.balance) {
-    throw new GraphQLError('Profile missing')
+  // todo: improve this validation once we know what paymentInfo should we use
+  if (!user || !user.balance || !user.paymentInfo) {
+    throw new GraphQLError(ErrorMessages.financialInfoMissing)
   }
 
   if (
     (!user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
     (user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
   ) {
-    throw new GraphQLError(
-      'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.'
-    )
+    throw new GraphQLError(ErrorMessages.spendingLimitReached)
   }
-
-  // todo: uncomment when strip integration is tested
-  // if (
-  //   !user.cryptoWallet ||
-  //   !user.cryptoWallet.address ||
-  //   !user.balance?.id ||
-  //   !user.paymentInfo?.tokenId
-  // ) {
-  //   throw new GraphQLError('No crypto wallet or payment information was added ')
-  // }
 
   await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
 
@@ -284,6 +267,6 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   } catch (error) {
     // await stripe.refundPayment(chargeId)
     console.error({ error })
-    throw new GraphQLError('Purchase failed to execute')
+    throw new GraphQLError(ErrorMessages.transactionFailed)
   }
 }

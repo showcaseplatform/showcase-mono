@@ -14,8 +14,7 @@ import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
 import { useBadgeTypeQuery } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
-import { useMyModal } from '../../../utils/useMyModal'
-import { ModalType } from '../../../../types/enum'
+import useBuyFlow from '../../../utils/useBuyFlow'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -28,12 +27,11 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const { data, loading, error } = useBadgeTypeQuery({
     variables: { id: item.id },
   })
+  const { start } = useBuyFlow({ itemId: item.id })
 
   const [showCauseModal, setShowCauseModal] = useState(false)
   const handleCloseModal = () => setShowCauseModal(false)
   const handleOpenModal = () => setShowCauseModal(true)
-
-  const { handleModal } = useMyModal()
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -154,9 +152,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             <Button
               mode="contained"
               color={theme.colors.ui.accent}
-              onPress={() =>
-                handleModal(ModalType.ADD_PAYMENT, { itemId: item.id })
-              }
+              onPress={() => start({ itemId: item.id })}
               style={{ borderRadius: 30 }}
               contentStyle={{ paddingHorizontal: 8 }}
               uppercase

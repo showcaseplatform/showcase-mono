@@ -1,6 +1,6 @@
 import React, { ReactNode, useState, useCallback } from 'react'
 
-import { FlowData, ModalContext } from '../../utils/useMyModal'
+import { ModalContext } from '../../utils/useMyModal'
 import StyledModal from '../../components/StyledModal.component'
 import ModalHeader from '../../components/ModalHeader.component'
 import { translate } from '../../utils/translator'
@@ -28,40 +28,20 @@ const modals = {
   },
 }
 
-const defaultFlowData: FlowData = {
-  password: undefined,
-  itemId: undefined,
-}
-
 const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [currentModalType, setContent] = useState<ModalType>(
     ModalType.ADD_PAYMENT
   )
-  const [flowData, setFlowData] = useState(defaultFlowData)
 
-  const handleFlowData = (key: keyof FlowData, data: Partial<FlowData>) => {
-    setFlowData((prevState) => ({
-      ...prevState,
-      [key]: data[key],
-    }))
-  }
-
-  const handleModal = useCallback(
-    (modalType?: ModalType, initVals?: Partial<FlowData>) => {
-      if (modalType) {
-        setContent(modalType)
-        setFlowData((prevState) => ({
-          ...prevState,
-          ...initVals,
-        }))
-        setIsOpen(true)
-      } else {
-        setIsOpen((currState) => !currState)
-      }
-    },
-    []
-  )
+  const handleModal = useCallback((modalType?: ModalType) => {
+    if (modalType) {
+      setContent(modalType)
+      setIsOpen(true)
+    } else {
+      setIsOpen(false)
+    }
+  }, [])
 
   return (
     <ModalContext.Provider
@@ -69,8 +49,6 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
         isOpen,
         currentModalType,
         handleModal,
-        flowData,
-        handleFlowData,
       }}
     >
       <>

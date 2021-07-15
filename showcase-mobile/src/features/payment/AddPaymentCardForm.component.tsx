@@ -15,14 +15,10 @@ import MySelectInputComponent from '../../components/MySelectInput.component'
 import MyTextField from '../../components/MyTextField.component'
 import { Spacer } from '../../components/Spacer.component'
 
-import {
-  useAddPaymentMutation,
-  useBadgeTypeQuery,
-} from '../../generated/graphql'
-import { Alert } from 'react-native'
-import { useMyModal } from '../../utils/useMyModal'
-import { ModalType } from '../../../types/enum'
-import { delay, makePriceTag } from '../../utils/helpers'
+import { useAddPaymentMutation } from '../../generated/graphql'
+
+import { delay } from '../../utils/helpers'
+import useBuyFlow from '../../utils/useBuyFlow'
 
 // type PaymentFormData = Pick<PaymentInfo,'lastFourCardDigit'>
 type AddPaymentCardInputs = {
@@ -62,13 +58,8 @@ const schema = yup.object().shape({
 
 const AddPaymentCardForm = () => {
   const theme = useTheme()
-  const { handleModal, flowData } = useMyModal()
   const [addPayment] = useAddPaymentMutation()
-  const { data: badgeTypeData, refetch: refetchBadgeType } = useBadgeTypeQuery({
-    variables: {
-      id: flowData.itemId || '',
-    },
-  })
+  const { start } = useBuyFlow({})
 
   const { control, handleSubmit, formState } = useForm<AddPaymentCardInputs>({
     defaultValues: {
@@ -117,7 +108,6 @@ const AddPaymentCardForm = () => {
         return arr.splice(arr.length - 4, arr.length - 1).join('')
       }
 
-      // !: resolver fails with 'Error: User profile is missing email or phone'
       const data = {
         idToken: paymentCredentials.token,
         lastFourCardDigit: getLastFour(_formData.cardNumber),
@@ -127,39 +117,10 @@ const AddPaymentCardForm = () => {
         variables: { data },
       })
 
-      await refetchBadgeType()
-
-      Alert.alert(
-        'Please choose the next step',
-        `Payment service token saved. Your last 4 digits: ${
-          result.data?.addPaymentInfo.paymentInfo?.lastFourCardDigit
-        }. Would you like to buy badgeItem.id: ${
-          flowData.itemId
-        } for ${makePriceTag(
-          badgeTypeData?.badgeType?.price,
-          badgeTypeData?.badgeType?.currency
-        )}?`,
-        [
-          {
-            text: "Why ya' askin?! Sure",
-            // do the purchase
-            onPress: () => {
-              delay(1500)
-              handleModal()
-            },
-          },
-          {
-            text: 'create password',
-            onPress: () => handleModal(ModalType.CREATE_PASSWORD),
-          },
-          {
-            text: 'cancel',
-            style: 'cancel',
-            onPress: () => handleModal(),
-          },
-        ],
-        { cancelable: true }
-      )
+      if (result.data?.addPaymentInfo.paymentInfo?.idToken) {
+        // restart buy flow
+        start()
+      }
     }
   }
 

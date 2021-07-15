@@ -4,9 +4,7 @@ import { ModalType } from '../../types/enum'
 export type ModalContextValue = {
   isOpen: boolean
   currentModalType: ModalType
-  flowData: FlowData
-  handleModal: (modalType?: ModalType, initVals?: Partial<FlowData>) => void
-  handleFlowData: (key: keyof FlowData, data: Partial<FlowData>) => void
+  handleModal: (modalType?: ModalType) => void
 }
 
 export type FlowData = {

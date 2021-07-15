@@ -33,5 +33,10 @@ query Me {
       userId
       status
     }
+    paymentInfo {
+      id
+      idToken
+      lastFourCardDigit
+    }
   }
 }

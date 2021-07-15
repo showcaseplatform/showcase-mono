@@ -241,6 +241,7 @@ const EditUserProfileScreen = ({
             error={error}
             placeholder="Your date of birth"
             // maximumDate={} // ?: disable dates after '18 years from now?'
+            minimumDate={new Date(1901, 0, 1)}
             hasErrorField
           />
         )}

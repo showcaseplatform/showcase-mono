@@ -20,7 +20,7 @@ export class PaymentResolver {
     return await addPaymentInfo(input, currentUser)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation((_returns) => String)
   async createCryptoWallet(
     @Arg('data') input: CreateCryptoWalletInput,
@@ -29,7 +29,7 @@ export class PaymentResolver {
     return await createCryptoWallet(input, currentUser)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation((_returns) => String)
   async createTransferwiseAccount(
     @CurrentUser() currentUser: User,
@@ -44,7 +44,7 @@ export class PaymentResolver {
     return await createTransferwiseAccount(input, currentUser)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation((_returns) => String)
   async withdrawFromTransferwise(
     @Arg('data') input: WithdrawFromTransferwiseInput,

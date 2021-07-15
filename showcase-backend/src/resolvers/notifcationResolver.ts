@@ -11,10 +11,11 @@ import { UserType } from '@prisma/client'
 import { NEW_NOTIFCATION } from '../services/pubSub'
 import { NotificationSubscriptionPayload } from '../libs/notification/types/notificationSubscriptionPayload.type'
 import { CurrentUser } from '../libs/auth/decorators'
+import { allUserTypes } from '../libs/auth/authLib'
 
 @Resolver()
 export class NotificationResolver {
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => MarkAsReadInfoUnion)
   async markAsRead(
     @Arg('notificationId') notificationId: string
@@ -22,19 +23,19 @@ export class NotificationResolver {
     return await notificationMarker.markOneAsRead(notificationId)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => [Notification])
   async markAllAsRead(@CurrentUser() currentUser: User): Promise<Notification[]> {
     return await notificationMarker.markAllAsRead(currentUser.id)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => User)
   async removeNotifcationToken(@CurrentUser() currentUser: User): Promise<User> {
     return await removeNotifcationToken(currentUser.id)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => User)
   async addNotifcationToken(
     @Arg('notificationToken') notificationToken: NotificationToken,
@@ -43,7 +44,7 @@ export class NotificationResolver {
     return await addNotifcationToken(notificationToken, currentUser.id)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Subscription({
     topics: NEW_NOTIFCATION,
     filter: async ({

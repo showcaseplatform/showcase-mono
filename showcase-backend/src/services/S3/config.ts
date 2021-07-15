@@ -1,10 +1,16 @@
 import convict from 'convict'
 
+// import config to make sure its linked with dotenv
+import * as dotenv from 'dotenv'
+import { join } from 'path'
+process.chdir(join(__dirname, '../../..'))
+const dotenvPath = join(__dirname, '../../..', '.env')
+dotenv.config({ path: dotenvPath })
+
 type ConfigType = {
   region: string
   keyId: string
   key: string
-  bucket: string
 }
 
 // Define a schema
@@ -23,11 +29,6 @@ const config = convict<ConfigType>({
     format: String,
     default: '',
     env: 'DEV_AWS_SECRET_ACCESS_KEY',
-  },
-  bucket: {
-    format: String,
-    default: '',
-    env: 'DEV_AWS_S3_BUCKET',
   },
 })
 

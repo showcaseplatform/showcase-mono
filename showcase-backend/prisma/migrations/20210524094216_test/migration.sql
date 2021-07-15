@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "BadgeType" ALTER COLUMN "donationAmount" SET DEFAULT 0,
-ALTER COLUMN "donationAmount" SET DATA TYPE DOUBLE PRECISION;

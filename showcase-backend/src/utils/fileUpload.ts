@@ -1,4 +1,4 @@
-import { uploadFileToS3Bucket } from '../services/S3'
+import { myS3 } from '../services/S3/s3'
 import { FileType, FileUploadInput } from './types/fileUpload.type'
 import { v4 as uuidv4 } from 'uuid'
 import { GraphQLError } from 'graphql'
@@ -10,10 +10,12 @@ enum FileUploadErrorMessages {
   MissingFileType = 'FileType musst be specified',
 }
 
-const BADGE_PATH = 'badges/'
+export const CAUSES_PATH = 'causes'
+
+export const BADGE_PATH = 'badges'
 const BADGE_ALLOWED_FILES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
 
-const AVATAR_PATH = 'avatars/'
+export const AVATAR_PATH = 'avatars'
 const AVATAR_ALLOWED_FILES = ['image/jpeg', 'image/jpg', 'image/png']
 
 type UploadFunction = (
@@ -36,7 +38,7 @@ export const uploadFile: UploadFunction = async ({ fileData, fileType, updateKey
         throw new GraphQLError(FileUploadErrorMessages.BadgeWrongFileType)
       }
       gif = fileExtension === 'gif'
-      Key = `${BADGE_PATH + uuidv4()}.${fileExtension}`
+      Key = `${BADGE_PATH}/${uuidv4()}.${fileExtension}`
       hash = crypto.createHash('md5').update(buffer).digest('base64')
       break
 
@@ -44,14 +46,14 @@ export const uploadFile: UploadFunction = async ({ fileData, fileType, updateKey
       if (!AVATAR_ALLOWED_FILES.includes(ContentType)) {
         throw new GraphQLError(FileUploadErrorMessages.AvatarWrongFileType)
       }
-      Key = updateKey || `${AVATAR_PATH + uuidv4()}.${fileExtension}`
+      Key = updateKey || `${AVATAR_PATH}/${uuidv4()}.${fileExtension}`
       break
 
     default:
       throw new GraphQLError(FileUploadErrorMessages.MissingFileType)
   }
 
-  await uploadFileToS3Bucket({
+  await myS3.uploadFileToS3Bucket({
     Key,
     ContentType,
     buffer,

@@ -4,7 +4,7 @@ import { badgeTypeLikeCount, badgeTypeViewCount } from '../libs/database/badgeTy
 import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
-import { generateSignedUrl } from '../services/S3'
+import { myS3 } from '../services/S3/s3'
 import { isBadgeTypeSoldOut, isBadgeTypeRemovedFromShowcase } from '../libs/badge/validateBadgeType'
 
 @Resolver(() => BadgeType)
@@ -45,7 +45,7 @@ export class CustomBadgeTypeResolver {
 
   @FieldResolver(() => String)
   async publicUrl(@Root() badgeType: BadgeType): Promise<string> {
-    return generateSignedUrl(badgeType.imageId)
+    return myS3.generateSignedUrl(badgeType.imageId)
   }
 
   @FieldResolver((_) => Boolean)

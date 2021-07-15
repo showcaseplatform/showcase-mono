@@ -21,8 +21,9 @@ enum Currency {
 }
 
 enum UserType {
-  basic
-  creator
+  basic // only auth
+  collector // basic + paymentInfo
+  creator // invite only
 }
 
 model User {
@@ -41,7 +42,7 @@ model User {
   badgeItemsOwned   BadgeItem[] @relation("badgeCurrentlyOwned")
 
   cryptoWallet Crypto?
-  stripeInfo   Stripe?
+  paymentInfo  PaymentInfo?
   balance      Balance?
   transferwise Transferwise?
   withdrawals  Withdrawal[]
@@ -238,7 +239,7 @@ model Receipt {
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
   badgeItemId String
 
-  stripeChargeId String
+  chargeId String
 
   convertedPrice    Float
   convertedRate     Float
@@ -253,12 +254,12 @@ model Receipt {
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model Stripe {
+model PaymentInfo {
   id     String @id @default(cuid())
   userId String @unique
   owner  User   @relation(fields: [userId], references: [id])
 
-  stripeId          String @unique
+  idToken           String @unique
   lastFourCardDigit String
 
   createdAt DateTime @default(now())
@@ -295,7 +296,6 @@ model Withdrawal {
   error                 String?
   eta                   DateTime?
   createdAt             DateTime  @default(now())
-
 }
 
 model BadgeItemLike {

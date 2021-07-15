@@ -1,10 +1,9 @@
-/* eslint-disable promise/no-nesting */
-import axios from 'axios'
 import { blockchain } from '../../config'
 import { Uid } from '../../types/user'
 import { UnListBadgeForSaleInput } from './types/unlistBadgeForSale.type'
 import { findBadgeItem, updateBadgeItem } from '../database/badgeItem.repo'
 import { GraphQLError } from 'graphql'
+import { removeBadgeFromEscrow } from '../../services/blockchain'
 
 export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Uid) => {
   const { badgeItemId } = input
@@ -20,7 +19,7 @@ export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Ui
 
   // todo: remove blockchain.enabled once server is ready
   const response = blockchain.enabled
-    ? await axios.post(blockchain.server + '/removeBadgeFromEscrow', { badgeid: badgeItem.tokenId })
+    ? await removeBadgeFromEscrow(badgeItem.tokenId)
     : { data: { success: true } }
 
   if (response && response.data && response.data.success) {

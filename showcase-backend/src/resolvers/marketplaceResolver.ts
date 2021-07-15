@@ -22,7 +22,7 @@ export class MarketplaceResolver {
     return publishBadgeType(publishBadgeTypeInput, file, currentUser)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(UserType.collector, UserType.creator)
   @Mutation(() => BadgeItem)
   async purchaseBadge(
     @Arg('data') purchaseBadgeInput: PurchaseBadgeInput,

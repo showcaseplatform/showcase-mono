@@ -1,8 +1,4 @@
-import axios from 'axios'
-import { blockchain } from '../../config'
-import { stripe } from '../../services/stripe'
 import { Uid } from '../../types/user'
-import Boom from 'boom'
 import { prisma } from '../../services/prisma'
 import { BadgeType, Currency } from '.prisma/client'
 import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
@@ -11,6 +7,8 @@ import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
 import { getRandomNum } from '../../utils/randoms'
 import { isBadgeTypeSoldOut } from './validateBadgeType'
+import { blockchain } from '../../config'
+import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -60,21 +58,6 @@ const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   return badge.tokenTypeId.slice(0, -10) + newLastDigits
 }
 
-const mintNewBadgeOnBlockchain = async (cryptoWalletAddress: string, newBadgeTokenId: string) => {
-  const data = {
-    to: cryptoWalletAddress,
-    type: newBadgeTokenId,
-    token: blockchain.authToken,
-  }
-
-  const response = await axios.post(blockchain.server + '/mintBadge', data)
-
-  if (response.data?.success && response.data?.transactionHash) {
-    return response.data
-  } else {
-    throw Boom.internal('Failed to mint new badge on blockchain', response)
-  }
-}
 
 const getUserProfileWithFinancialInfo = async (id: Uid) => {
   return await prisma.user.findUnique({
@@ -85,47 +68,9 @@ const getUserProfileWithFinancialInfo = async (id: Uid) => {
       profile: true,
       cryptoWallet: true,
       balance: true,
-      stripeInfo: true,
+      paymentInfo: true,
     },
   })
-}
-
-const chargeStripeAccount = async ({
-  amount,
-  currency,
-  customerStripeId,
-  badgeItemId,
-  title,
-  creatorProfileId,
-}: {
-  amount: number
-  currency: Currency
-  customerStripeId: string
-  badgeItemId: string
-  title: string
-  creatorProfileId: string
-}) => {
-  // todo: test this if its correct
-  const twoDecimalCurrencyMultiplier = 100
-  const charge = await stripe.charges.create({
-    amount: amount * twoDecimalCurrencyMultiplier,
-    currency,
-    customer: customerStripeId,
-    description: 'Showcase Badge "' + title + '" (ID: ' + badgeItemId + ')',
-    metadata: {
-      badgeid: badgeItemId,
-      badgename: title,
-      creatorid: creatorProfileId,
-    },
-    // todo: when should we include emails?
-    //receipt_email: user.email || null, //avoid email for now..
-  })
-
-  if (!charge || !charge.id || !charge.paid) {
-    throw Boom.internal('Unable to create charge')
-  }
-
-  return { chargeId: charge.id }
 }
 
 const purchaseBadgeTransaction = async ({
@@ -159,8 +104,8 @@ const purchaseBadgeTransaction = async ({
               create: {
                 buyerId: userId,
                 sellerId: badgeType.creatorId,
-                stripeChargeId: chargeId,
                 causeId: badgeType.causeId,
+                chargeId,
                 convertedPrice,
                 convertedCurrency,
                 convertedRate,
@@ -233,9 +178,9 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   //   !user.cryptoWallet ||
   //   !user.cryptoWallet.address ||
   //   !user.balance?.id ||
-  //   !user.stripeInfo?.stripeId
+  //   !user.paymentInfo?.tokenId
   // ) {
-  //   throw new GraphQLError('No wallet or card')
+  //   throw new GraphQLError('No crypto wallet or payment information was added ')
   // }
 
   await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
@@ -278,23 +223,22 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   }
 
   // todo: uncomment when strip integration is tested
-  // const { chargeId } = await chargeStripeAccount({
+  // const { chargeId } = await stripe.chargeStripeAccount({
   //   amount: calculatedPrice,
   //   currency: user.profile.currency,
   //   title: badgeType.title,
   //   badgeItemId: newBadgeTokenId,
   //   creatorProfileId: badgeType.creatorId,
-  //   customerStripeId: user.stripeInfo.stripeId,
+  //   customerStripeId: user.paymentInfo.tokenId,
   // })
   const chargeId = getRandomNum().toString()
 
   try {
     // todo: uncomment when strip integration is tested
     // todo: remove blockchain.enabled once server is ready
-    // const { transactionHash } = blockchain.enabled
-    //   ? await mintNewBadgeOnBlockchain(user.cryptoWallet.address, newBadgeTokenId)
-    //   : { transactionHash: 'fake_hash' + getRandomNum() }
-    const transactionHash = 'fake_hash' + getRandomNum()
+    const transactionHash  = blockchain.enabled
+      ? await mintNewBadgeOnBlockchain(newBadgeTokenId, user?.cryptoWallet?.address)
+      : { transactionHash: 'fake_hash' + getRandomNum() }
 
     let payoutAmount = 0
     let causeFullAmount = 0
@@ -331,7 +275,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
 
     return updatedBadgeType.badgeItems[0]
   } catch (error) {
-    await stripe.refunds.create({ charge: chargeId })
+    // await stripe.refundPayment(chargeId)
     throw new GraphQLError('Purchase failed to execute,')
   }
 }

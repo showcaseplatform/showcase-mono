@@ -1,15 +1,20 @@
 import { Uid } from '../../types/user'
 import { prisma } from '../../services/prisma'
 import { BadgeType, Currency } from '.prisma/client'
-import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
+import {
+  SHOWCASE_COMMISSION_FEE_MULTIPLIER,
+  SPEND_LIMIT_DEFAULT,
+  SPEND_LIMIT_KYC_VERIFIED,
+} from '../../consts/businessRules'
 import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
 import { getRandomNum } from '../../utils/randoms'
 import { isBadgeTypeSoldOut } from './validateBadgeType'
-import { blockchain } from '../../config'
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
 import { findUserWithFinancialInfo } from '../database/user.repo'
+import { findBadgeType } from '../database/badgeType.repo'
+import { UserType } from '@prisma/client'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -28,9 +33,10 @@ interface PurchaseTransactionInput {
 
 enum ErrorMessages {
   badgeAlreadyOwned = 'You already purchased this badge.',
-  financialInfoMissing = 'Financial information missing',
+  paymentInfoMissing = 'Payment information missing',
   spendingLimitReached = 'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.',
-  transactionFailed = 'Purchase transaction failed to execute'
+  transactionFailed = 'Purchase transaction failed to execute',
+  outOfStock = 'Out of stock',
 }
 
 const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
@@ -55,7 +61,7 @@ const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) 
   }
 }
 
-// todo: why is it neccesary to construct this id? would be better to auto-gen badgeItem ids, and store this in a prop if neccesary
+// todo: how and what for is this used for?
 const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   let newLastDigits = (parseInt(badge.tokenTypeId.slice(-10)) + newSoldAmount).toFixed(0)
 
@@ -158,47 +164,40 @@ const purchaseBadgeTransaction = async ({
 export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const { badgeTypeId } = input || {}
 
+  const badgeType = await findBadgeType(badgeTypeId)
+
+  await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
+
+  if (isBadgeTypeSoldOut(badgeType)) {
+    throw new GraphQLError(ErrorMessages.outOfStock)
+  }
+
   const user = await findUserWithFinancialInfo(uid)
 
+  const isSoldForMoney = badgeType.price > 0
+
   // todo: improve this validation once we know what paymentInfo should we use
-  if (!user || !user.balance || !user.paymentInfo) {
-    throw new GraphQLError(ErrorMessages.financialInfoMissing)
+  if (
+    !user ||
+    user.userType != UserType.basic ||
+    !user.balance ||
+    !user.paymentInfo ||
+    !user?.profile?.currency
+  ) {
+    throw new GraphQLError(ErrorMessages.paymentInfoMissing)
   }
 
   if (
-    (!user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
-    (user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
+    isSoldForMoney &&
+    ((!user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
+      (user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED))
   ) {
     throw new GraphQLError(ErrorMessages.spendingLimitReached)
   }
 
-  await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
-
-  const badgeType = await prisma.badgeType.findUnique({
-    where: {
-      id: badgeTypeId,
-    },
-  })
-
-  if (!badgeType) {
-    throw new GraphQLError('Invalid badge id')
-  }
-
-  if (isBadgeTypeSoldOut(badgeType)) {
-    throw new GraphQLError('Out of stock')
-  }
-
   const currenciesData = await CurrencyRateLib.getLatestExchangeRates()
 
-  if (!user?.profile?.currency) {
-    throw new GraphQLError('User profile currency if missing')
-  }
-
-  const userCurrencyRate = currenciesData[user.profile.currency]
-
-  const newSoldAmount = badgeType.sold + 1
-  const newBadgeTokenId = constructNewBadgeTokenId(badgeType, newSoldAmount)
-
+  const userCurrencyRate = 1 // todo: user user's currency rate here:  currenciesData[user.profile.currency]
   const multiplier = (1 / currenciesData[badgeType.currency]) * userCurrencyRate
   const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
 
@@ -212,7 +211,10 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   //   throw new GraphQLError('Transaction currency conversion rate dont match!')
   // }
 
-  // todo: uncomment when strip integration is tested
+  const newSoldAmount = badgeType.sold + 1
+  const newBadgeTokenId = constructNewBadgeTokenId(badgeType, newSoldAmount)
+
+  // todo: uncomment when stripe integration is tested
   // const { chargeId } = await stripe.chargeStripeAccount({
   //   amount: calculatedPrice,
   //   currency: user.profile.currency,
@@ -224,22 +226,21 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const chargeId = getRandomNum().toString()
 
   try {
-    // todo: uncomment when strip integration is tested
-    // todo: remove blockchain.enabled once server is ready
-    const { transactionHash } = blockchain.enabled
-      ? await mintNewBadgeOnBlockchain(newBadgeTokenId, user?.cryptoWallet?.address)
-      : { transactionHash: 'fake_hash' + getRandomNum() }
+    const transactionHash = await mintNewBadgeOnBlockchain(
+      newBadgeTokenId,
+      user?.cryptoWallet?.address
+    )
 
     let payoutAmount = 0
     let causeFullAmount = 0
     let USDPrice = 0
 
-    if (badgeType.price > 0) {
+    if (isSoldForMoney) {
       const USDmultiplier = 1 / currenciesData[badgeType.currency]
       USDPrice = parseFloat((badgeType.price * USDmultiplier).toFixed(2))
       const totalPrice = badgeType.price
-      // todo: why is this set to 0.9 by default?
-      let feeMultiplier = 0.9
+
+      let feeMultiplier = SHOWCASE_COMMISSION_FEE_MULTIPLIER
 
       if (badgeType.donationAmount) {
         feeMultiplier -= badgeType.donationAmount

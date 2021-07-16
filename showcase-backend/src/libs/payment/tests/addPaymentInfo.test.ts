@@ -13,8 +13,6 @@ const inputUserId = `${getRandomNum()}`
 
 
 describe('Adding payment information to a user', () => {
-  beforeAll(async () => {})
-
   it('should change userType to collector if user is still basic', async () => {
     const inputUserType = UserType.basic
     const inputUser = getDefaultUser(inputUserId, inputUserType)

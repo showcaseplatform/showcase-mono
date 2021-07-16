@@ -1,6 +1,6 @@
 import axios from 'axios'
-import { blockchain } from '../config'
 import Boom from 'boom'
+import { blockchain } from '../config'
 import { prisma } from './prisma'
 import { BadgeItemId } from '../types/badge'
 import { ListBadgeForSaleInput } from '../libs/badge/types/listBadgeForSale.type'
@@ -9,23 +9,30 @@ import { Profile } from '@prisma/client'
 import { GraphQLError } from 'graphql'
 import { BadgeTypeCreateInput } from '@generated/type-graphql'
 import { PublishBadgeTypeInputValidation } from '../libs/badge/publishBadgeType'
+import { getRandomNum } from '../utils/randoms'
 
 export const mintNewBadgeOnBlockchain = async (
   newBadgeTokenId: string,
   cryptoWalletAddress?: string // todo: remove ? once crypto account validation is in place
-) => {
+): Promise<string> => {
   const data = {
     to: cryptoWalletAddress,
     type: newBadgeTokenId,
     token: blockchain.authToken,
   }
 
-  const response = await axios.post(blockchain.server + '/mintBadge', data)
+  // todo: uncomment when strip integration is tested
+  // todo: remove blockchain.enabled once server is ready
+  if (blockchain.enabled) {
+    const response = await axios.post(blockchain.server + '/mintBadge', data)
 
-  if (response.data?.success && response.data?.transactionHash) {
-    return response.data.transactionHash
+    if (response.data?.success && response.data?.transactionHash) {
+      return response.data.transactionHash
+    } else {
+      throw Boom.internal('Failed to mint new badge on blockchain', response)
+    }
   } else {
-    throw Boom.internal('Failed to mint new badge on blockchain', response)
+    return 'fake_hash' + getRandomNum()
   }
 }
 

@@ -2,6 +2,7 @@
 // Marketplace
 export const SPEND_LIMIT_DEFAULT = 1000
 export const SPEND_LIMIT_KYC_VERIFIED = SPEND_LIMIT_DEFAULT * 10
+export const SHOWCASE_COMMISSION_FEE_MULTIPLIER = 0.9
 
 // Badge type
 export const BADGE_TYPE_MIN_SALE_PRICE = 0

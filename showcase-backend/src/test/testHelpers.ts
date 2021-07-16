@@ -1,4 +1,5 @@
-import { UserType, User, Currency, Profile } from '@prisma/client'
+import { UserType, User, Currency, Profile, BadgeItem } from '@prisma/client'
+import { Args } from 'type-graphql'
 import { Uid } from '../types/user'
 import { getRandomNum } from '../utils/randoms'
 import { prismaMock } from './prismaMock'
@@ -27,6 +28,24 @@ const profileBaseProps: Profile = {
   updatedAt: new Date(),
 }
 
+const badgeItemBaseProps: BadgeItem = {
+  badgeTypeId: `${getRandomNum()}`,
+  tokenId: `${getRandomNum()}`,
+  id: `${getRandomNum()}`,
+  ownerId: `${getRandomNum()}`,
+  edition: 1,
+  purchaseDate: new Date(),
+  forSale: false,
+  salePrice: null,
+  saleCurrency: null,
+  isSold: false,
+  sellDate: new Date(),
+  shares: 0,
+  removedFromShowcase: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}
+
 export const getDefaultUser = (id: Uid, userType?: UserType): User => {
   return {
     ...userBaseProps,
@@ -40,6 +59,7 @@ export const mockFindUniqueUser = (id: Uid, userType?: UserType) =>
     ...userBaseProps,
     id,
     userType: userType || UserType.basic,
+    // badgeItemsOwned: () => {}
   })
 
 export const mockCreateUser = (phone: string, userType?: UserType) =>
@@ -74,3 +94,10 @@ export const mockCreateBadgeItemLike = (badgeItemId: string, userId: Uid) =>
     badgeItemId,
     createdAt: new Date(),
   })
+
+// export const mockCreateBadgeTypeLike = (badgeTypeId: string, userId: Uid) =>
+// prismaMock.badgeTypeLike.create.mockResolvedValue({
+//   userId,
+//   badgeTypeId,
+//   createdAt: new Date(),
+// })

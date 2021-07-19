@@ -69,12 +69,15 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
 
   const [buyBadge] = useBuyBadgeItemMutation({
     onCompleted: () => {
-      console.log('badge bought')
+      // todo: success event
+      console.log('badge bought, id: ', badgeTypeId)
       setBadgeTypeId(undefined)
     },
+    refetchQueries: [{ query: MeDocument }],
   })
 
-  React.useEffect(() => getMe(), [getMe])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => getMe(), [])
 
   const isOutOfStock = dataBadge?.badgeType?.supply < 1
   const hasPaymentInfo =

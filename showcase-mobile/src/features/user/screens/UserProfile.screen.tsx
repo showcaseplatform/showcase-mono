@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo } from 'react'
+import React, { useLayoutEffect, useMemo, useState } from 'react'
 import { View, FlatList, Pressable, Share } from 'react-native'
 import { NavigationProp, RouteProp } from '@react-navigation/native'
 import { Button, Divider, IconButton } from 'react-native-paper'
@@ -27,8 +27,11 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
   `${items[0].id}${items[1]?.id}${index}`
 
 const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
-  const { data, loading, error } = useMeQuery()
+  const { data, loading, error } = useMeQuery({
+    fetchPolicy: 'cache-and-network',
+  })
   const theme = useTheme()
+  const [countOfBadges, setCountOfBadges] = useState(0)
 
   const countOfFriends = useMemo(
     () =>
@@ -47,10 +50,15 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
   // const friendsLength = data?.me.friendsCount
   // const followersLength = data?.me.followersCount
 
-  const reshapedCreatedBadgeTypes = useMemo(
-    () => reshapeBadges<Partial<BadgeType>>(data?.me.badgeTypesCreated || []),
-    [data?.me.badgeTypesCreated]
-  )
+  const allReshapedBadges = useMemo(() => {
+    const created = data?.me.badgeTypesCreated || []
+    const owned = data?.me.badgeItemsOwned.map((item) => item.badgeType) || []
+
+    const allBadges = [...created, ...owned]
+
+    setCountOfBadges(allBadges.length)
+    return reshapeBadges<BadgeType>(allBadges)
+  }, [data?.me.badgeTypesCreated, data?.me.badgeItemsOwned])
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -131,7 +139,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
             <Divider style={{ width: 1, height: '60%' }} />
 
             <View alignItems="center" style={{ paddingHorizontal: 12 }}>
-              <Text>{data.me.badgeTypesCreated.length}</Text>
+              <Text>{countOfBadges}</Text>
               <Spacer />
               <Text variant="caption">{translate().profileCountBadges}</Text>
             </View>
@@ -162,7 +170,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
         <View style={{ flexGrow: 1, width: '100%' }}>
           <FlatList
             horizontal
-            data={reshapedCreatedBadgeTypes}
+            data={allReshapedBadges}
             keyExtractor={createReshapedBadgeKey}
             contentContainerStyle={{ flexGrow: 1, paddingVertical: 8 }}
             ListEmptyComponent={<EmptyListComponent text="No Badges yet." />}

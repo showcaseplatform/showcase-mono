@@ -109,7 +109,7 @@ export class UserSeeder {
             id: pickRandomItemFromList<number>(causesList),
           },
         },
-        donationAmount: 5,
+        donationAmount: 0.10,
         price: 1,
         supply: this.numberOfCollectors + 5,
         sold: this.numberOfCollectors,

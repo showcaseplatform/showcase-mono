@@ -4,33 +4,22 @@ query User($id: String!) {
     userType
     amIFollowing
     profile {
-      id
-      displayName
-      bio
-      username
-      avatarUrl
+      ...Profile_WithBasics
     }
     badgeTypesCreated {
-      id
-      title
-      publicUrl
+      ...BadgeType_WithBasics
     }
-     badgeItemsToShow {
+    badgeItemsToShow {
       id
       badgeType {
-        id
-        title
-        publicUrl
+        ...BadgeType_WithBasics
       }
     }
     badgeItemsForSale {
-      id  
+      id
       badgeType {
-        id
-        title
-        publicUrl
+        ...BadgeType_WithBasics
       }
     }
-
   }
 }

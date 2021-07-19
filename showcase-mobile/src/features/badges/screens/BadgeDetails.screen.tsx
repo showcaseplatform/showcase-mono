@@ -11,10 +11,8 @@ import CauseModal from '../components/CauseModal.component'
 import { DonationWidget } from '../components/DonationWidget.component'
 import { translate } from '../../../utils/translator'
 import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
-import { useBadgeTypeQuery } from '../../../generated/graphql'
-import LoadingIndicator from '../../../components/LoadingIndicator.component'
+import { useMyModal } from '../../../utils/useMyModal'
 import Error from '../../../components/Error.component'
-import useBuyFlow from '../../../utils/useBuyFlow'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -24,10 +22,7 @@ type BadgeDetailsScreenProps = {
 const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const theme = useTheme()
   const { item } = route.params
-  const { data, loading, error } = useBadgeTypeQuery({
-    variables: { id: item.id },
-  })
-  const { start } = useBuyFlow({ itemId: item.id })
+  const { buyBadgeItem } = useMyModal()
 
   const [showCauseModal, setShowCauseModal] = useState(false)
   const handleCloseModal = () => setShowCauseModal(false)
@@ -36,15 +31,10 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <View>
-          <Text style={{ color: theme.colors.text.secondary }}>
-            {makeSupplyTag(item.sold, item.supply)}
-          </Text>
-        </View>
+        <Text style={{ color: theme.colors.text.secondary }}>
+          {makeSupplyTag(item.sold, item.supply)}
+        </Text>
       ),
-      headerRightContainerStyle: {
-        paddingRight: 10,
-      },
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation])
@@ -64,9 +54,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       })
   }, [navigation])
 
-  if (loading) {
-    return <LoadingIndicator fullScreen />
-  } else if (data) {
+  if (item) {
     const {
       price,
       currency,
@@ -74,7 +62,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       creator: { profile },
       cause,
       publicUrl,
-    } = data.badgeType
+    } = item
 
     return (
       <>
@@ -152,7 +140,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             <Button
               mode="contained"
               color={theme.colors.ui.accent}
-              onPress={() => start({ itemId: item.id })}
+              onPress={() => buyBadgeItem(item.id)}
               style={{ borderRadius: 30 }}
               contentStyle={{ paddingHorizontal: 8 }}
               uppercase
@@ -175,8 +163,8 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         </Provider>
       </>
     )
-  } else if (error) {
-    return <Error error={error} />
+  } else {
+    return <Error />
   }
 }
 

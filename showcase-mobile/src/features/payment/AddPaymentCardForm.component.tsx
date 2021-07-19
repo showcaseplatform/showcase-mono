@@ -15,10 +15,10 @@ import MySelectInputComponent from '../../components/MySelectInput.component'
 import MyTextField from '../../components/MyTextField.component'
 import { Spacer } from '../../components/Spacer.component'
 
-import { useAddPaymentMutation } from '../../generated/graphql'
+import { MeDocument, useAddPaymentMutation } from '../../generated/graphql'
 
 import { delay } from '../../utils/helpers'
-import useBuyFlow from '../../utils/useBuyFlow'
+import { useMyModal } from '../../utils/useMyModal'
 
 // type PaymentFormData = Pick<PaymentInfo,'lastFourCardDigit'>
 type AddPaymentCardInputs = {
@@ -58,8 +58,9 @@ const schema = yup.object().shape({
 
 const AddPaymentCardForm = () => {
   const theme = useTheme()
-  const [addPayment] = useAddPaymentMutation()
-  const { start } = useBuyFlow({})
+  const [addPayment] = useAddPaymentMutation({
+    refetchQueries: [{ query: MeDocument }],
+  })
 
   const { control, handleSubmit, formState } = useForm<AddPaymentCardInputs>({
     defaultValues: {
@@ -90,13 +91,15 @@ const AddPaymentCardForm = () => {
     mode: 'onBlur',
   })
 
+  const { handleModal } = useMyModal()
+
   const onSubmit = async (_formData: AddPaymentCardInputs) => {
     // send info to a payment service than receive payment auth token
 
     // TEMP
     // validate then return a fake payment service token with short expiration time
     const paymentCredentials = await delay(1000).then((_r) => ({
-      token: 'faketoken',
+      token: 'faketoken' + Date.now(),
       expirationTime: 10 * 60 * 1000,
     }))
 
@@ -117,9 +120,9 @@ const AddPaymentCardForm = () => {
         variables: { data },
       })
 
-      if (result.data?.addPaymentInfo.paymentInfo?.idToken) {
-        // restart buy flow
-        start()
+      if (result.data?.addPaymentInfo.paymentInfo?.lastFourCardDigit) {
+        // TODO: continue buy flow
+        handleModal()
       }
     }
   }

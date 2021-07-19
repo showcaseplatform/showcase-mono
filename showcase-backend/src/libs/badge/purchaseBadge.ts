@@ -39,7 +39,7 @@ enum ErrorMessages {
   outOfStock = 'Out of stock',
 }
 
-const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
+export const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
   const userWithBadgeItems = await prisma.user.findUnique({
     where: {
       id: userId,
@@ -179,7 +179,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   // todo: improve this validation once we know what paymentInfo should we use
   if (
     !user ||
-    user.userType != UserType.basic ||
+    user.userType == UserType.basic ||
     !user.balance ||
     !user.paymentInfo ||
     !user?.profile?.currency

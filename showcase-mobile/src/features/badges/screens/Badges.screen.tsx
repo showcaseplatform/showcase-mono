@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { NavigationProp } from '@react-navigation/core'
 import { FlatList, View, RefreshControl } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
@@ -72,7 +72,10 @@ const BadgesScreen = ({
     await refetch({ limit: 10, category: val, search: searchQuery })
   }
 
-  const badges = data?.feedSearch.edges.map((edge) => edge.node)
+  const badges = useMemo(
+    () => data?.feedSearch.edges.map((edge) => edge.node),
+    [data?.feedSearch.edges]
+  )
   const pageInfo = data?.feedSearch.pageInfo
 
   if (error) {

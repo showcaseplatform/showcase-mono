@@ -17,7 +17,7 @@ import StyledModal, {
 } from '../../../components/StyledModal.component'
 
 interface CauseModalProps extends StyledModalProps {
-  cause: Cause
+  cause: Pick<Cause, 'name' | 'site' | 'imageUrl'>
   donation: number
 }
 

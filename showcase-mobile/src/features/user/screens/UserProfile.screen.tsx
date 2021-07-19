@@ -10,7 +10,9 @@ import { UserStackParamList } from '../../../infrastructure/navigation/user.navi
 import { reshapeBadges } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 
-import BadgeItem from '../../badges/components/BadgeItem.component'
+import BadgeItem, {
+  MyBadgeType,
+} from '../../badges/components/BadgeItem.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 import ProfileImage from '../../../components/ProfileImage.component'
@@ -27,9 +29,7 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
   `${items[0].id}${items[1]?.id}${index}`
 
 const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
-  const { data, loading, error } = useMeQuery({
-    fetchPolicy: 'cache-and-network',
-  })
+  const { data, loading, error } = useMeQuery()
   const theme = useTheme()
   const [countOfBadges, setCountOfBadges] = useState(0)
 
@@ -50,6 +50,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
   // const friendsLength = data?.me.friendsCount
   // const followersLength = data?.me.followersCount
 
+  // !: temp
   const allReshapedBadges = useMemo(() => {
     const created = data?.me.badgeTypesCreated || []
     const owned = data?.me.badgeItemsOwned.map((item) => item.badgeType) || []
@@ -57,7 +58,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
     const allBadges = [...created, ...owned]
 
     setCountOfBadges(allBadges.length)
-    return reshapeBadges<BadgeType>(allBadges)
+    return reshapeBadges<MyBadgeType>(allBadges)
   }, [data?.me.badgeTypesCreated, data?.me.badgeItemsOwned])
 
   useLayoutEffect(() => {

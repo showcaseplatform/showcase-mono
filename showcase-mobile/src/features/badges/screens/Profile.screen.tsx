@@ -72,7 +72,6 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
 
   const { data, loading, error } = useUserQuery({
     variables: { id },
-    fetchPolicy: 'cache-first',
   })
 
   const isCreator = data?.user?.userType === UserType.Creator

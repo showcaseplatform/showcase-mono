@@ -6,12 +6,12 @@ import BadgeDetailsScreen from '../../features/badges/screens/BadgeDetails.scree
 import { Alert } from 'react-native'
 import ProfileScreen from '../../features/badges/screens/Profile.screen'
 import { IconButton } from 'react-native-paper'
-import { BadgeType } from '../../generated/graphql'
+import { MyBadgeType } from '../../features/badges/components/BadgeItem.component'
 
 export type BadgeStackParamList = {
   Badges: undefined
   BadgeDetails: {
-    item: BadgeType
+    item: MyBadgeType
   }
   Profile: {
     userId: string

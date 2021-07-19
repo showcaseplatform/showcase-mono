@@ -7,7 +7,7 @@ import { translate } from '../../utils/translator'
 import { ModalType } from '../../../types/enum'
 import { makePriceTag } from '../../utils/helpers'
 import {
-  BadgeTypeDocument,
+  BadgeDetailsDocument,
   MeDocument,
   useBuyBadgeItemMutation,
 } from '../../generated/graphql'
@@ -65,7 +65,7 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
 
   const [getMe, { data: dataMe, error: errorMe }] = useLazyQuery(MeDocument)
   const [getBadgeType, { data: dataBadge, error: errorBadge }] =
-    useLazyQuery(BadgeTypeDocument)
+    useLazyQuery(BadgeDetailsDocument)
 
   const [buyBadge] = useBuyBadgeItemMutation({
     onCompleted: () => {

@@ -13,6 +13,8 @@ import { translate } from '../../../utils/translator'
 import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
 import { useMyModal } from '../../../utils/useMyModal'
 import Error from '../../../components/Error.component'
+import { useBadgeDetailsQuery } from '../../../generated/graphql'
+import LoadingIndicator from '../../../components/LoadingIndicator.component'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -22,6 +24,10 @@ type BadgeDetailsScreenProps = {
 const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const theme = useTheme()
   const { item } = route.params
+  const { data, loading, error } = useBadgeDetailsQuery({
+    variables: { id: route.params.item.id },
+  })
+
   const { buyBadgeItem } = useMyModal()
 
   const [showCauseModal, setShowCauseModal] = useState(false)
@@ -54,15 +60,18 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       })
   }, [navigation])
 
-  if (item) {
+  if (loading) {
+    return <LoadingIndicator fullScreen />
+  }
+
+  if (data?.badgeType) {
     const {
-      price,
-      currency,
+      id,
       donationAmount,
       creator: { profile },
       cause,
       publicUrl,
-    } = item
+    } = data.badgeType
 
     return (
       <>
@@ -106,7 +115,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         >
           <View>
             <Text variant="body" color="secondary">
-              {makePriceTag(price, currency)}
+              {makePriceTag(item.price, item.currency)}
             </Text>
             <Spacer position="y">
               <View flexDirection="row">
@@ -140,7 +149,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             <Button
               mode="contained"
               color={theme.colors.ui.accent}
-              onPress={() => buyBadgeItem(item.id)}
+              onPress={() => buyBadgeItem(id)}
               style={{ borderRadius: 30 }}
               contentStyle={{ paddingHorizontal: 8 }}
               uppercase
@@ -164,7 +173,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       </>
     )
   } else {
-    return <Error />
+    return <Error error={error} />
   }
 }
 

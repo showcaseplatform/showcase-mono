@@ -3,5 +3,6 @@ query Causes {
     id
     name
     imageUrl
+    site
   }
 }

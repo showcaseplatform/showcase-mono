@@ -9,7 +9,7 @@ services:
     env: node
     buildCommand: cd showcase-backend && yarn && yarn run prisma:generate && yarn run build
     startCommand: cd showcase-backend && yarn prisma:ci && yarn start
-    afterFirstDeployCommand: cd showcase-backend yarn prisma:seed
+    afterFirstDeployCommand: cd showcase-backend && yarn prisma:seed
     envVars:
       - fromGroup: showcase-backend
       - key: DATABASE_URL

@@ -7,122 +7,103 @@ export const addCausesFixture = async (prisma: PrismaClient) => {
         id: 1,
         name: 'Carpathia Foundation',
         site: 'https://www.carpathia.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fcarpathia.jpg?alt=media',
-        balanceEUR: 0.55,
-        numberOfContributions: 1,
+        image: 'causes/carpathia.jpg',
       },
       {
         id: 2,
         name: 'The Salvation Army',
         site: 'http://www.salvationarmy.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fsalvationarmy.jpg?alt=media',
+        image: 'causes/salvationarmy.jpg',
       },
       {
         id: 3,
         name: 'Sea Turtle Conservancy',
         site: 'http://www.conserveturtles.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fstc.jpg?alt=media',
+        image: 'causes/stc.jpg',
       },
       {
         id: 4,
         name: 'Feeding America',
         site: 'http://www.feedingamerica.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Ffeedingamerica.jpg?alt=media',
+        image: 'causes/feedingamerica.jpg',
       },
       {
         id: 5,
         name: 'Scholarship America',
         site: 'http://www.scholarshipamerica.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fscholarshipamerica.jpg?alt=media',
+        image: 'causes/scholarshipamerica.jpg',
       },
       {
         id: 6,
         name: 'Keep America Beautiful',
         site: 'https://www.kab.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fkap.jpg?alt=media',
+        image: 'caues/kap.jpg',
       },
       {
         id: 7,
         name: 'Autism Speaks',
         site: 'http://www.autismspeaks.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fautismspeaks.jpg?alt=media',
+        image: 'causes/autismspeaks.jpg',
       },
       {
         id: 8,
         name: 'American Civil Liberties Union',
         site: 'http://aclu.org',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Famericanheart.png?alt=media',
+        image: 'causes/americanheart.png',
       },
       {
         id: 9,
         name: 'Habitat for Humanity',
         site: 'https://www.habitat.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fhabitatforhumanity.jpg?alt=media',
+        image: 'causes/habitatforhumanity.jpg',
       },
       {
         id: 10,
         name: 'Coral Reef Alliance',
         site: 'http://coral.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fcoralalliance.jpg?alt=media',
+        image: 'causes/coralalliance.jpg',
       },
       {
         id: 11,
         name: 'Wounded Warrior Project',
         site: 'https://www.woundedwarriorproject.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fwoundedwarrior.jpg?alt=media',
+        image: 'causes/woundedwarrior.jpg',
       },
       {
         id: 12,
         name: "Alzheimer's Association",
         site: 'https://www.alz.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Falzheimers.jpg?alt=media',
+        image: 'causes/alzheimers.jpg',
       },
       {
         id: 13,
         site: 'https://www.heart.org/',
         name: 'American Heart Association',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Famericanheart.png?alt=media',
+        image: 'causes/americanheart.png',
       },
       {
         id: 14,
         name: "St. Jude Children's Research Hospital",
         site: 'http://www.stjude.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Fstjudes.jpg?alt=media',
+        image: 'causes/stjudes.jpg',
       },
       {
         id: 15,
         name: 'Rainforest Action Network',
         site: 'https://www.ran.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Frainforestaction.jpg?alt=media',
+        image: 'causes/rainforestaction.jpg',
       },
       {
         id: 16,
         name: 'American Cancer Society',
         site: 'http://www.cancer.org/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Famericancancer.jpg?alt=media',
+        image: 'causes/americancancer.jpg',
       },
       {
         id: 17,
         name: 'Operation Honey Bee',
         site: 'https://www.operationhoneybee.com/',
-        image:
-          'https://firebasestorage.googleapis.com/v0/b/showcase-app-2b04e.appspot.com/o/causes%2Foperationhoneybee.jpg?alt=media',
+        image: 'causes/operationhoneybee.jpg',
       },
     ],
   })

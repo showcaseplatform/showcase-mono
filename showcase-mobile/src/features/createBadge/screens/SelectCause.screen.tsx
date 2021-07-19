@@ -99,7 +99,7 @@ const SelectCause: React.FC<SelectCauseProps> = ({ route, navigation }) => {
               onPress={() => handleToggleSelect(item.id)}
             >
               <Image
-                source={{ uri: item.image }}
+                source={{ uri: item.imageUrl }}
                 resizeMode="contain"
                 style={{ width: '100%', height: undefined, aspectRatio: 1 / 1 }}
               />

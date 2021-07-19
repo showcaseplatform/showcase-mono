@@ -1,6 +1,5 @@
 import { Uid } from '../../types/user'
 import { prisma } from '../../services/prisma'
-import { BadgeType, Currency } from '.prisma/client'
 import {
   SHOWCASE_COMMISSION_FEE_MULTIPLIER,
   SPEND_LIMIT_DEFAULT,
@@ -10,11 +9,16 @@ import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
 import { getRandomNum } from '../../utils/randoms'
-import { isBadgeTypeSoldOut } from './validateBadgeType'
+import {
+  isBadgeTypeCreatedByUser,
+  isBadgeTypeOwnedByUser,
+  isBadgeTypeSoldOut,
+} from './validateBadgePurchase'
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
 import { findUserWithFinancialInfo } from '../database/user.repo'
 import { findBadgeType } from '../database/badgeType.repo'
-import { UserType } from '@prisma/client'
+import { Currency, UserType } from '@prisma/client'
+import { BadgeType } from '@generated/type-graphql'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -32,31 +36,27 @@ interface PurchaseTransactionInput {
 }
 
 enum ErrorMessages {
-  badgeAlreadyOwned = 'You already purchased this badge.',
+  badgeAlreadyOwned = 'You already purchased this badge',
+  badgeCreatedByUser = 'Creators cannot buy from own badges',
   paymentInfoMissing = 'Payment information missing',
   spendingLimitReached = 'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.',
   transactionFailed = 'Purchase transaction failed to execute',
   outOfStock = 'Out of stock',
 }
 
-export const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
-  const userWithBadgeItems = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      badgeItemsOwned: {
-        where: {
-          badgeTypeId,
-        },
-      },
-    },
-  })
+const checkIfUserAllowedToPurchase = async (
+  userId: Uid,
+  badgeType: BadgeType
+): Promise<void> => {
+  if (isBadgeTypeCreatedByUser(userId, badgeType.creatorId)) {
+    throw new GraphQLError(ErrorMessages.badgeCreatedByUser)
+  }
 
-  if (
-    userWithBadgeItems?.badgeItemsOwned?.length &&
-    userWithBadgeItems?.badgeItemsOwned?.length > 0
-  ) {
+  if (await isBadgeTypeSoldOut(badgeType)) {
+    throw new GraphQLError(ErrorMessages.outOfStock)
+  }
+
+  if (await isBadgeTypeOwnedByUser(userId, badgeType.id)) {
     throw new GraphQLError(ErrorMessages.badgeAlreadyOwned)
   }
 }
@@ -166,11 +166,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
 
   const badgeType = await findBadgeType(badgeTypeId)
 
-  await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
-
-  if (isBadgeTypeSoldOut(badgeType)) {
-    throw new GraphQLError(ErrorMessages.outOfStock)
-  }
+  await checkIfUserAllowedToPurchase(uid, badgeType)
 
   const user = await findUserWithFinancialInfo(uid)
 

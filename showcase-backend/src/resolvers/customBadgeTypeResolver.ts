@@ -5,7 +5,13 @@ import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
 import { myS3 } from '../services/S3/s3'
-import { isBadgeTypeSoldOut, isBadgeTypeRemovedFromShowcase } from '../libs/badge/validateBadgeType'
+import {
+  isBadgeTypeSoldOut,
+  isBadgeTypeRemovedFromShowcase,
+  getAvailableToBuyCount,
+  isBadgeTypeOwnedByUser,
+  isBadgeTypeCreatedByUser,
+} from '../libs/badge/validateBadgePurchase'
 
 @Resolver(() => BadgeType)
 export class CustomBadgeTypeResolver {
@@ -52,8 +58,24 @@ export class CustomBadgeTypeResolver {
   async removedFromShowcase(@Root() badgeType: BadgeType) {
     return await isBadgeTypeRemovedFromShowcase(badgeType.id)
   }
+
   @FieldResolver((_) => Boolean)
   async isSoldOut(@Root() badgeType: BadgeType) {
-    return isBadgeTypeSoldOut(badgeType)
+    return await isBadgeTypeSoldOut(badgeType)
+  }
+
+  @FieldResolver((_) => Int, { description: 'currently available stock' })
+  async availableToBuyCount(@Root() badgeType: BadgeType) {
+    return await getAvailableToBuyCount(badgeType)
+  }
+
+  @FieldResolver((_) => Boolean)
+  isCreatedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
+    return isBadgeTypeCreatedByUser(currentUser.id, badgeType.creatorId)
+  }
+
+  @FieldResolver((_) => Boolean)
+  async isOwnedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
+    return await isBadgeTypeOwnedByUser(currentUser.id, badgeType.id)
   }
 }

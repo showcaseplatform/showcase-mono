@@ -7,9 +7,10 @@ import { translate } from '../../utils/translator'
 import { ModalType } from '../../../types/enum'
 import { makePriceTag } from '../../utils/helpers'
 import {
-  BadgeDetailsDocument,
+  BuyBadgeCheckDocument,
   MeDocument,
   useBuyBadgeItemMutation,
+  useMeQuery,
 } from '../../generated/graphql'
 
 import AddPaymentCardForm from '../../features/payment/AddPaymentCardForm.component'
@@ -63,9 +64,10 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
   )
   const [badgeTypeId, setBadgeTypeId] = useState<string | undefined>(undefined)
 
-  const [getMe, { data: dataMe, error: errorMe }] = useLazyQuery(MeDocument)
-  const [getBadgeType, { data: dataBadge, error: errorBadge }] =
-    useLazyQuery(BadgeDetailsDocument)
+  const { data: dataMe, error: errorMe, refetch: refetchMe } = useMeQuery()
+  const [getBadgeData, { data: dataBadge, error: errorBadge }] = useLazyQuery(
+    BuyBadgeCheckDocument
+  )
 
   const [buyBadge] = useBuyBadgeItemMutation({
     onCompleted: () => {
@@ -76,10 +78,6 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     refetchQueries: [{ query: MeDocument }],
   })
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  React.useEffect(() => getMe(), [])
-
-  const isOutOfStock = dataBadge?.badgeType?.supply < 1
   const hasPaymentInfo =
     !!dataMe?.me?.paymentInfo?.idToken &&
     dataMe?.me?.paymentInfo?.lastFourCardDigit.length === 4
@@ -128,13 +126,15 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+      await refetchMe()
+
       if (!hasPaymentInfo) {
         return handleModal(ModalType.ADD_PAYMENT)
       }
 
-      await getBadgeType({ variables: { id: itemId } })
+      await getBadgeData({ variables: { id: itemId } })
 
-      if (isOutOfStock) {
+      if (dataBadge?.badgeType?.availableToBuyCount < 0) {
         return outOfStockAlert()
       }
 
@@ -159,23 +159,21 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     >
       <>
         {children}
-        {currentModalType && (
-          <StyledModal
-            visible={isOpen}
-            onDismiss={handleModal}
-            children={
-              <>
-                <ModalHeader
-                  title={modals[currentModalType].title}
-                  subtitle={modals[currentModalType]?.subtitle}
-                  onClose={handleModal}
-                />
-                <Spacer size="large" />
-                {modals[currentModalType].component}
-              </>
-            }
-          />
-        )}
+        <StyledModal
+          visible={isOpen}
+          onDismiss={handleModal}
+          children={
+            <>
+              <ModalHeader
+                title={modals[currentModalType].title}
+                subtitle={modals[currentModalType]?.subtitle}
+                onClose={handleModal}
+              />
+              <Spacer size="large" />
+              {modals[currentModalType].component}
+            </>
+          }
+        />
       </>
     </ModalContext.Provider>
   )

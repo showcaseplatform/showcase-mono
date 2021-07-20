@@ -71,6 +71,9 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       creator: { profile },
       cause,
       publicUrl,
+      isOwnedByMe,
+      isCreatedByMe,
+      availableToBuyCount,
     } = data.badgeType
 
     return (
@@ -98,7 +101,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         {cause && donationAmount && (
           <DonationWidget
             donation={donationAmount}
-            image={cause?.image}
+            image={cause?.imageUrl}
             openModal={handleOpenModal}
           />
         )}
@@ -152,9 +155,18 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
               onPress={() => buyBadgeItem(id)}
               style={{ borderRadius: 30 }}
               contentStyle={{ paddingHorizontal: 8 }}
+              disabled={availableToBuyCount < 1 || isCreatedByMe || isOwnedByMe}
               uppercase
             >
-              <Text color="secondary">{translate().purchaseButton}</Text>
+              <Text color="secondary">
+                {availableToBuyCount < 1
+                  ? translate().outOfStock
+                  : isCreatedByMe
+                  ? translate().yourCreation
+                  : isOwnedByMe
+                  ? translate().alreadyOwned
+                  : translate().purchaseButton}
+              </Text>
             </Button>
           </View>
         </View>

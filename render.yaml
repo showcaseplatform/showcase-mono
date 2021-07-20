@@ -21,3 +21,4 @@ databases:
     plan: starter
     previewPlan: starter
     region: oregon
+    postgresMajorVersion: 13

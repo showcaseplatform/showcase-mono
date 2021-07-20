@@ -6,4 +6,5 @@ fragment BuyBadgeCriterias on BadgeType {
   isOwnedByMe
   isCreatedByMe
   availableToBuyCount
+  isSoldOut
 }

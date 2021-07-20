@@ -9,8 +9,8 @@ import { makePriceTag } from '../../utils/helpers'
 import {
   BuyBadgeCheckDocument,
   MeDocument,
+  useAmIAllowedToBuyQuery,
   useBuyBadgeItemMutation,
-  useMeQuery,
 } from '../../generated/graphql'
 
 import AddPaymentCardForm from '../../features/payment/AddPaymentCardForm.component'
@@ -64,7 +64,8 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
   )
   const [badgeTypeId, setBadgeTypeId] = useState<string | undefined>(undefined)
 
-  const { data: dataMe, error: errorMe, refetch: refetchMe } = useMeQuery()
+  const { data: dataAllowedToBuy, error: errorAllowedToBuy } =
+    useAmIAllowedToBuyQuery()
   const [getBadgeData, { data: dataBadge, error: errorBadge }] = useLazyQuery(
     BuyBadgeCheckDocument
   )
@@ -77,10 +78,6 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     },
     refetchQueries: [{ query: MeDocument }],
   })
-
-  const hasPaymentInfo =
-    !!dataMe?.me?.paymentInfo?.idToken &&
-    dataMe?.me?.paymentInfo?.lastFourCardDigit.length === 4
 
   const handleModal = useCallback((modalType?: ModalType) => {
     if (modalType) {
@@ -126,15 +123,13 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      await refetchMe()
-
-      if (!hasPaymentInfo) {
+      if (!dataAllowedToBuy?.me.isAllowedToBuy) {
         return handleModal(ModalType.ADD_PAYMENT)
       }
 
-      await getBadgeData({ variables: { id: itemId } })
-
-      if (dataBadge?.badgeType?.availableToBuyCount < 0) {
+      getBadgeData({ variables: { id: itemId } }) //todo: promisify me
+      // then continue if got supply data
+      if (dataBadge?.badgeType?.isSoldOut) {
         return outOfStockAlert()
       }
 
@@ -142,7 +137,7 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       handleModal()
       console.error('def', error)
-      console.error('def', errorMe)
+      console.error('def', errorAllowedToBuy)
       console.error('def', errorBadge)
     }
   }
@@ -159,18 +154,19 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     >
       <>
         {children}
+
         <StyledModal
           visible={isOpen}
           onDismiss={handleModal}
           children={
             <>
               <ModalHeader
-                title={modals[currentModalType].title}
+                title={modals[currentModalType]?.title}
                 subtitle={modals[currentModalType]?.subtitle}
-                onClose={handleModal}
+                onClose={() => handleModal(undefined)}
               />
               <Spacer size="large" />
-              {modals[currentModalType].component}
+              {modals[currentModalType]?.component}
             </>
           }
         />

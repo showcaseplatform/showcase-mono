@@ -71,11 +71,19 @@ export class CustomBadgeTypeResolver {
 
   @FieldResolver((_) => Boolean)
   isCreatedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
-    return isBadgeTypeCreatedByUser(currentUser.id, badgeType.creatorId)
+    const uid = currentUser?.id
+    if (!uid) {
+      return false
+    }
+    return isBadgeTypeCreatedByUser(uid, badgeType.creatorId)
   }
 
   @FieldResolver((_) => Boolean)
   async isOwnedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
-    return await isBadgeTypeOwnedByUser(currentUser.id, badgeType.id)
+    const uid = currentUser?.id
+    if (!uid) {
+      return false
+    }
+    return await isBadgeTypeOwnedByUser(uid, badgeType.id)
   }
 }

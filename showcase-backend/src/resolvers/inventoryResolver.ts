@@ -13,7 +13,6 @@ import {
   BadgeTypeLike,
   BadgeItemLike,
   User,
-  UserType,
   BadgeTypeView,
   BadgeItemView,
 } from '@prisma/client'
@@ -41,7 +40,7 @@ export class InventoryResolver {
     return await countView(countViewInput, currentUser.id)
   }
 
-  @Authorized(UserType.collector, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => BadgeItem)
   async listBadgeForSale(
     @Arg('data') listBadgeForSaleInput: ListBadgeForSaleInput,
@@ -50,7 +49,7 @@ export class InventoryResolver {
     return await listBadgeForSale(listBadgeForSaleInput, currentUser.id)
   }
 
-  @Authorized(UserType.collector, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => BadgeItem)
   async unlistBadgeForSale(
     @Arg('data') unListBadgeForSaleInput: UnListBadgeForSaleInput,

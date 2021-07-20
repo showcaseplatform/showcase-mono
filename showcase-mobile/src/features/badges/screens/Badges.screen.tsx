@@ -110,10 +110,10 @@ const BadgesScreen = ({
             refreshing={isLoadingMore}
             onEndReached={handleFetchMore}
             initialNumToRender={10}
-            windowSize={22}
-            maxToRenderPerBatch={12}
-            onEndReachedThreshold={0.2}
-            removeClippedSubviews={true}
+            onEndReachedThreshold={0.4}
+            windowSize={40}
+            // maxToRenderPerBatch={12}
+            // removeClippedSubviews={true}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}

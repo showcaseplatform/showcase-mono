@@ -105,16 +105,15 @@ const BadgesScreen = ({
             data={badges}
             keyExtractor={({ id }) => id}
             numColumns={2}
+            contentContainerStyle={{ flexGrow: 1 }}
             ListEmptyComponent={EmptyListComponent}
             refreshing={isLoadingMore}
             onEndReached={handleFetchMore}
-            onEndReachedThreshold={0.2}
-            contentContainerStyle={{ flexGrow: 1 }}
             initialNumToRender={10}
-            removeClippedSubviews={false}
-            updateCellsBatchingPeriod={30}
-            windowSize={20}
-            maxToRenderPerBatch={4}
+            onEndReachedThreshold={0.4}
+            windowSize={40}
+            // maxToRenderPerBatch={12}
+            // removeClippedSubviews={true}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}

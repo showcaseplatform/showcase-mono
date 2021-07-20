@@ -6,8 +6,6 @@
   - Added the required column `chargeId` to the `Receipt` table without a default value. This is not possible if the table is not empty.
 
 */
--- AlterEnum
-ALTER TYPE "UserType" ADD VALUE 'collector';
 
 -- DropForeignKey
 ALTER TABLE "Stripe" DROP CONSTRAINT "Stripe_userId_fkey";

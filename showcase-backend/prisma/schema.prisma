@@ -22,7 +22,6 @@ enum Currency {
 
 enum UserType {
   basic // only auth
-  collector // todo: delete if really not neccesary
   creator // invite only
 }
 

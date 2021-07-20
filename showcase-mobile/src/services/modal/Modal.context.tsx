@@ -19,6 +19,8 @@ import StorePasswordReminder from '../../features/payment/StorePasswordReminder.
 import StyledModal from '../../components/StyledModal.component'
 import ModalHeader from '../../components/ModalHeader.component'
 import { Spacer } from '../../components/Spacer.component'
+import { useMyBottomSheet } from '../../utils/useMyBottomSheet'
+import AuthenticationFlow from '../../features/authentication/components/AuthenticationFlow.component'
 
 const modals = {
   addPayment: {
@@ -69,6 +71,7 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [getBadgeData, { data: dataBadge, error: errorBadge }] = useLazyQuery(
     BuyBadgeCheckDocument
   )
+  const { expand } = useMyBottomSheet()
 
   const [buyBadge] = useBuyBadgeItemMutation({
     onCompleted: () => {
@@ -123,6 +126,17 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
+      // todo: manage errors lil'bit more sophisitcated
+      if (
+        errorAllowedToBuy?.message ===
+        "Access denied! You don't have permission for this action!"
+      ) {
+        return expand({
+          children: <AuthenticationFlow />,
+          snapPoints: [0, '60%', '80%'],
+        })
+      }
+
       if (!dataAllowedToBuy?.me.isAllowedToBuy) {
         return handleModal(ModalType.ADD_PAYMENT)
       }

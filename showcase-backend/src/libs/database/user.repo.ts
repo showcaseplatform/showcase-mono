@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql'
 import prisma from '../../services/prisma'
 import { Uid } from '../../types/user'
 
@@ -18,7 +19,7 @@ export const findUserById = async (id: Uid) => {
 }
 
 export const findUserWithFinancialInfo = async (id: Uid) => {
-  return await prisma.user.findUnique({
+  const user = await prisma.user.findUnique({
     where: {
       id,
     },
@@ -29,5 +30,9 @@ export const findUserWithFinancialInfo = async (id: Uid) => {
       cryptoWallet: true,
     },
   })
+  if (!user) {
+    throw new GraphQLError('User not found')
+  } else {
+    return user
+  }
 }
-

@@ -4,6 +4,7 @@ import { MyContext } from '../services/apollo'
 import { isUserAlreadyFollowed } from '../libs/user/toggleFollow'
 import { friendsCount, followersCount } from '../libs/user/followCount'
 import { UserBadgeItemsForSale, UserBadgeItemsToShow } from '../libs/user/inventory'
+import { isUserAllowedToBuy } from '../libs/user/permissions'
 
 @Resolver(() => User)
 export class CustomUserResolver {
@@ -24,6 +25,11 @@ export class CustomUserResolver {
   @FieldResolver(() => Int)
   async friendsCount(@Root() user: User): Promise<number> {
     return await friendsCount(user.id)
+  }
+
+  @FieldResolver(() => Boolean)
+  async isAllowedToBuy(@Root() user: User): Promise<Boolean> {
+    return await isUserAllowedToBuy(user.id)
   }
 
   // todo: add custom pagination

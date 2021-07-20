@@ -1,10 +1,6 @@
 import { Uid } from '../../types/user'
 import { prisma } from '../../services/prisma'
-import {
-  SHOWCASE_COMMISSION_FEE_MULTIPLIER,
-  SPEND_LIMIT_DEFAULT,
-  SPEND_LIMIT_KYC_VERIFIED,
-} from '../../consts/businessRules'
+import { SHOWCASE_COMMISSION_FEE_MULTIPLIER } from '../../consts/businessRules'
 import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
@@ -17,8 +13,9 @@ import {
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
 import { findUserWithFinancialInfo } from '../database/user.repo'
 import { findBadgeType } from '../database/badgeType.repo'
-import { Currency, UserType } from '@prisma/client'
-import { BadgeType } from '@generated/type-graphql'
+import { Currency } from '@prisma/client'
+import { BadgeType, User } from '@generated/type-graphql'
+import { hasUserPaymentInfo, hasUserReachedSpendingLimit } from '../user/permissions'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -44,11 +41,11 @@ enum ErrorMessages {
   outOfStock = 'Out of stock',
 }
 
-const checkIfUserAllowedToPurchase = async (
-  userId: Uid,
+const checkIfUserAllowedToPurchaseBadgeType = async (
+  user: User,
   badgeType: BadgeType
 ): Promise<void> => {
-  if (isBadgeTypeCreatedByUser(userId, badgeType.creatorId)) {
+  if (isBadgeTypeCreatedByUser(user.id, badgeType.creatorId)) {
     throw new GraphQLError(ErrorMessages.badgeCreatedByUser)
   }
 
@@ -56,8 +53,16 @@ const checkIfUserAllowedToPurchase = async (
     throw new GraphQLError(ErrorMessages.outOfStock)
   }
 
-  if (await isBadgeTypeOwnedByUser(userId, badgeType.id)) {
+  if (await isBadgeTypeOwnedByUser(user.id, badgeType.id)) {
     throw new GraphQLError(ErrorMessages.badgeAlreadyOwned)
+  }
+
+  if (!hasUserPaymentInfo(user)) {
+    throw new GraphQLError(ErrorMessages.paymentInfoMissing)
+  }
+
+  if (badgeType.price > 0 && hasUserReachedSpendingLimit(user)) {
+    throw new GraphQLError(ErrorMessages.spendingLimitReached)
   }
 }
 
@@ -165,31 +170,9 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   const { badgeTypeId } = input || {}
 
   const badgeType = await findBadgeType(badgeTypeId)
-
-  await checkIfUserAllowedToPurchase(uid, badgeType)
-
   const user = await findUserWithFinancialInfo(uid)
 
-  const isSoldForMoney = badgeType.price > 0
-
-  // todo: improve this validation once we know what paymentInfo should we use
-  if (
-    !user ||
-    user.userType == UserType.basic ||
-    !user.balance ||
-    !user.paymentInfo ||
-    !user?.profile?.currency
-  ) {
-    throw new GraphQLError(ErrorMessages.paymentInfoMissing)
-  }
-
-  if (
-    isSoldForMoney &&
-    ((!user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
-      (user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED))
-  ) {
-    throw new GraphQLError(ErrorMessages.spendingLimitReached)
-  }
+  await checkIfUserAllowedToPurchaseBadgeType(user, badgeType)
 
   const currenciesData = await CurrencyRateLib.getLatestExchangeRates()
 
@@ -231,7 +214,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
     let causeFullAmount = 0
     let USDPrice = 0
 
-    if (isSoldForMoney) {
+    if (badgeType.price > 0) {
       const USDmultiplier = 1 / currenciesData[badgeType.currency]
       USDPrice = parseFloat((badgeType.price * USDmultiplier).toFixed(2))
       const totalPrice = badgeType.price
@@ -254,7 +237,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
       chargeId,
       transactionHash,
       convertedPrice: calculatedPrice,
-      convertedCurrency: user.profile.currency,
+      convertedCurrency: badgeType.currency, // todo: use user.profile?.currency  for conversion
       convertedRate: userCurrencyRate,
       USDPrice,
       newSoldAmount,

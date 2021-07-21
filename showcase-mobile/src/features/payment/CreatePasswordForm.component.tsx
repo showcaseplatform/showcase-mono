@@ -25,16 +25,14 @@ const schema = yup.object().shape({
 
 const CreatePasswordForm = () => {
   const theme = useTheme()
-  const { handleModal, handleFlowData } = useMyModal()
+  const { handleModal } = useMyModal()
   const { control, handleSubmit, formState } = useForm<
     CreateCryptoWalletInput & { password2: string }
   >({
     defaultValues: {
-      // password: undefined,
-      // password2: undefined,
-      password: 'pass',
-      password2: 'pass',
-      hint: undefined,
+      password: '',
+      password2: '',
+      hint: '',
     },
     resolver: yupResolver(schema),
     mode: 'onBlur',
@@ -53,7 +51,7 @@ const CreatePasswordForm = () => {
       // handle expiry
 
       // get server response with ew password or get sent password
-      handleFlowData('password', { password: _formData.password })
+      // handleFlowData('password', { password: _formData.password })
 
       Alert.alert(
         JSON.stringify(walletCredentials),

@@ -14,11 +14,11 @@ const RootProvider = ({ children }: PropsWithChildren<{}>) => {
     <ThemeProvider theme={theme}>
       <TokenProvider>
         <ApolloProvider client={client}>
-          <ModalProvider>
-            <BottomSheetProvider>
+          <BottomSheetProvider>
+            <ModalProvider>
               <Portal.Host>{children}</Portal.Host>
-            </BottomSheetProvider>
-          </ModalProvider>
+            </ModalProvider>
+          </BottomSheetProvider>
         </ApolloProvider>
       </TokenProvider>
     </ThemeProvider>

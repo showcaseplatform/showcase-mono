@@ -1,14 +1,12 @@
-import { createContext, useContext } from 'react'
-import { ModalType } from '../../types/enum'
+import React, { createContext, useContext } from 'react'
 
 export type ModalContextValue = {
   isOpen: boolean
-  currentModalType: ModalType
-  badgeTypeId?: string
-  handleModal: (modalType?: ModalType) => void
-  buyBadgeItem: (badgeTypeId: string) => Promise<void>
+  closeModal: () => void
+  openModal: (content: React.ReactNode) => void
 }
 
+// !: delete me
 export type FlowData = {
   password?: string
   itemId?: string // BadgeItem id

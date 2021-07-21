@@ -124,7 +124,9 @@ const BadgesScreen = ({
             renderItem={({ item }) => (
               <BadgeItem
                 item={item}
-                onPress={() => navigation.navigate('BadgeDetails', { item })}
+                onPress={() =>
+                  navigation.navigate('BadgeDetails', { badgeType: item })
+                }
                 withoutInfo
               />
             )}

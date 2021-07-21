@@ -10,7 +10,6 @@ import valid from 'card-validator'
 import { countries } from '../../utils/authentication.utils'
 import { translate } from '../../utils/translator'
 import { delay } from '../../utils/helpers'
-import { useMyModal } from '../../utils/useMyModal'
 import {
   AmIAllowedToBuyDocument,
   useAddPaymentMutation,
@@ -84,9 +83,10 @@ const schema = yup.object().shape({
   country: yup.string().required(),
 })
 
-const AddPaymentCardForm = () => {
+const AddPaymentCardForm = ({ onCompleted }: { onCompleted: () => void }) => {
   const theme = useTheme()
   const [addPayment] = useAddPaymentMutation({
+    onCompleted,
     refetchQueries: [{ query: AmIAllowedToBuyDocument }],
   })
 
@@ -107,8 +107,6 @@ const AddPaymentCardForm = () => {
     resolver: yupResolver(schema),
     mode: 'onTouched',
   })
-
-  const { handleModal } = useMyModal()
 
   const onSubmit = async (_formData: AddPaymentCardInputs) => {
     // send info to a payment service than receive payment auth token
@@ -133,14 +131,9 @@ const AddPaymentCardForm = () => {
         lastFourCardDigit: getLastFour(_formData.cardNumber),
       }
 
-      const result = await addPayment({
+      await addPayment({
         variables: { data },
       })
-
-      if (result.data?.addPaymentInfo.paymentInfo?.lastFourCardDigit) {
-        // TODO: continue buy flow
-        handleModal()
-      }
     }
   }
 

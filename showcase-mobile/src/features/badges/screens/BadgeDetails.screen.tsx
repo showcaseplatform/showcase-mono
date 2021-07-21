@@ -11,10 +11,10 @@ import CauseModal from '../components/CauseModal.component'
 import { DonationWidget } from '../components/DonationWidget.component'
 import { translate } from '../../../utils/translator'
 import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
-import { useMyModal } from '../../../utils/useMyModal'
 import Error from '../../../components/Error.component'
 import { useBadgeDetailsQuery } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
+import useBuyBadge from '../../../hooks/useBuyBadge'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -23,12 +23,12 @@ type BadgeDetailsScreenProps = {
 
 const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const theme = useTheme()
-  const { item } = route.params
+  const { badgeType } = route.params
   const { data, loading, error } = useBadgeDetailsQuery({
-    variables: { id: route.params.item.id },
+    variables: { id: route.params.badgeType.id },
   })
 
-  const { buyBadgeItem } = useMyModal()
+  const { buyItem } = useBuyBadge(badgeType.id)
 
   const [showCauseModal, setShowCauseModal] = useState(false)
   const handleCloseModal = () => setShowCauseModal(false)
@@ -38,7 +38,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
     navigation.setOptions({
       headerRight: () => (
         <Text style={{ color: theme.colors.text.secondary }}>
-          {makeSupplyTag(item.sold, item.supply)}
+          {makeSupplyTag(badgeType.sold, badgeType.supply)}
         </Text>
       ),
     })
@@ -66,7 +66,6 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
 
   if (data?.badgeType) {
     const {
-      id,
       donationAmount,
       creator: { profile },
       cause,
@@ -118,7 +117,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         >
           <View>
             <Text variant="body" color="secondary">
-              {makePriceTag(item.price, item.currency)}
+              {makePriceTag(badgeType.price, badgeType.currency)}
             </Text>
             <Spacer position="y">
               <View flexDirection="row">
@@ -152,7 +151,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             <Button
               mode="contained"
               color={theme.colors.ui.accent}
-              onPress={() => buyBadgeItem(id)}
+              onPress={buyItem}
               style={{ borderRadius: 30 }}
               contentStyle={{ paddingHorizontal: 8 }}
               disabled={availableToBuyCount < 1 || isCreatedByMe || isOwnedByMe}

@@ -11,7 +11,7 @@ import { MyBadgeType } from '../../features/badges/components/BadgeItem.componen
 export type BadgeStackParamList = {
   Badges: undefined
   BadgeDetails: {
-    item: MyBadgeType
+    badgeType: MyBadgeType
   }
   Profile: {
     userId: string
@@ -34,7 +34,7 @@ export const BadgesNavigator = () => (
       name="BadgeDetails"
       component={BadgeDetailsScreen}
       options={({ route }) => ({
-        title: route.params?.item.title,
+        title: route.params?.badgeType.title,
         headerShown: true,
         headerTransparent: true,
         headerBackTitleVisible: false,

@@ -11,7 +11,7 @@ type ModalHeaderProps = {
 
 const ModalHeader = ({
   title = 'title placeholder',
-  subtitle = 'subtitle placeholder',
+  subtitle,
   onClose,
 }: ModalHeaderProps) => {
   return (

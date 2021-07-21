@@ -7,18 +7,18 @@ import BottomSheetProvider from '../services/bottomSheet/BottomSheetModal.contex
 import { TokenProvider } from '../services/persistence/token'
 import client from '../services/api/apolloClient'
 import theme from './theme'
-import ModalProvider from '../services/modal/Modal.context'
+import BuyBadgeProvider from '../services/modal/BuyBadge.context'
 
 const RootProvider = ({ children }: PropsWithChildren<{}>) => {
   return (
     <ThemeProvider theme={theme}>
       <TokenProvider>
         <ApolloProvider client={client}>
-          <ModalProvider>
+          <BuyBadgeProvider>
             <BottomSheetProvider>
               <Portal.Host>{children}</Portal.Host>
             </BottomSheetProvider>
-          </ModalProvider>
+          </BuyBadgeProvider>
         </ApolloProvider>
       </TokenProvider>
     </ThemeProvider>

@@ -4,6 +4,8 @@ import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import DateTimePickerModal, {
   ReactNativeModalDateTimePickerProps,
 } from 'react-native-modal-datetime-picker'
+import { format } from 'date-fns'
+
 import MyTextInputComponent, {
   ErrorText,
   InputWrapper,
@@ -40,7 +42,7 @@ const MyDatePickerInput = (props: MyDatePickerInput) => {
     <InputWrapper>
       <TouchableWithoutFeedback onPress={showDatePicker}>
         <MyTextInputComponent
-          value={value ? new Date(value).toDateString() : undefined}
+          value={value ? format(new Date(value), 'dd/MM/yyyy') : undefined}
           editable={false}
           error={error}
           placeholder={placeholder}

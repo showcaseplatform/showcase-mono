@@ -1,94 +1,111 @@
 import React from 'react'
-import { Controller, useForm } from 'react-hook-form'
 import { View } from 'react-native'
 import { useTheme } from 'styled-components/native'
-import * as yup from 'yup'
 import { Button } from 'react-native-paper'
+import { Controller, useForm } from 'react-hook-form'
+import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
-// import cardValidator from 'card-validator'
+import valid from 'card-validator'
 
 import { countries } from '../../utils/authentication.utils'
 import { translate } from '../../utils/translator'
+import { delay } from '../../utils/helpers'
+import { useMyModal } from '../../utils/useMyModal'
+import {
+  AmIAllowedToBuyDocument,
+  useAddPaymentMutation,
+} from '../../generated/graphql'
 
 import MyKeyboardAwareScrollView from '../../components/MyKeyboardAwareScrollView.component'
 import MySelectInputComponent from '../../components/MySelectInput.component'
 import MyTextField from '../../components/MyTextField.component'
 import { Spacer } from '../../components/Spacer.component'
 
-import { MeDocument, useAddPaymentMutation } from '../../generated/graphql'
-
-import { delay } from '../../utils/helpers'
-import { useMyModal } from '../../utils/useMyModal'
-
 // type PaymentFormData = Pick<PaymentInfo,'lastFourCardDigit'>
 type AddPaymentCardInputs = {
-  cardNumber: number
-  cvc: number
-  expirationMonth: number
-  expirationYear: number
+  cardNumber: string
+  cvc: string
+  expirationMonth: string
+  expirationYear: string
   name: string
   address: string
   address2: string
   city: string
   state: string
-  zip: number
+  zip: string
   country: string
 }
 
-// todo: card validator
 const schema = yup.object().shape({
-  cardNumber: yup.number().required(),
-  cvc: yup.number().required(),
-  expirationMonth: yup.number().min(2).max(2).lessThan(13).required(),
-  expirationYear: yup
-    .number()
-    .min(2)
-    .max(2)
-    .moreThan(19)
-    .lessThan(30)
+  cardNumber: yup
+    .string()
+    .test(
+      'test-cardNumber',
+      'Credit Card number is invalid',
+      (val) => valid.number(val).isValid
+    )
     .required(),
-  name: yup.string().required(),
+  cvc: yup
+    .string()
+    .test('test-cvc', 'CVC is invalid', (val) => valid.cvv(val).isValid)
+    .required(),
+  expirationMonth: yup
+    .string()
+    .test(
+      'test-expirationMonth',
+      'Expiration month is invalid',
+      (val) => valid.expirationMonth(val).isValid
+    )
+    .required(),
+  expirationYear: yup
+    .string()
+    .test(
+      'test-expirationYear',
+      'Expiration year is invalid',
+      (val) => valid.expirationYear(val).isValid
+    )
+    .required(),
+  name: yup
+    .string()
+    .test(
+      'test-Name',
+      'Name is invalid',
+      (val) => valid.cardholderName(val).isValid
+    )
+    .required(),
   address: yup.string().required(),
   address2: yup.string().required(),
   city: yup.string().required(),
   state: yup.string().required(),
-  zip: yup.number().required(),
+  zip: yup
+    .string()
+    .test('test-Name', 'Zip is invalid', (val) => valid.postalCode(val).isValid)
+    .required(),
   country: yup.string().required(),
 })
 
 const AddPaymentCardForm = () => {
   const theme = useTheme()
   const [addPayment] = useAddPaymentMutation({
-    refetchQueries: [{ query: MeDocument }],
+    refetchQueries: [{ query: AmIAllowedToBuyDocument }],
   })
 
   const { control, handleSubmit, formState } = useForm<AddPaymentCardInputs>({
     defaultValues: {
-      // cardNumber: undefined,
-      // cvc: undefined,
-      // expirationMonth: undefined,
-      // expirationYear: undefined,
-      // name: '',
-      // address: '',
-      // address2: '',
-      // city: '',
-      // state: '',
-      // zip: undefined,
-      // country: undefined,
-      cardNumber: 1000008888,
-      cvc: 1,
-      expirationMonth: 11,
-      expirationYear: 22,
-      name: 'X',
-      address: 'A',
-      address2: 'B',
-      city: 'C',
-      state: 'D',
-      zip: 4281,
+      cardNumber: '',
+      cvc: '',
+      expirationMonth: '',
+      expirationYear: '',
+      name: '',
+      address: '',
+      address2: '',
+      city: '',
+      state: '',
+      zip: '',
       country: 'US',
     },
     resolver: yupResolver(schema),
-    mode: 'onBlur',
+    mode: 'onTouched',
   })
 
   const { handleModal } = useMyModal()
@@ -104,7 +121,7 @@ const AddPaymentCardForm = () => {
     }))
 
     if (paymentCredentials) {
-      const getLastFour = (number: number) => {
+      const getLastFour = (number: number | string) => {
         let arr
         arr = number.toString().split('')
 
@@ -139,8 +156,8 @@ const AddPaymentCardForm = () => {
           }) => (
             <MyTextField
               onBlur={onBlur}
-              onChangeText={(val) => onChange(val && parseInt(val))}
-              value={value.toString()}
+              onChangeText={(val) => onChange(val)}
+              value={value?.toString()}
               error={error}
               placeholder={translate().inputCardNumber}
               hasErrorField
@@ -160,12 +177,13 @@ const AddPaymentCardForm = () => {
               }) => (
                 <MyTextField
                   onBlur={onBlur}
-                  onChangeText={(val) => onChange(val && parseInt(val))}
+                  onChangeText={(val) => onChange(val)}
                   value={value.toString()}
                   error={error}
                   placeholder={translate().inputCVC}
                   hasErrorField
                   autoCorrect={false}
+                  maxLength={3}
                   keyboardType="decimal-pad"
                 />
               )}
@@ -189,6 +207,7 @@ const AddPaymentCardForm = () => {
                   hasErrorField
                   autoCorrect={false}
                   style={{ flex: 1 }}
+                  maxLength={2}
                   keyboardType="decimal-pad"
                 />
               )}
@@ -205,12 +224,13 @@ const AddPaymentCardForm = () => {
               }) => (
                 <MyTextField
                   onBlur={onBlur}
-                  onChangeText={(val) => onChange(val && parseInt(val))}
+                  onChangeText={(val) => onChange(val)}
                   value={value.toString()}
                   error={error}
                   placeholder={translate().inputExpYear}
                   hasErrorField
                   autoCorrect={false}
+                  maxLength={4}
                   keyboardType="decimal-pad"
                 />
               )}
@@ -316,7 +336,7 @@ const AddPaymentCardForm = () => {
           }) => (
             <MyTextField
               onBlur={onBlur}
-              onChangeText={(val) => onChange(val && parseInt(val))}
+              onChangeText={(val) => onChange(val)}
               value={value.toString()}
               error={error}
               placeholder={translate().inputAddressZip}

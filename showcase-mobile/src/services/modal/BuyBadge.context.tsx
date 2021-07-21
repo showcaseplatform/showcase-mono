@@ -9,8 +9,8 @@ import { makePriceTag } from '../../utils/helpers'
 import {
   BuyBadgeCheckDocument,
   MeDocument,
+  useAmIAllowedToBuyQuery,
   useBuyBadgeItemMutation,
-  useMeQuery,
 } from '../../generated/graphql'
 
 import AddPaymentCardForm from '../../features/payment/AddPaymentCardForm.component'
@@ -19,6 +19,8 @@ import StorePasswordReminder from '../../features/payment/StorePasswordReminder.
 import StyledModal from '../../components/StyledModal.component'
 import ModalHeader from '../../components/ModalHeader.component'
 import { Spacer } from '../../components/Spacer.component'
+import { useMyBottomSheet } from '../../utils/useMyBottomSheet'
+import AuthenticationFlow from '../../features/authentication/components/AuthenticationFlow.component'
 
 const modals = {
   addPayment: {
@@ -64,10 +66,12 @@ const BuyBadgeProvider = ({ children }: { children: ReactNode }) => {
   )
   const [badgeTypeId, setBadgeTypeId] = useState<string | undefined>(undefined)
 
-  const { data: dataMe, error: errorMe, refetch: refetchMe } = useMeQuery()
+  const { data: dataAllowedToBuy, error: errorAllowedToBuy } =
+    useAmIAllowedToBuyQuery()
   const [getBadgeData, { data: dataBadge, error: errorBadge }] = useLazyQuery(
     BuyBadgeCheckDocument
   )
+  const { expand } = useMyBottomSheet()
 
   const [buyBadge] = useBuyBadgeItemMutation({
     onCompleted: () => {
@@ -77,10 +81,6 @@ const BuyBadgeProvider = ({ children }: { children: ReactNode }) => {
     },
     refetchQueries: [{ query: MeDocument }],
   })
-
-  const hasPaymentInfo =
-    !!dataMe?.me?.paymentInfo?.idToken &&
-    dataMe?.me?.paymentInfo?.lastFourCardDigit.length === 4
 
   const handleModal = useCallback((modalType?: ModalType) => {
     if (modalType) {
@@ -126,15 +126,24 @@ const BuyBadgeProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      await refetchMe()
+      // todo: manage errors lil'bit more sophisitcated
+      if (
+        errorAllowedToBuy?.message ===
+        "Access denied! You don't have permission for this action!"
+      ) {
+        return expand({
+          children: <AuthenticationFlow />,
+          snapPoints: [0, '60%', '80%'],
+        })
+      }
 
-      if (!hasPaymentInfo) {
+      if (!dataAllowedToBuy?.me.isAllowedToBuy) {
         return handleModal(ModalType.ADD_PAYMENT)
       }
 
-      await getBadgeData({ variables: { id: itemId } })
-
-      if (dataBadge?.badgeType?.availableToBuyCount < 0) {
+      getBadgeData({ variables: { id: itemId } }) //todo: promisify me
+      // then continue if got supply data
+      if (dataBadge?.badgeType?.isSoldOut) {
         return outOfStockAlert()
       }
 
@@ -142,7 +151,7 @@ const BuyBadgeProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       handleModal()
       console.error('def', error)
-      console.error('def', errorMe)
+      console.error('def', errorAllowedToBuy)
       console.error('def', errorBadge)
     }
   }
@@ -159,18 +168,19 @@ const BuyBadgeProvider = ({ children }: { children: ReactNode }) => {
     >
       <>
         {children}
+
         <StyledModal
           visible={isOpen}
           onDismiss={handleModal}
           children={
             <>
               <ModalHeader
-                title={modals[currentModalType].title}
+                title={modals[currentModalType]?.title}
                 subtitle={modals[currentModalType]?.subtitle}
-                onClose={handleModal}
+                onClose={() => handleModal(undefined)}
               />
               <Spacer size="large" />
-              {modals[currentModalType].component}
+              {modals[currentModalType]?.component}
             </>
           }
         />

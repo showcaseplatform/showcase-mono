@@ -58,8 +58,8 @@ const alerts = {
   },
 }
 
-// TODO: convert alerts into modals to make a full flow
-const ModalProvider = ({ children }: { children: ReactNode }) => {
+// TODO: remove business logic, make me a plain modal provider
+const BuyBadgeProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [currentModalType, setCurrentModalType] = useState<ModalType>(
     ModalType.ADD_PAYMENT
@@ -189,4 +189,4 @@ const ModalProvider = ({ children }: { children: ReactNode }) => {
   )
 }
 
-export default ModalProvider
+export default BuyBadgeProvider

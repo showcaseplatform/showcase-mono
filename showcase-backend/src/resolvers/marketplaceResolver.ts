@@ -9,6 +9,7 @@ import { UserType } from '.prisma/client'
 import { User } from '@prisma/client'
 import { CurrentUser } from '../libs/auth/decorators'
 import { FileUpload } from '../utils/types/fileUpload.type'
+import { allUserTypes } from '../libs/auth/authLib'
 
 @Resolver()
 export class MarketplaceResolver {
@@ -22,7 +23,7 @@ export class MarketplaceResolver {
     return publishBadgeType(publishBadgeTypeInput, file, currentUser)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => BadgeItem)
   async purchaseBadge(
     @Arg('data') purchaseBadgeInput: PurchaseBadgeInput,

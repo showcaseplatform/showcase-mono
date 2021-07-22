@@ -10,6 +10,7 @@ import AddPaymentCardForm from '../features/payment/AddPaymentCardForm.component
 // import StorePasswordReminder from '../features/payment/StorePasswordReminder.component'
 import {
   BuyBadgeCheckDocument,
+  MeDocument,
   useAmIAllowedToBuyQuery,
   useBuyBadgeCheckQuery,
   useBuyBadgeItemMutation,
@@ -46,6 +47,7 @@ const useBuyBadge = (badgeTypeId: string) => {
     },
     refetchQueries: [
       { query: BuyBadgeCheckDocument, variables: { id: badgeTypeId } },
+      { query: MeDocument },
     ],
   })
 

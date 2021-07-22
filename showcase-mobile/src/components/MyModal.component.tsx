@@ -8,17 +8,14 @@ const modals = {
   addPayment: {
     title: translate().addCardHeader,
     subtitle: translate().addCardSubHeader,
-    // component: <AddPaymentCardForm />,
   },
   createPassword: {
     title: translate().createWalletHeader,
     subtitle: translate().createWalletSubHeader,
-    // component: <CreatePasswordForm />,
   },
   storePassword: {
     title: translate().createWalletHeader,
     subtitle: translate().backupWalletSubHeader,
-    // component: <StorePasswordReminder />,
   },
 }
 

@@ -8,6 +8,7 @@ import { TokenProvider } from '../services/persistence/token'
 import client from '../services/api/apolloClient'
 import theme from './theme'
 import ModalProvider from '../services/modal/Modal.context'
+import DialogProvider from '../services/dialog/Dialog.context'
 
 const RootProvider = ({ children }: PropsWithChildren<{}>) => {
   return (
@@ -16,7 +17,9 @@ const RootProvider = ({ children }: PropsWithChildren<{}>) => {
         <ApolloProvider client={client}>
           <BottomSheetProvider>
             <ModalProvider>
-              <Portal.Host>{children}</Portal.Host>
+              <Portal.Host>
+                <DialogProvider>{children}</DialogProvider>
+              </Portal.Host>
             </ModalProvider>
           </BottomSheetProvider>
         </ApolloProvider>

@@ -1,9 +1,10 @@
-// import { useLazyQuery } from '@apollo/client'
 import React, { useEffect } from 'react'
 import { useState } from 'react'
-import { Alert, AlertButton } from 'react-native'
+import { Button, Dialog } from 'react-native-paper'
+import { useTheme } from 'styled-components/native'
 import { ModalType } from '../../types/enum'
 import { MyModal } from '../components/MyModal.component'
+import { Text } from '../components/Text.component'
 import AuthenticationFlow from '../features/authentication/components/AuthenticationFlow.component'
 import AddPaymentCardForm from '../features/payment/AddPaymentCardForm.component'
 // import CreatePasswordForm from '../features/payment/CreatePasswordForm.component'
@@ -16,7 +17,9 @@ import {
   useBuyBadgeItemMutation,
 } from '../generated/graphql'
 import { makePriceTag } from '../utils/helpers'
+import { translate } from '../utils/translator'
 import { useMyBottomSheet } from '../utils/useMyBottomSheet'
+import { useMyDialog } from '../utils/useMyDialog'
 import { useMyModal } from '../utils/useMyModal'
 
 enum BuyStep {
@@ -33,6 +36,9 @@ const useBuyBadge = (badgeTypeId: string) => {
   )
   const { expand } = useMyBottomSheet()
   const { openModal, closeModal } = useMyModal()
+  const { openDialog, closeDialog } = useMyDialog()
+
+  const theme = useTheme()
 
   const { data: dataAllowedToBuy, error: errorAllowedToBuy } =
     useAmIAllowedToBuyQuery()
@@ -43,6 +49,7 @@ const useBuyBadge = (badgeTypeId: string) => {
 
   const [buyBadge] = useBuyBadgeItemMutation({
     onCompleted: () => {
+      closeDialog()
       console.log('badge bought, id: ', badgeTypeId)
     },
     refetchQueries: [
@@ -104,40 +111,65 @@ const useBuyBadge = (badgeTypeId: string) => {
         )
       }
       case BuyStep.OUT_OF_STOCK: {
-        return Alert.alert(
-          'Out of Stock',
-          'Please try again later',
-          [
-            {
-              text: 'Ok',
-              style: 'cancel',
-            },
-          ],
-          { cancelable: true }
+        return openDialog(
+          <>
+            <Dialog.Title>{translate().outOfStock}</Dialog.Title>
+            <Dialog.Content>
+              <Text>{translate().tryAgainLater}</Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button
+                onPress={closeDialog}
+                mode="contained"
+                color={theme.colors.ui.accent}
+                style={{ borderRadius: 30 }}
+                contentStyle={{ paddingHorizontal: 8 }}
+                uppercase
+              >
+                OK
+              </Button>
+            </Dialog.Actions>
+          </>
         )
       }
       case BuyStep.SUCCESS: {
         break
       }
       default: {
-        return Alert.alert(
-          'Are you sure want to buy?',
-          `title: ${dataBadge?.badgeType?.title} for ${makePriceTag(
-            dataBadge?.badgeType?.price,
-            dataBadge?.badgeType?.currency
-          )}`,
-          [
-            {
-              text: "Why ya' askin?! Sure",
-              onPress: () => buyBadge({ variables: { badgeTypeId } }),
-            },
-            {
-              text: 'No, thanks!',
-              style: 'cancel',
-              onPress: () => setCurrentBuyStep(undefined),
-            },
-          ] as AlertButton[],
-          { cancelable: true }
+        return openDialog(
+          <>
+            <Dialog.Title>{translate().confirmBuyBadgeTitle}</Dialog.Title>
+            <Dialog.Content>
+              <Text>
+                {dataBadge?.badgeType?.title} for{' '}
+                {makePriceTag(
+                  dataBadge?.badgeType?.price,
+                  dataBadge?.badgeType?.currency
+                )}{' '}
+                ?
+              </Text>
+            </Dialog.Content>
+            <Dialog.Actions>
+              <Button
+                onPress={closeDialog}
+                color={theme.colors.ui.accent}
+                contentStyle={{ paddingHorizontal: 8 }}
+                uppercase
+              >
+                cancel
+              </Button>
+              <Button
+                onPress={() => buyBadge({ variables: { badgeTypeId } })}
+                mode="contained"
+                color={theme.colors.ui.accent}
+                style={{ borderRadius: 20 }}
+                contentStyle={{ paddingHorizontal: 8 }}
+                uppercase
+              >
+                buy
+              </Button>
+            </Dialog.Actions>
+          </>
         )
       }
     }

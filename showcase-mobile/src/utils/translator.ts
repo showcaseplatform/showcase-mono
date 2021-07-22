@@ -32,6 +32,7 @@ const englishTranslations = {
   myTrade: 'Trade',
   purchaseButton: 'BUY',
   outOfStock: 'Out of stock',
+  tryAgainLater: 'Please try again later',
   yourCreation: 'Your creation',
   alreadyOwned: 'Owned',
   searchShowcase: 'Search Showcase',
@@ -149,6 +150,7 @@ const englishTranslations = {
   backupWalletDescription:
     'We recommend writing down your password and storing it in several places. By continuing you agree that in the event your password is lost or stolen, Showcase takes no responsibility or liability and you will permanently lose access to your badges.',
   continueButton: 'Continue',
+  confirmBuyBadgeTitle: 'Are you sure want to buy?',
   createWalletPasswordHint: 'Reminder Hint (optional)',
   createWalletPasswordConfirm: 'Confirm your password',
   createWalletPassword: 'Enter your password',

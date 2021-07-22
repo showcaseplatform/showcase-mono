@@ -68,8 +68,7 @@ const useBuyBadge = (badgeTypeId: string) => {
     } else if (
       // current badge is out of stock
       dataBadge &&
-      dataBadge.badgeType?.availableToBuyCount &&
-      dataBadge.badgeType?.availableToBuyCount < 1
+      dataBadge.badgeType?.availableToBuyCount === 0
     ) {
       setCurrentBuyStep(BuyStep.OUT_OF_STOCK)
     } else if (badgeTypeId && currentBuyStep !== BuyStep.SUCCESS) {

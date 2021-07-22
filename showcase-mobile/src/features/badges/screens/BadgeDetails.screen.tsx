@@ -11,9 +11,10 @@ import CauseModal from '../components/CauseModal.component'
 import { DonationWidget } from '../components/DonationWidget.component'
 import { translate } from '../../../utils/translator'
 import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
-import { useBadgeTypeQuery } from '../../../generated/graphql'
-import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
+import { useBadgeDetailsQuery } from '../../../generated/graphql'
+import LoadingIndicator from '../../../components/LoadingIndicator.component'
+import useBuyBadge from '../../../hooks/useBuyBadge'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -22,10 +23,12 @@ type BadgeDetailsScreenProps = {
 
 const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const theme = useTheme()
-  const { item } = route.params
-  const { data, loading, error } = useBadgeTypeQuery({
-    variables: { id: item.id },
+  const { badgeType } = route.params
+  const { data, loading, error } = useBadgeDetailsQuery({
+    variables: { id: route.params.badgeType.id },
   })
+
+  const { buyItem } = useBuyBadge(badgeType.id)
 
   const [showCauseModal, setShowCauseModal] = useState(false)
   const handleCloseModal = () => setShowCauseModal(false)
@@ -34,21 +37,16 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <View>
-          <Text style={{ color: theme.colors.text.secondary }}>
-            {makeSupplyTag(item.sold, item.supply)}
-          </Text>
-        </View>
+        <Text style={{ color: theme.colors.text.secondary }}>
+          {makeSupplyTag(badgeType.sold, badgeType.supply)}
+        </Text>
       ),
-      headerRightContainerStyle: {
-        paddingRight: 10,
-      },
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation])
 
   // hide bottom tab navigator
-  // todo: consider to refactor navigation stacks
+  // todo: consider to refactor navigation stacks to avoid hide/show glitches
   useEffect(() => {
     const parent = navigation.dangerouslyGetParent()
     parent &&
@@ -64,14 +62,17 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
 
   if (loading) {
     return <LoadingIndicator fullScreen />
-  } else if (data) {
+  }
+
+  if (data?.badgeType) {
     const {
-      price,
-      currency,
       donationAmount,
       creator: { profile },
       cause,
       publicUrl,
+      isOwnedByMe,
+      isCreatedByMe,
+      availableToBuyCount,
     } = data.badgeType
 
     return (
@@ -99,7 +100,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         {cause && donationAmount && (
           <DonationWidget
             donation={donationAmount}
-            image={cause?.image}
+            image={cause?.imageUrl}
             openModal={handleOpenModal}
           />
         )}
@@ -116,7 +117,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         >
           <View>
             <Text variant="body" color="secondary">
-              {makePriceTag(price, currency)}
+              {makePriceTag(badgeType.price, badgeType.currency)}
             </Text>
             <Spacer position="y">
               <View flexDirection="row">
@@ -150,30 +151,39 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             <Button
               mode="contained"
               color={theme.colors.ui.accent}
-              onPress={() => console.log('hello')}
+              onPress={buyItem}
               style={{ borderRadius: 30 }}
               contentStyle={{ paddingHorizontal: 8 }}
+              disabled={availableToBuyCount < 1 || isCreatedByMe || isOwnedByMe}
               uppercase
             >
-              <Text color="secondary">{translate().purchaseButton}</Text>
+              <Text color="secondary">
+                {availableToBuyCount < 1
+                  ? translate().outOfStock
+                  : isCreatedByMe
+                  ? translate().yourCreation
+                  : isOwnedByMe
+                  ? translate().alreadyOwned
+                  : translate().purchaseButton}
+              </Text>
             </Button>
           </View>
         </View>
-        {cause && donationAmount && (
-          <Provider>
-            <Portal>
+        <Provider>
+          <Portal>
+            {cause && donationAmount && (
               <CauseModal
                 isOpen={showCauseModal}
                 closeModal={handleCloseModal}
                 cause={cause}
                 donation={donationAmount}
               />
-            </Portal>
-          </Provider>
-        )}
+            )}
+          </Portal>
+        </Provider>
       </>
     )
-  } else if (error) {
+  } else {
     return <Error error={error} />
   }
 }

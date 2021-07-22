@@ -7,13 +7,14 @@ query Me {
       ...Me_Profile
     }
     badgeTypesCreated {
+      ...BadgeType_WithBasics
+    }
+    badgeItemsOwned {
       id
-      price
-      currency
-      publicUrl
-      supply
-      sold
-      title
+      edition
+      badgeType {
+        ...BadgeType_WithBasics
+      }
     }
     friends {
       userId
@@ -33,5 +34,11 @@ query Me {
       userId
       status
     }
+    paymentInfo {
+      id
+      idToken
+      lastFourCardDigit
+    }
+    isAllowedToBuy
   }
 }

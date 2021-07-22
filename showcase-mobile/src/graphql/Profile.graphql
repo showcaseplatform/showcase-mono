@@ -1,6 +1,0 @@
-query Profile($id: String!) {
-  profile(where: { id: $id }) {
-    ...Profile_WithBasics
-    ...Profile_WithCreatedBadgeTypes
-  }
-}

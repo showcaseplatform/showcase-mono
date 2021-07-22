@@ -4,6 +4,7 @@ import { View, Text } from 'react-native'
 
 // todo: build me properly, make Error prop required
 const Error = ({ error }: { error?: ApolloError }) => {
+  console.log(JSON.stringify(error))
   return (
     <View>
       <Text>something went wrong</Text>

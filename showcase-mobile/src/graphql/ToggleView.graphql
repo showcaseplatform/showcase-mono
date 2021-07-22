@@ -1,0 +1,5 @@
+mutation countBadgeView($isBadgeType: Boolean!, $badgeId: String!) {
+  countView(data: { marketplace: $isBadgeType, badgeId: $badgeId }) {
+    __typename
+  }
+}

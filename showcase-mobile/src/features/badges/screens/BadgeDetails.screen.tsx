@@ -13,6 +13,7 @@ import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
 import {
   BadgeDetailsDocument,
   useBadgeDetailsQuery,
+  useCountBadgeViewMutation,
   useToggleLikeMutation,
 } from '../../../generated/graphql'
 
@@ -50,6 +51,13 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
     ],
   })
 
+  const [countView] = useCountBadgeViewMutation({
+    variables: { isBadgeType: true, badgeId: badgeType.id },
+    refetchQueries: [
+      { query: BadgeDetailsDocument, variables: { id: badgeType.id } },
+    ],
+  })
+
   const [showCauseModal, setShowCauseModal] = useState(false)
   const handleCloseModal = () => setShowCauseModal(false)
   const handleOpenModal = () => setShowCauseModal(true)
@@ -64,6 +72,13 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation])
+
+  useEffect(() => {
+    if (data && !data.badgeType?.isViewedByMe) {
+      countView()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
 
   // hide bottom tab navigator
   // todo: consider to refactor navigation stacks to avoid hide/show glitches
@@ -96,7 +111,6 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       viewCount,
       likeCount,
       isLikedByMe,
-      isViewedByMe,
     } = data.badgeType
 
     return (
@@ -147,11 +161,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
                 <Ionicons
                   size={32}
                   name="eye-outline"
-                  color={
-                    isViewedByMe
-                      ? theme.colors.text.accent
-                      : theme.colors.text.grey
-                  }
+                  color={theme.colors.text.grey}
                 />
                 <Spacer position="right" />
                 <Text variant="label" color="secondary">

@@ -1,0 +1,5 @@
+mutation ToggleLike($isBadgeType: Boolean!, $badgeId: String!) {
+  toggleLike(data: { marketplace: $isBadgeType, badgeId: $badgeId }) {
+    __typename
+  }
+}

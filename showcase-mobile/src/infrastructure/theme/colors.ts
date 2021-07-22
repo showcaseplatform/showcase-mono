@@ -4,6 +4,7 @@ export const colors: Colors = {
   bg: {
     primary: '#FFFFFF',
     secondary: '#F1F1F1',
+    black: '#000',
   },
   ui: {
     accent: 'rgb(254, 43, 84)',

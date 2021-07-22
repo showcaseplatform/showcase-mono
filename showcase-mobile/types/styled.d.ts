@@ -19,6 +19,7 @@ export type Colors = {
   bg: {
     primary: string
     secondary: string
+    black: string
   }
   ui: {
     accent: string

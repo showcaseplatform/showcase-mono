@@ -185,7 +185,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
                     onPress={() =>
                       navigation.navigate('BadgeNavigator', {
                         screen: 'BadgeDetails',
-                        params: { item },
+                        params: { badgeType: item },
                       })
                     }
                   />

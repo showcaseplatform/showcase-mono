@@ -44,12 +44,12 @@ export const updateBadgeItem = async (
   })
 }
 
-export const findUserBadgeItems = async (
+export const findManyBadgeItems = async (
   where: Partial<BadgeItem>,
-  orderBy: BadgeItemOrderByInput
+  orderBy?: BadgeItemOrderByInput
 ) => {
   return await prisma.badgeItem.findMany({
     where,
-    orderBy,
+    orderBy: orderBy || { createdAt: 'desc' },
   })
 }

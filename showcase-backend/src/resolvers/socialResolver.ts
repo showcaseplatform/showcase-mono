@@ -6,11 +6,12 @@ import { UpdateProfileInput } from '../libs/user/types/updateProfile.type'
 import { User, UserType } from '@prisma/client'
 import { CurrentUser } from '../libs/auth/decorators'
 import { FileUpload } from '../utils/types/fileUpload.type'
+import { allUserTypes } from '../libs/auth/authLib'
 
 @Resolver()
 export class SocialResolver {
   // todo: mutation to accept / decline request eg.: answerFollowRequest
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => Follow)
   async toggleFollow(
     @CurrentUser() currentUser: User,
@@ -19,7 +20,7 @@ export class SocialResolver {
     return await toggleFollow(userId, currentUser.id)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => Profile)
   async updateProfileCustom(
     @Arg('data', { nullable: true }) updateProfileInput: UpdateProfileInput,

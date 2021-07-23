@@ -1,0 +1,23 @@
+query BadgeDetails($id: String!) {
+  badgeType(where: { id: $id }) {
+    id
+    donationAmount
+    isOwnedByMe
+    isCreatedByMe
+    publicUrl
+    creator {
+      id
+      profile {
+        id
+        displayName
+      }
+    }
+    cause {
+      id
+      imageUrl
+      name
+      site
+    }
+    ...BuyBadgeCriterias
+  }
+}

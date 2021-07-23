@@ -1,0 +1,7 @@
+mutation BuyBadgeItem($badgeTypeId: String!) {
+  purchaseBadge(
+    data: { badgeTypeId: $badgeTypeId }
+  ) {
+    id
+  }
+}

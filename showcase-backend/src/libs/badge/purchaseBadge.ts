@@ -1,16 +1,21 @@
-import axios from 'axios'
-import { blockchain } from '../../config'
-import { stripe } from '../../services/stripe'
 import { Uid } from '../../types/user'
-import Boom from 'boom'
 import { prisma } from '../../services/prisma'
-import { BadgeType, Currency } from '.prisma/client'
-import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
+import { SHOWCASE_COMMISSION_FEE_MULTIPLIER } from '../../consts/businessRules'
 import { PurchaseBadgeInput } from './types/purchaseBadge.type'
 import { GraphQLError } from 'graphql'
 import { CurrencyRateLib } from '../currencyRate/currencyRate'
 import { getRandomNum } from '../../utils/randoms'
-import { isBadgeTypeSoldOut } from './validateBadgeType'
+import {
+  isBadgeTypeCreatedByUser,
+  isBadgeTypeOwnedByUser,
+  isBadgeTypeSoldOut,
+} from './validateBadgePurchase'
+import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
+import { findUserWithFinancialInfo } from '../database/user.repo'
+import { findBadgeType } from '../database/badgeType.repo'
+import { Currency } from '@prisma/client'
+import { BadgeType, User } from '@generated/type-graphql'
+import { hasUserPaymentInfo, hasUserReachedSpendingLimit } from '../user/permissions'
 
 interface PurchaseTransactionInput {
   userId: string
@@ -27,29 +32,41 @@ interface PurchaseTransactionInput {
   USDPrice: number
 }
 
-const checkIfBadgeAlreadyOwnedByUser = async (userId: Uid, badgeTypeId: string) => {
-  const userWithBadgeItems = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      badgeItemsOwned: {
-        where: {
-          badgeTypeId,
-        },
-      },
-    },
-  })
+enum ErrorMessages {
+  badgeAlreadyOwned = 'You already purchased this badge',
+  badgeCreatedByUser = 'Creators cannot buy from own badges',
+  paymentInfoMissing = 'Payment information missing',
+  spendingLimitReached = 'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.',
+  transactionFailed = 'Purchase transaction failed to execute',
+  outOfStock = 'Out of stock',
+}
 
-  if (
-    userWithBadgeItems?.badgeItemsOwned?.length &&
-    userWithBadgeItems?.badgeItemsOwned?.length > 0
-  ) {
-    throw new GraphQLError('You already purchased this badge')
+const checkIfUserAllowedToPurchaseBadgeType = async (
+  user: User,
+  badgeType: BadgeType
+): Promise<void> => {
+  if (isBadgeTypeCreatedByUser(user.id, badgeType.creatorId)) {
+    throw new GraphQLError(ErrorMessages.badgeCreatedByUser)
+  }
+
+  if (await isBadgeTypeSoldOut(badgeType)) {
+    throw new GraphQLError(ErrorMessages.outOfStock)
+  }
+
+  if (await isBadgeTypeOwnedByUser(user.id, badgeType.id)) {
+    throw new GraphQLError(ErrorMessages.badgeAlreadyOwned)
+  }
+
+  if (!hasUserPaymentInfo(user)) {
+    throw new GraphQLError(ErrorMessages.paymentInfoMissing)
+  }
+
+  if (badgeType.price > 0 && hasUserReachedSpendingLimit(user)) {
+    throw new GraphQLError(ErrorMessages.spendingLimitReached)
   }
 }
 
-// todo: why is it neccesary to construct this id? would be better to auto-gen badgeItem ids, and store this in a prop if neccesary
+// todo: how and what for is this used for?
 const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   let newLastDigits = (parseInt(badge.tokenTypeId.slice(-10)) + newSoldAmount).toFixed(0)
 
@@ -58,74 +75,6 @@ const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   }
 
   return badge.tokenTypeId.slice(0, -10) + newLastDigits
-}
-
-const mintNewBadgeOnBlockchain = async (cryptoWalletAddress: string, newBadgeTokenId: string) => {
-  const data = {
-    to: cryptoWalletAddress,
-    type: newBadgeTokenId,
-    token: blockchain.authToken,
-  }
-
-  const response = await axios.post(blockchain.server + '/mintBadge', data)
-
-  if (response.data?.success && response.data?.transactionHash) {
-    return response.data
-  } else {
-    throw Boom.internal('Failed to mint new badge on blockchain', response)
-  }
-}
-
-const getUserProfileWithFinancialInfo = async (id: Uid) => {
-  return await prisma.user.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      profile: true,
-      cryptoWallet: true,
-      balance: true,
-      stripeInfo: true,
-    },
-  })
-}
-
-const chargeStripeAccount = async ({
-  amount,
-  currency,
-  customerStripeId,
-  badgeItemId,
-  title,
-  creatorProfileId,
-}: {
-  amount: number
-  currency: Currency
-  customerStripeId: string
-  badgeItemId: string
-  title: string
-  creatorProfileId: string
-}) => {
-  // todo: test this if its correct
-  const twoDecimalCurrencyMultiplier = 100
-  const charge = await stripe.charges.create({
-    amount: amount * twoDecimalCurrencyMultiplier,
-    currency,
-    customer: customerStripeId,
-    description: 'Showcase Badge "' + title + '" (ID: ' + badgeItemId + ')',
-    metadata: {
-      badgeid: badgeItemId,
-      badgename: title,
-      creatorid: creatorProfileId,
-    },
-    // todo: when should we include emails?
-    //receipt_email: user.email || null, //avoid email for now..
-  })
-
-  if (!charge || !charge.id || !charge.paid) {
-    throw Boom.internal('Unable to create charge')
-  }
-
-  return { chargeId: charge.id }
 }
 
 const purchaseBadgeTransaction = async ({
@@ -152,15 +101,19 @@ const purchaseBadgeTransaction = async ({
         badgeItems: {
           create: {
             tokenId,
-            ownerId: userId,
+            owner: {
+              connect: {
+                id: userId,
+              },
+            },
             edition: newSoldAmount,
             purchaseDate: new Date(),
             receipt: {
               create: {
                 buyerId: userId,
                 sellerId: badgeType.creatorId,
-                stripeChargeId: chargeId,
-                causeId: badgeType.causeId,
+                causeId: badgeType.causeId || null,
+                chargeId,
                 convertedPrice,
                 convertedCurrency,
                 convertedRate,
@@ -169,13 +122,16 @@ const purchaseBadgeTransaction = async ({
             },
           },
         },
-        cause: {
-          update: {
-            [`balance${badgeType.currency}`]: {
-              increment: causeFullAmount || 0,
-            },
-          },
-        },
+        cause:
+          badgeType.causeId && causeFullAmount
+            ? {
+                update: {
+                  [`balance${badgeType.currency}`]: {
+                    increment: causeFullAmount,
+                  },
+                },
+              }
+            : undefined,
       },
       include: {
         badgeItems: {
@@ -211,90 +167,48 @@ const purchaseBadgeTransaction = async ({
 }
 
 export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
-  const { badgeTypeId, currencyRate, displayedPrice } = input
+  const { badgeTypeId } = input || {}
 
-  const user = await getUserProfileWithFinancialInfo(uid)
+  const badgeType = await findBadgeType(badgeTypeId)
+  const user = await findUserWithFinancialInfo(uid)
 
-  if (!user || !user.balance) {
-    throw new GraphQLError('Profile missing')
-  }
-
-  if (
-    (!user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
-    (user.kycVerified && user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
-  ) {
-    throw new GraphQLError(
-      'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.'
-    )
-  }
-
-  // todo: uncomment when strip integration is tested
-  // if (
-  //   !user.cryptoWallet ||
-  //   !user.cryptoWallet.address ||
-  //   !user.balance?.id ||
-  //   !user.stripeInfo?.stripeId
-  // ) {
-  //   throw new GraphQLError('No wallet or card')
-  // }
-
-  await checkIfBadgeAlreadyOwnedByUser(uid, badgeTypeId)
-
-  const badgeType = await prisma.badgeType.findUnique({
-    where: {
-      id: badgeTypeId,
-    },
-  })
-
-  if (!badgeType) {
-    throw new GraphQLError('Invalid badge id')
-  }
-
-  if (isBadgeTypeSoldOut(badgeType)) {
-    throw new GraphQLError('Out of stock')
-  }
+  await checkIfUserAllowedToPurchaseBadgeType(user, badgeType)
 
   const currenciesData = await CurrencyRateLib.getLatestExchangeRates()
 
-  if (!user?.profile?.currency) {
-    throw new GraphQLError('User profile currency if missing')
-  }
+  const userCurrencyRate = 1 // todo: user user's currency rate here:  currenciesData[user.profile.currency]
+  const multiplier = (1 / currenciesData[badgeType.currency]) * userCurrencyRate
+  const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
 
-  const userCurrencyRate = currenciesData[user.profile.currency]
+  // todo:  uncomment this when display badges in user's currency is implemented
+  // if (calculatedPrice !== displayedPrice && badgeType.price !== 0) {
+  //   throw new GraphQLError('Wrong price displayed')
+  // }
+
+  // if (currenciesData[user.profile.currency] !== currencyRate) {
+  //   console.log(currenciesData[user.profile.currency], currencyRate)
+  //   throw new GraphQLError('Transaction currency conversion rate dont match!')
+  // }
 
   const newSoldAmount = badgeType.sold + 1
   const newBadgeTokenId = constructNewBadgeTokenId(badgeType, newSoldAmount)
 
-  const multiplier = (1 / currenciesData[badgeType.currency]) * userCurrencyRate
-  const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
-
-  if (calculatedPrice !== displayedPrice && badgeType.price !== 0) {
-    throw new GraphQLError('Wrong price displayed')
-  }
-
-  if (currenciesData[user.profile.currency] !== currencyRate) {
-    console.log(currenciesData[user.profile.currency], currencyRate)
-    throw new GraphQLError('Transaction currency conversion rate dont match!')
-  }
-
-  // todo: uncomment when strip integration is tested
-  // const { chargeId } = await chargeStripeAccount({
+  // todo: uncomment when stripe integration is tested
+  // const { chargeId } = await stripe.chargeStripeAccount({
   //   amount: calculatedPrice,
   //   currency: user.profile.currency,
   //   title: badgeType.title,
   //   badgeItemId: newBadgeTokenId,
   //   creatorProfileId: badgeType.creatorId,
-  //   customerStripeId: user.stripeInfo.stripeId,
+  //   customerStripeId: user.paymentInfo.tokenId,
   // })
   const chargeId = getRandomNum().toString()
 
   try {
-    // todo: uncomment when strip integration is tested
-    // todo: remove blockchain.enabled once server is ready
-    // const { transactionHash } = blockchain.enabled
-    //   ? await mintNewBadgeOnBlockchain(user.cryptoWallet.address, newBadgeTokenId)
-    //   : { transactionHash: 'fake_hash' + getRandomNum() }
-    const transactionHash = 'fake_hash' + getRandomNum()
+    const transactionHash = await mintNewBadgeOnBlockchain(
+      newBadgeTokenId,
+      user?.cryptoWallet?.address
+    )
 
     let payoutAmount = 0
     let causeFullAmount = 0
@@ -304,8 +218,8 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
       const USDmultiplier = 1 / currenciesData[badgeType.currency]
       USDPrice = parseFloat((badgeType.price * USDmultiplier).toFixed(2))
       const totalPrice = badgeType.price
-      // todo: why is this set to 0.9 by default?
-      let feeMultiplier = 0.9
+
+      let feeMultiplier = SHOWCASE_COMMISSION_FEE_MULTIPLIER
 
       if (badgeType.donationAmount) {
         feeMultiplier -= badgeType.donationAmount
@@ -323,7 +237,7 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
       chargeId,
       transactionHash,
       convertedPrice: calculatedPrice,
-      convertedCurrency: user.profile.currency,
+      convertedCurrency: badgeType.currency, // todo: use user.profile?.currency  for conversion
       convertedRate: userCurrencyRate,
       USDPrice,
       newSoldAmount,
@@ -331,7 +245,8 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
 
     return updatedBadgeType.badgeItems[0]
   } catch (error) {
-    await stripe.refunds.create({ charge: chargeId })
-    throw new GraphQLError('Purchase failed to execute,')
+    // await stripe.refundPayment(chargeId)
+    console.error({ error })
+    throw new GraphQLError(ErrorMessages.transactionFailed)
   }
 }

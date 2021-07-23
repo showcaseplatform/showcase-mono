@@ -54,7 +54,7 @@ const schema = yup.object().shape({
     .date()
     .max(new Date(eighteenYearsAgo), 'You must over 18 years')
     .required('Please provide your date of birth'),
-  bio: yup.string().max(240, 'Maximum 240 characters allowed'),
+  bio: yup.string().max(240, 'Maximum 240 characters allowed').nullable(),
 })
 
 // todo: implement auto-focus on fields
@@ -216,15 +216,11 @@ const EditUserProfileScreen = ({
       <Controller
         name="currency"
         control={control}
-        render={({
-          field: { onChange, onBlur, value },
-          fieldState: { error },
-        }) => (
+        render={({ field: { onChange, value }, fieldState: { error } }) => (
           <MySelectInputComponent
             placeholder={translate().balanceCurrencyLabel}
             items={currencies}
             value={value}
-            onBlur={onBlur}
             onValueChange={(val) => onChange(val)}
             error={error}
             hasErrorField
@@ -241,6 +237,7 @@ const EditUserProfileScreen = ({
             error={error}
             placeholder="Your date of birth"
             // maximumDate={} // ?: disable dates after '18 years from now?'
+            minimumDate={new Date(1901, 0, 1)}
             hasErrorField
           />
         )}

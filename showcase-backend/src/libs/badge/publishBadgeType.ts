@@ -1,24 +1,23 @@
-import axios from 'axios'
 import { blockchain } from '../../config'
 // import { sendNotificationToFollowersAboutNewBadge } from '../pushNotifications/newBadgePublished'
-import { Profile, User } from '@generated/type-graphql'
 import { prisma } from '../../services/prisma'
 import { GraphQLError } from 'graphql'
 import { UserType } from '.prisma/client'
-import { BadgeTypeCreateInput, Currency, Category } from '@generated/type-graphql'
+import { Currency, Category, User } from '@generated/type-graphql'
 import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { PublishBadgeTypeInput } from './types/publishBadgeType.type'
 import { uploadFile } from '../../utils/fileUpload'
 import { BadgeType } from '@prisma/client'
+import { createTokenTypeOnBlockchain } from '../../services/blockchain'
 
-interface InputWithUser {
+export interface PublishBadgeTypeInputValidation {
   user: User
   donationAmount: number
   causeId: number
 }
 
 // todo: does user musst have a crypto account?
-const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWithUser>) => {
+const validatePublishBadgeTypeInputs = async ({ user, donationAmount, causeId }: Partial<PublishBadgeTypeInputValidation>) => {
   if (!user || user.userType !== UserType.creator) {
     throw new GraphQLError('You are not a verified creator')
   }
@@ -39,43 +38,6 @@ const validateInputs = async ({ user, donationAmount, causeId }: Partial<InputWi
   }
 }
 
-const createTokenTypeOnBlockchain = async ({
-  id,
-  user,
-  profile,
-  title,
-  description,
-  category,
-  imageId,
-  imageHash,
-  supply,
-}: Partial<InputWithUser & BadgeTypeCreateInput & { profile: Profile }>): Promise<string> => {
-  const data = {
-    token: blockchain.authToken,
-    uri: 'https://showcase.to/badge/' + id,
-    name: title,
-    description: description || 'None',
-    creatorname: profile?.username,
-    category,
-    image: imageId,
-    imagehash: imageHash, // todo: camelCase on blockchain server
-    supply,
-    creatoraddress: user?.cryptoWallet?.address,
-
-    // todo: why are these commented out?
-    //causeSite: foundDonationSite,
-    //causeAmount: foundDonationAmount,
-  }
-
-  const { data: blockchainData } = await axios.post(blockchain.server + '/createBadge', data)
-
-  if (blockchainData.tokenType) {
-    return blockchainData.tokenType
-  } else {
-    throw new GraphQLError('Blockchain error, missing tokenType from response', blockchainData)
-  }
-}
-
 export const publishBadgeType = async (
   input: PublishBadgeTypeInput,
   fileData: FileUpload,
@@ -91,7 +53,7 @@ export const publishBadgeType = async (
     throw new GraphQLError('Invalid user')
   }
 
-  await validateInputs({
+  await validatePublishBadgeTypeInputs({
     ...input,
     user,
   })

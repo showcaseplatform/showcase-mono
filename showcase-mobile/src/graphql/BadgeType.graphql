@@ -1,5 +1,0 @@
-query BadgeType($id: String!) {
-  badgeType(where: { id: $id }) {
-    ...BadgeType_WithBasics
-  }
-}

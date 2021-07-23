@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { NavigationProp } from '@react-navigation/core'
 import { FlatList, View, RefreshControl } from 'react-native'
 import EmptyListComponent from '../../../components/EmptyList.component'
@@ -13,7 +13,6 @@ import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.n
 import BadgeItem from '../components/BadgeItem.component'
 import CategorySelector from '../components/CategorySelector.component'
 import Error from '../../../components/Error.component'
-import { Text } from '../../../components/Text.component'
 import {
   StyledSafeArea,
   SearchContainer,
@@ -72,7 +71,10 @@ const BadgesScreen = ({
     await refetch({ limit: 10, category: val, search: searchQuery })
   }
 
-  const badges = data?.feedSearch.edges.map((edge) => edge.node)
+  const badges = useMemo(
+    () => data?.feedSearch.edges.map((edge) => edge.node),
+    [data?.feedSearch.edges]
+  )
   const pageInfo = data?.feedSearch.pageInfo
 
   if (error) {
@@ -103,28 +105,28 @@ const BadgesScreen = ({
             data={badges}
             keyExtractor={({ id }) => id}
             numColumns={2}
+            contentContainerStyle={{ flexGrow: 1 }}
             ListEmptyComponent={EmptyListComponent}
             refreshing={isLoadingMore}
             onEndReached={handleFetchMore}
-            onEndReachedThreshold={0.6}
-            contentContainerStyle={{ flexGrow: 1 }}
+            initialNumToRender={10}
+            onEndReachedThreshold={0.4}
+            windowSize={40}
+            // maxToRenderPerBatch={12}
+            // removeClippedSubviews={true}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
               />
             }
-            ListFooterComponent={
-              !pageInfo?.hasNextPage ? (
-                <Spacer position="bottom" size="large">
-                  <Text center>end of feed</Text>
-                </Spacer>
-              ) : null
-            }
+            ListFooterComponent={isLoadingMore ? <LoadingIndicator /> : null}
             renderItem={({ item }) => (
               <BadgeItem
                 item={item}
-                onPress={() => navigation.navigate('BadgeDetails', { item })}
+                onPress={() =>
+                  navigation.navigate('BadgeDetails', { badgeType: item })
+                }
                 withoutInfo
               />
             )}

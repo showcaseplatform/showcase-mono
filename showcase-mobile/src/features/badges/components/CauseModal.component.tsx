@@ -1,39 +1,24 @@
-import { Ionicons } from '@expo/vector-icons'
-
 import React, { useCallback, useMemo } from 'react'
-import { View, Image, Alert } from 'react-native'
+import { View, Image } from 'react-native'
 import { useTheme } from 'styled-components/native'
-import styled from 'styled-components/native'
-import { Modal } from 'react-native-paper'
+import { Ionicons } from '@expo/vector-icons'
 import * as WebBrowser from 'expo-web-browser'
 
 import { Cause } from '../../../generated/graphql'
 import { makePercent } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 
-import ModalHeader from '../components/CauseModalHeader.component'
+import ModalHeader from '../../../components/ModalHeader.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 import { CenterView } from '../../../components/CenterView.component'
+import StyledModal, {
+  StyledModalProps,
+} from '../../../components/StyledModal.component'
 
-const StyledModal = styled(Modal).attrs({
-  contentContainerStyle: {
-    height: '80%',
-    width: '84%',
-    bottom: '10%',
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: 'white',
-  },
-})`
-  align-items: center;
-  justify-content: flex-end;
-`
-interface CauseModalProps {
-  isOpen: boolean
-  cause: Cause
+interface CauseModalProps extends StyledModalProps {
+  cause: Pick<Cause, 'name' | 'site' | 'imageUrl'>
   donation: number
-  closeModal: () => void
 }
 
 const CauseModal = ({

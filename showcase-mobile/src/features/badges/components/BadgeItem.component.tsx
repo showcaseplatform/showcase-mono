@@ -17,7 +17,15 @@ export type BadgeItemProps = {
 // todo: extract me
 export type MyBadgeType = Pick<
   BadgeType,
-  'publicUrl' | 'price' | 'currency' | 'supply' | 'sold' | 'createdAt'
+  | 'id'
+  | 'category'
+  | 'title'
+  | 'publicUrl'
+  | 'supply'
+  | 'sold'
+  | 'createdAt'
+  | 'price'
+  | 'currency'
 >
 
 export type Cause = {

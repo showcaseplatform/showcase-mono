@@ -30,9 +30,3 @@ jobs:
           expo publish --release-channel=release-candidate
         env:
           DEV_API: 'https://showcase-backend-monorepo-pagl.onrender.com/graphql'
-
-      - uses: unsplash/comment-on-pr@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          msg: App is ready for review, you can [see it here](https://expo.io/@myshowcase/ShowcaseApp?release-channel=release-candidate).

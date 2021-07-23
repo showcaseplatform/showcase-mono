@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo } from 'react'
+import React, { useLayoutEffect, useMemo, useState } from 'react'
 import { View, FlatList, Pressable, Share } from 'react-native'
 import { NavigationProp, RouteProp } from '@react-navigation/native'
 import { Button, Divider, IconButton } from 'react-native-paper'
@@ -10,7 +10,9 @@ import { UserStackParamList } from '../../../infrastructure/navigation/user.navi
 import { reshapeBadges } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 
-import BadgeItem from '../../badges/components/BadgeItem.component'
+import BadgeItem, {
+  MyBadgeType,
+} from '../../badges/components/BadgeItem.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 import ProfileImage from '../../../components/ProfileImage.component'
@@ -29,6 +31,7 @@ const createReshapedBadgeKey = (items: BadgeType[], index: number) =>
 const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
   const { data, loading, error } = useMeQuery()
   const theme = useTheme()
+  const [countOfBadges, setCountOfBadges] = useState(0)
 
   const countOfFriends = useMemo(
     () =>
@@ -47,10 +50,16 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
   // const friendsLength = data?.me.friendsCount
   // const followersLength = data?.me.followersCount
 
-  const reshapedCreatedBadgeTypes = useMemo(
-    () => reshapeBadges<Partial<BadgeType>>(data?.me.badgeTypesCreated || []),
-    [data?.me.badgeTypesCreated]
-  )
+  // !: temp
+  const allReshapedBadges = useMemo(() => {
+    const created = data?.me.badgeTypesCreated || []
+    const owned = data?.me.badgeItemsOwned.map((item) => item.badgeType) || []
+
+    const allBadges = [...created, ...owned]
+
+    setCountOfBadges(allBadges.length)
+    return reshapeBadges<MyBadgeType>(allBadges)
+  }, [data?.me.badgeTypesCreated, data?.me.badgeItemsOwned])
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -131,7 +140,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
             <Divider style={{ width: 1, height: '60%' }} />
 
             <View alignItems="center" style={{ paddingHorizontal: 12 }}>
-              <Text>{data.me.badgeTypesCreated.length}</Text>
+              <Text>{countOfBadges}</Text>
               <Spacer />
               <Text variant="caption">{translate().profileCountBadges}</Text>
             </View>
@@ -162,7 +171,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
         <View style={{ flexGrow: 1, width: '100%' }}>
           <FlatList
             horizontal
-            data={reshapedCreatedBadgeTypes}
+            data={allReshapedBadges}
             keyExtractor={createReshapedBadgeKey}
             contentContainerStyle={{ flexGrow: 1, paddingVertical: 8 }}
             ListEmptyComponent={<EmptyListComponent text="No Badges yet." />}
@@ -176,7 +185,7 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
                     onPress={() =>
                       navigation.navigate('BadgeNavigator', {
                         screen: 'BadgeDetails',
-                        params: { item },
+                        params: { badgeType: item },
                       })
                     }
                   />

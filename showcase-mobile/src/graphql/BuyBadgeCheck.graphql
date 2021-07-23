@@ -1,0 +1,5 @@
+query BuyBadgeCheck($id: String!) {
+  badgeType(where: { id: $id }) {
+    ...BuyBadgeCriterias
+  }
+}

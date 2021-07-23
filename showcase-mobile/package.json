@@ -30,6 +30,7 @@
     "@types/react-native-datepicker": "^1.7.0",
     "babel-plugin-dotenv-import": "^2.2.0",
     "camelize": "^1.0.0",
+    "card-validator": "^8.1.1",
     "date-fns": "^2.21.3",
     "expo": "~41.0.1",
     "expo-app-loading": "^1.0.3",

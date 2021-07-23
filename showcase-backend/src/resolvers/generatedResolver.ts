@@ -82,7 +82,7 @@ applyRelationResolversEnhanceMap({
     cryptoWallet: [IsCurrentUser(null) as PropertyDecorator],
     transferwise: [IsCurrentUser(null) as PropertyDecorator],
     withdrawals: [IsCurrentUser([]) as PropertyDecorator],
-    stripeInfo: [IsCurrentUser(null) as PropertyDecorator],
+    paymentInfo: [IsCurrentUser(null) as PropertyDecorator],
     buyReceipts: [IsCurrentUser([]) as PropertyDecorator],
     sellReceipts: [IsCurrentUser([]) as PropertyDecorator],
     notifications: [IsCurrentUser([]) as PropertyDecorator],

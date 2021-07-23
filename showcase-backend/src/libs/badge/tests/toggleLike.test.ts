@@ -1,6 +1,6 @@
-import { ToggleLikeInput } from './types/toggleLike.type'
-import { mockCreateBadgeItemLike, mockCreateBadgeTypeLike } from '../../test/testHelpers'
-import { createLikeRecord } from './toggleLike'
+import { ToggleLikeInput } from '../types/toggleLike.type'
+import { mockCreateBadgeItemLike, mockCreateBadgeTypeLike } from '../../../test/testHelpers'
+import { createLikeRecord } from '../toggleLike'
 
 describe('createLikeRecord test cases', () => {
   it('createLikeRecord should create new LikeBadgeType record if badge viewed in marketplace', async () => {

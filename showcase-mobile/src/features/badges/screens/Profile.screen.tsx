@@ -77,7 +77,7 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   const isCreator = data?.user?.userType === UserType.Creator
 
   const [activeTab, setActiveTab] = useState<BadgeTabType>(
-    inventoryTabs[isCreator ? 0 : 1].name
+    inventoryTabs[isCreator ? 0 : 2].name
   )
 
   useLayoutEffect(() => {
@@ -109,15 +109,14 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
     toggleFollow({ variables: { userId: id } })
   }
 
-  // !: badgeType vs BadgeItem types are conflicting (they are the same structure)
   const reshapedCreatedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
     data?.user?.badgeTypesCreated || []
   )
   const reshapedResellBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.user?.badgeItemsForSale || []
+    data?.user?.badgeItemsForSale.map(({ badgeType }) => badgeType) || []
   )
   const reshapedOwnedBadgeTypes = reshapeBadges<Partial<BadgeType>>(
-    data?.user?.badgeItemsToShow || []
+    data?.user?.badgeItemsToShow.map(({ badgeType }) => badgeType) || []
   )
 
   if (loading) {

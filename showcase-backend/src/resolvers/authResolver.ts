@@ -8,6 +8,7 @@ import {
 import { User } from '@generated/type-graphql'
 import { UserType } from '.prisma/client'
 import { CurrentUser } from '../libs/auth/decorators'
+import { allUserTypes } from '../libs/auth/authLib'
 
 @Resolver()
 export class AuthResolver {
@@ -21,7 +22,7 @@ export class AuthResolver {
     return await smsLib.verifyPhoneCode(input)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Query((_returns) => User)
   async me(@CurrentUser() currentUser: User) {
     return currentUser

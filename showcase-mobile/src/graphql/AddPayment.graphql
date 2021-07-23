@@ -1,0 +1,8 @@
+mutation AddPayment($data: AddPaymentInfoInput!) {
+  addPaymentInfo(data: $data) {
+    paymentInfo {
+      lastFourCardDigit
+      idToken
+    }
+  }
+}

@@ -8,7 +8,7 @@ export const cleanDb = async (prisma: PrismaClient) => {
     await prisma.balance.deleteMany()
     await prisma.currencyRate.deleteMany()
     await prisma.receipt.deleteMany()
-    await prisma.stripe.deleteMany()
+    await prisma.paymentInfo.deleteMany()
     await prisma.transferwise.deleteMany()
     await prisma.withdrawal.deleteMany()
     await prisma.badgeItemLike.deleteMany()

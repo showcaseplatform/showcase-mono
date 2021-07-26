@@ -1,5 +1,17 @@
 mutation countBadgeView($isBadgeType: Boolean!, $badgeId: String!) {
   countView(data: { marketplace: $isBadgeType, badgeId: $badgeId }) {
-    __typename
+    ... on BadgeTypeView {
+      userId
+      badgeTypeId
+      createdAt
+    }
+    ... on BadgeItemView {
+      userId
+      badgeItemId
+      createdAt
+    }
+    ... on ViewInfo {
+      info
+    }
   }
 }

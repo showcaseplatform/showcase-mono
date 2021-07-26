@@ -172,7 +172,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
               <CenterView row>
                 <Ionicons
                   size={32}
-                  name="thumbs-up"
+                  name={isLikedByMe ? 'heart' : 'heart-outline'}
                   color={
                     isLikedByMe
                       ? theme.colors.text.accent

@@ -5,7 +5,7 @@ import { AuthLib } from './authLib'
 import { GraphQLError } from 'graphql'
 import { VerifyPhoneCodeInput, VerifyPhoneCodeResponse } from './types/verifyPhoneCode.type'
 import { jwtClient } from '../../services/jsonWebToken'
-import { findUserByPhone } from '../database/user.repo'
+import { findUserByPhone } from '../../database/user.repo'
 import { env } from '../../config'
 
 enum ErrorMessages {

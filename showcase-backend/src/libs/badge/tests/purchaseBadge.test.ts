@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { getRandomNum } from '../../../utils/randoms'
 import { purchaseBadge } from '../purchaseBadge'
 import { PurchaseBadgeInput } from '../types/purchaseBadge.type'
@@ -9,6 +10,9 @@ const inputBadgeTypeId: PurchaseBadgeInput = {
 
 const inputUserId = `${getRandomNum()}`
 
+// beforeAll(async () => {
+//   await createTestDb(prisma)
+// })
 
 describe('Purchasing a badge', () => {
   it('should fail if buyer already owned a badgItem from the desired badgeType', async () => {

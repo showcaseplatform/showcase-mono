@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { PrismaClient } from '@prisma/client'
-import { createTestDb } from './createDb'
+import { createTestDb } from '../src/database/createDb'
 
 const prisma = new PrismaClient()
 

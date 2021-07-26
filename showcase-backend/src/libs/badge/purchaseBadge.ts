@@ -11,8 +11,8 @@ import {
   isBadgeTypeSoldOut,
 } from './validateBadgePurchase'
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
-import { findUserWithFinancialInfo } from '../database/user.repo'
-import { findBadgeType } from '../database/badgeType.repo'
+import { findUserWithFinancialInfo } from '../../database/user.repo'
+import { findBadgeType } from '../../database/badgeType.repo'
 import { Currency } from '@prisma/client'
 import { BadgeType, User } from '@generated/type-graphql'
 import { hasUserPaymentInfo, hasUserReachedSpendingLimit } from '../user/permissions'

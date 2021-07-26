@@ -1,5 +1,5 @@
 import { BadgeItem } from '@prisma/client'
-import { prisma, Prisma } from '../../services/prisma'
+import { prisma, Prisma } from '../services/prisma'
 import { BadgeItemOrderByInput } from '@generated/type-graphql'
 
 export const findBadgeItem = async (id: string) => {

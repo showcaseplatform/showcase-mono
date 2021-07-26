@@ -4,8 +4,8 @@ import {
   BadgeTypeCreateWithoutCreatorInput,
   BadgeItemCreateWithoutBadgeTypeInput,
 } from '@generated/type-graphql'
-import { myS3, seedBucket } from '../../src/services/S3/s3'  
 import Bluebird from 'bluebird'
+import { myS3, seedBucket } from '../../services/S3/s3'
 
 const generateRandomNumbers = () => {
   return Math.floor(Math.random() * 100 * 10000).toString()
@@ -42,7 +42,7 @@ export class UserSeeder {
   }
 
   addUsersFixture = async () => {
-    if (this.badges.length == 0 || this.avatars.length == 0) {
+    if (this.badges.length === 0 || this.avatars.length === 0) {
       await this.initBucketOBjects()
     }
     this.collectorIds = await this.addEmptyCollectors(this.numberOfCollectors)
@@ -87,7 +87,7 @@ export class UserSeeder {
 
   generateTestBadgeTypes = async (amount: number) => {
     let i = 0
-    let testBadgeTypes: BadgeTypeCreateWithoutCreatorInput[] = []
+    const testBadgeTypes: BadgeTypeCreateWithoutCreatorInput[] = []
     const causesList = (await this.prisma.cause.findMany()).map((cause) => {
       return cause.id
     })
@@ -142,7 +142,7 @@ export class UserSeeder {
 
   generateTestBadgeItems = (amount: number): BadgeItemCreateWithoutBadgeTypeInput[] => {
     let i = 0
-    let testBadgeItems: BadgeItemCreateWithoutBadgeTypeInput[] = []
+    const testBadgeItems: BadgeItemCreateWithoutBadgeTypeInput[] = []
     while (i < amount) {
       testBadgeItems.push({
         id: faker.datatype.uuid(),

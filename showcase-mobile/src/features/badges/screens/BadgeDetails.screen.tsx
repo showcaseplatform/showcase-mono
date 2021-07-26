@@ -29,6 +29,7 @@ import {
   MyImageBackground,
 } from '../components/BadgeDetails.styles'
 import { CenterView } from '../../../components/CenterView.component'
+import { DoublePress } from '../../../components/DoublePress.component'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -117,7 +118,9 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       <>
         <MyImageBackground source={{ uri: publicUrl }}>
           <BlurView tint="dark" intensity={85}>
-            <MyImage source={{ uri: publicUrl }} resizeMode="contain" />
+            <DoublePress onDoublePress={toggleLike} delay={300}>
+              <MyImage source={{ uri: publicUrl }} resizeMode="contain" />
+            </DoublePress>
           </BlurView>
         </MyImageBackground>
         {cause && donationAmount && (

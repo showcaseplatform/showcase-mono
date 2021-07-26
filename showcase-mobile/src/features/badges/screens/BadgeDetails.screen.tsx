@@ -118,7 +118,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       <>
         <MyImageBackground source={{ uri: publicUrl }}>
           <BlurView tint="dark" intensity={85}>
-            <DoublePress onDoublePress={toggleLike} delay={300}>
+            <DoublePress onDoublePress={toggleLike}>
               <MyImage source={{ uri: publicUrl }} resizeMode="contain" />
             </DoublePress>
           </BlurView>

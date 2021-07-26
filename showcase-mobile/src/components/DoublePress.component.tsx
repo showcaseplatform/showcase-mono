@@ -3,13 +3,13 @@ import { TouchableWithoutFeedback } from 'react-native'
 
 interface DoublePressProps {
   children: React.ReactNode
-  delay: number
+  delay?: number
   onDoublePress: () => void
 }
 
 export const DoublePress = ({
   children,
-  delay,
+  delay = 300,
   onDoublePress,
 }: DoublePressProps) => {
   const firstPress = useRef<boolean>(true)

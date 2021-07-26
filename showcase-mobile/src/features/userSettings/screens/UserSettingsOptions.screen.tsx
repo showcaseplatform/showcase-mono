@@ -1,5 +1,6 @@
 import React from 'react'
 import { Alert, View } from 'react-native'
+import Constants from 'expo-constants'
 import { Ionicons } from '@expo/vector-icons'
 import { Divider, TouchableRipple } from 'react-native-paper'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
@@ -70,7 +71,10 @@ const UserSettingsOptionsScreen = ({
             if (o.target) {
               navigation.navigate(o.target)
             } else {
-              Alert.alert('send email os dialog kicks in')
+              Alert.alert(
+                'Send email os dialog kicks in',
+                `version: ${Constants.manifest.version}`
+              )
             }
           }}
           key={o.label}

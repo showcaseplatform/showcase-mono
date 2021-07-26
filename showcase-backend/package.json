@@ -12,7 +12,7 @@
     "migrate:init": "npx prisma migrate dev --name init",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker compose down",
-    "test": "yarn docker:up && yarn migrate:init && jest -i",
+    "test": "yarn docker:up && yarn migrate:init && jest -i --detectOpenHandles",
     "test:watch": "jest --watch",
     "postgresql": "npm run postgresql:kill && npm run postgresql:start",
     "postgresql:kill": "docker ps -a | grep showcase-postgresql | awk '{print $1}' | xargs -I {} docker rm -f {}",

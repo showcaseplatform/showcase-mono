@@ -32,7 +32,7 @@ interface PurchaseTransactionInput {
   USDPrice: number
 }
 
-enum ErrorMessages {
+export enum PurchaseErrorMessages {
   badgeAlreadyOwned = 'You already purchased this badge',
   badgeCreatedByUser = 'Creators cannot buy from own badges',
   paymentInfoMissing = 'Payment information missing',
@@ -46,23 +46,23 @@ const checkIfUserAllowedToPurchaseBadgeType = async (
   badgeType: BadgeType
 ): Promise<void> => {
   if (isBadgeTypeCreatedByUser(user.id, badgeType.creatorId)) {
-    throw new GraphQLError(ErrorMessages.badgeCreatedByUser)
+    throw new GraphQLError(PurchaseErrorMessages.badgeCreatedByUser)
   }
 
   if (await isBadgeTypeSoldOut(badgeType)) {
-    throw new GraphQLError(ErrorMessages.outOfStock)
+    throw new GraphQLError(PurchaseErrorMessages.outOfStock)
   }
 
   if (await isBadgeTypeOwnedByUser(user.id, badgeType.id)) {
-    throw new GraphQLError(ErrorMessages.badgeAlreadyOwned)
+    throw new GraphQLError(PurchaseErrorMessages.badgeAlreadyOwned)
   }
 
   if (!hasUserPaymentInfo(user)) {
-    throw new GraphQLError(ErrorMessages.paymentInfoMissing)
+    throw new GraphQLError(PurchaseErrorMessages.paymentInfoMissing)
   }
 
   if (badgeType.price > 0 && hasUserReachedSpendingLimit(user)) {
-    throw new GraphQLError(ErrorMessages.spendingLimitReached)
+    throw new GraphQLError(PurchaseErrorMessages.spendingLimitReached)
   }
 }
 
@@ -247,6 +247,6 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   } catch (error) {
     // await stripe.refundPayment(chargeId)
     console.error({ error })
-    throw new GraphQLError(ErrorMessages.transactionFailed)
+    throw new GraphQLError(PurchaseErrorMessages.transactionFailed)
   }
 }

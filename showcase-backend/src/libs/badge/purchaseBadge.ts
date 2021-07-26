@@ -13,7 +13,7 @@ import {
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
 import { findUserWithFinancialInfo } from '../../database/user.repo'
 import { findBadgeType } from '../../database/badgeType.repo'
-import { Currency } from '@prisma/client'
+import { BadgeItem, Currency } from '@prisma/client'
 import { BadgeType, User } from '@generated/type-graphql'
 import { hasUserPaymentInfo, hasUserReachedSpendingLimit } from '../user/permissions'
 
@@ -166,7 +166,7 @@ const purchaseBadgeTransaction = async ({
   ])
 }
 
-export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
+export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid): Promise<BadgeItem> => {
   const { badgeTypeId } = input || {}
 
   const badgeType = await findBadgeType(badgeTypeId)

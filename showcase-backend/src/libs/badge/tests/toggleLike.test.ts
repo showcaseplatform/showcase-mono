@@ -1,38 +1,45 @@
+import 'reflect-metadata'
 import { ToggleLikeInput } from '../types/toggleLike.type'
-import { mockCreateBadgeItemLike, mockCreateBadgeTypeLike } from '../../../test/testHelpers'
-import { createLikeRecord } from '../toggleLike'
+import { createLikeRecord, toggleLike } from '../toggleLike'
+import { prisma } from '../../../services/prisma'
+import { AuthLib } from '../../auth/authLib'
+import { getRandomNum } from '../../../utils/randoms'
+import { createTestDb } from '../../../database/createDb'
 
-describe('createLikeRecord test cases', () => {
-  it('createLikeRecord should create new LikeBadgeType record if badge viewed in marketplace', async () => {
-    const badgeTypeId = 'badgeTypeId'
-    const likerUserId = 'likerUserId'
+beforeAll(async () => {
+  return await createTestDb(prisma)
+})
+
+describe('Toggleing like', () => {
+  it('should create new LikeBadgeType record if badge viewed in marketplace', async () => {
+    const dummyPhone = `3670978${getRandomNum()}`
+    const newUser= await AuthLib.createNewUser(dummyPhone, '36')
+    const badgeType = await prisma.badgeType.findFirst()
 
     const input: ToggleLikeInput = {
-      badgeId: badgeTypeId,
+      badgeId: badgeType?.id || '',
       marketplace: true,
     }
+  
+    const like = await toggleLike(input, newUser.id)
 
-    mockCreateBadgeTypeLike(badgeTypeId, likerUserId)
-    const createdRecord = await createLikeRecord(input, likerUserId)
-
-    expect(createdRecord.userId).toEqual(likerUserId)
-    expect(createdRecord).toHaveProperty('badgeTypeId', badgeTypeId)
+    expect(like.userId).toEqual(newUser.id)
+    expect(like).toHaveProperty('badgeTypeId', badgeType?.id)
   })
 
-  it('createLikeRecord should create new LikeBadgeType record if badge viewed NOT in marketplace', async () => {
-    const badgeItemId = 'badgeItemId'
-    const likerUserId = 'likerUserId'
+  it('should create new LikeBadgeType record if badge viewed NOT in marketplace', async () => {
+    const dummyPhone = `3670978${getRandomNum()}`
+    const newUser= await AuthLib.createNewUser(dummyPhone, '36')
+    const badgeItem = await prisma.badgeItem.findFirst()
 
     const input: ToggleLikeInput = {
-      badgeId: badgeItemId,
+      badgeId: badgeItem?.id || '',
       marketplace: false,
     }
 
-    mockCreateBadgeItemLike(badgeItemId, likerUserId)
+    const createdRecord = await toggleLike(input, newUser.id)
 
-    const createdRecord = await createLikeRecord(input, likerUserId)
-
-    expect(createdRecord.userId).toEqual(likerUserId)
-    expect(createdRecord).toHaveProperty('badgeItemId', badgeItemId)
+    expect(createdRecord.userId).toEqual(newUser.id)
+    expect(createdRecord).toHaveProperty('badgeItemId', badgeItem?.id)
   })
 })

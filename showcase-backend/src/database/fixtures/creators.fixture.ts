@@ -1,6 +1,7 @@
 import { UserType, Category, Currency, PrismaClient } from '.prisma/client'
 import faker from 'faker'
 import {
+  UserCreateInput,
   BadgeTypeCreateWithoutCreatorInput,
   BadgeItemCreateWithoutBadgeTypeInput,
 } from '@generated/type-graphql'
@@ -35,13 +36,13 @@ export class UserSeeder {
     this.numberOfCreators = numberOfCreators
   }
 
-  initBucketOBjects = async () => {
+  initBucketOBjects = async (): Promise<void> => {
     const { avatars, badges } = await myS3.getListOfS3BucketObjects(seedBucket)
     this.badges = badges || []
     this.avatars = avatars || []
   }
 
-  addUsersFixture = async () => {
+  addUsersFixture = async (): Promise<void> => {
     if (this.badges.length === 0 || this.avatars.length === 0) {
       await this.initBucketOBjects()
     }
@@ -49,24 +50,24 @@ export class UserSeeder {
     await this.addCreatorsWithRelationships(this.numberOfCreators)
   }
 
-  addEmptyCollectors = async (amount: number) => {
+  addEmptyCollectors = async (amount: number): Promise<string[]> => {
     const amountArr = [...Array(amount).keys()]
     const collectors = await Bluebird.map(amountArr, async (i) => {
       return await this.prisma.user.create({
         data: {
-          ...this.generateDefaultUserData(`collector-${i}`, UserType.basic),
+          ...this.generateUserDataWithPaymentInfo(`collector-${i}`, UserType.basic),
         },
       })
     })
     return collectors.map(({ id }) => id)
   }
 
-  addCreatorsWithRelationships = async (amount: number) => {
+  addCreatorsWithRelationships = async (amount: number): Promise<string[]> => {
     const amountArr = [...Array(amount).keys()]
     const creators = await Bluebird.map(amountArr, async (i) => {
       return await this.prisma.user.create({
         data: {
-          ...this.generateDefaultUserData(`creator-${i}`, UserType.creator),
+          ...this.generateUserDataWithPaymentInfo(`creator-${i}`, UserType.creator),
           followers: {
             createMany: {
               data: [
@@ -77,7 +78,10 @@ export class UserSeeder {
             },
           },
           badgeTypesCreated: {
-            create: [...(await this.generateTestBadgeTypes(10))],
+            create: [
+              ...(await this.generateTestBadgeTypes(10)),
+              await this.generateTestSoldOutBadgeType(),
+            ],
           },
         },
       })
@@ -85,7 +89,7 @@ export class UserSeeder {
     return creators.map(({ id }) => id)
   }
 
-  generateTestBadgeTypes = async (amount: number) => {
+  generateTestBadgeTypes = async (amount: number): Promise<BadgeTypeCreateWithoutCreatorInput[]> => {
     let i = 0
     const testBadgeTypes: BadgeTypeCreateWithoutCreatorInput[] = []
     const causesList = (await this.prisma.cause.findMany()).map((cause) => {
@@ -109,7 +113,7 @@ export class UserSeeder {
             id: pickRandomItemFromList<number>(causesList),
           },
         },
-        donationAmount: 0.10,
+        donationAmount: 0.1,
         price: 1,
         supply: this.numberOfCollectors + 5,
         sold: this.numberOfCollectors,
@@ -139,6 +143,36 @@ export class UserSeeder {
     }
     return testBadgeTypes
   }
+  generateTestSoldOutBadgeType = async (): Promise<BadgeTypeCreateWithoutCreatorInput> => {
+    const causesList = (await this.prisma.cause.findMany()).map((cause) => {
+      return cause.id
+    })
+
+    return {
+      id: faker.datatype.uuid(),
+      title: `Soldout BadgeType Title`,
+      description: `Soldout badgeType description`,
+      category: pickRandomItemFromList<Category>(categoryList),
+      currency: pickRandomItemFromList<Currency>(currencyList),
+      shares: 0,
+      tokenTypeId: faker.datatype.uuid(),
+      imageId: pickRandomItemFromList<string>(this.badges),
+      imageHash: faker.datatype.uuid(),
+      uri: `https://showcase.to/badge/${faker.datatype.uuid()}`,
+      cause: {
+        connect: {
+          id: pickRandomItemFromList<number>(causesList),
+        },
+      },
+      donationAmount: 0.1,
+      price: 1,
+      supply: 1,
+      sold: 1,
+      badgeItems: {
+        create: [...this.generateTestBadgeItems(1)],
+      },
+    }
+  }
 
   generateTestBadgeItems = (amount: number): BadgeItemCreateWithoutBadgeTypeInput[] => {
     let i = 0
@@ -160,7 +194,7 @@ export class UserSeeder {
     return testBadgeItems
   }
 
-  generateDefaultUserData = (id: string, userType: UserType) => {
+  generateUserDataWithPaymentInfo = (id: string, userType: UserType): UserCreateInput => {
     return {
       id,
       phone: '+36709' + generateRandomNumbers(),
@@ -180,6 +214,13 @@ export class UserSeeder {
           USD: 0,
         },
       },
+      paymentInfo: {
+        create: {
+          idToken: generateRandomNumbers(),
+          lastFourCardDigit: '1234',
+        }
+      }
+      
     }
   }
 }

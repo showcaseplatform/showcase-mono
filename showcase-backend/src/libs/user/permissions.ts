@@ -13,25 +13,11 @@ export const isUserAllowedToBuy = async (id: Uid): Promise<boolean> => {
 }
 
 export const hasUserReachedSpendingLimit = (user: User): boolean => {
-  if (
-    (!user.kycVerified &&
-      user.balance &&
-      user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_DEFAULT) ||
-    (user.kycVerified &&
-      user.balance &&
-      user.balance.totalSpentAmountConvertedUsd > SPEND_LIMIT_KYC_VERIFIED)
-  ) {
-    return true
-  } else {
-    return false
-  }
+  const spendingLimit = user.kycVerified ? SPEND_LIMIT_KYC_VERIFIED : SPEND_LIMIT_DEFAULT;
+  return (user.balance?.totalSpentAmountConvertedUsd || 0) > spendingLimit
 }
 
 // todo: improve this validation once we know what paymentInfo should we use
 export const hasUserPaymentInfo = (user: User): boolean => {
-  if (user && user.paymentInfo?.idToken && user.paymentInfo?.lastFourCardDigit) {
-    return true
-  } else {
-    return false
-  }
+return !!(user.paymentInfo?.idToken && user.paymentInfo?.lastFourCardDigit)
 }

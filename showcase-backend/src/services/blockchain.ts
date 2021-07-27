@@ -1,12 +1,10 @@
 import axios from 'axios'
-import Boom from 'boom'
 import { blockchain } from '../config'
 import { prisma } from './prisma'
 import { BadgeItemId } from '../types/badge'
 import { ListBadgeForSaleInput } from '../libs/badge/types/listBadgeForSale.type'
 import { Uid } from '../types/user'
 import { Profile } from '@prisma/client'
-import { GraphQLError } from 'graphql'
 import { BadgeTypeCreateInput } from '@generated/type-graphql'
 import { PublishBadgeTypeInputValidation } from '../libs/badge/publishBadgeType'
 import { getRandomNum } from '../utils/randoms'
@@ -29,7 +27,7 @@ export const mintNewBadgeOnBlockchain = async (
     if (response.data?.success && response.data?.transactionHash) {
       return response.data.transactionHash
     } else {
-      throw Boom.internal('Failed to mint new badge on blockchain', response)
+      throw new Error('Failed to mint new badge on blockchain')
     }
   } else {
     return 'fake_hash' + getRandomNum()
@@ -54,7 +52,7 @@ export const checkBadgeOwnedOnBlockchain = async (badgeItemId: BadgeItemId): Pro
     },
   })
   if (!badge) {
-    throw Boom.badData('Badge id not found', { badgeItemId })
+    throw new Error('Badge id not found')
   }
 
   const data = {
@@ -90,7 +88,7 @@ export const addNonFungibleToEscrowWithSignatureRelay = async (
   })
 
   if (!cryptoWallet?.address) {
-    throw Boom.badData('User doesnt have crypto address')
+    throw new Error('User doesnt have crypto address')
   }
 
   const postData: BlockChainPostData = {
@@ -109,7 +107,7 @@ export const addNonFungibleToEscrowWithSignatureRelay = async (
   if (response && response.data && response.data.success) {
     return
   } else {
-    throw new GraphQLError('Blockchain server gave invalid response')
+    throw new Error('Blockchain server gave invalid response')
   }
 }
 
@@ -148,7 +146,7 @@ export const createTokenTypeOnBlockchain = async ({
   if (blockchainData.tokenType) {
     return blockchainData.tokenType
   } else {
-    throw new GraphQLError('Blockchain error, missing tokenType from response', blockchainData)
+    throw new Error('Blockchain error, missing tokenType from response')
   }
 }
 

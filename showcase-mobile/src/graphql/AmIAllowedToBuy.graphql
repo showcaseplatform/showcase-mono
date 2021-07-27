@@ -1,0 +1,6 @@
+query AmIAllowedToBuy {
+  me {
+    id
+    isAllowedToBuy
+  }
+}

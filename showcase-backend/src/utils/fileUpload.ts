@@ -3,6 +3,7 @@ import { FileType, FileUploadInput } from './types/fileUpload.type'
 import { v4 as uuidv4 } from 'uuid'
 import { GraphQLError } from 'graphql'
 import * as crypto from 'crypto'
+import { resizeImageWithSharp } from '../services/sharp'
 
 enum FileUploadErrorMessages {
   BadgeWrongFileType = 'Only JPG, JPEG, PNG and GIF files are allowed.',
@@ -26,8 +27,8 @@ export const uploadFile: UploadFunction = async ({ fileData, fileType, updateKey
   const { base64DataURL, mimeType: ContentType } = fileData
 
   const fileExtension = ContentType.split('/')[1]
-  const buffer = Buffer.from(base64DataURL, 'base64')
 
+  let buffer = Buffer.from(base64DataURL, 'base64')
   let Key = ''
   let hash = ''
   let gif = false
@@ -47,6 +48,7 @@ export const uploadFile: UploadFunction = async ({ fileData, fileType, updateKey
         throw new GraphQLError(FileUploadErrorMessages.AvatarWrongFileType)
       }
       Key = updateKey || `${AVATAR_PATH}/${uuidv4()}.${fileExtension}`
+      buffer = await resizeImageWithSharp({ buffer, width: 100, height: 100 })
       break
 
     default:

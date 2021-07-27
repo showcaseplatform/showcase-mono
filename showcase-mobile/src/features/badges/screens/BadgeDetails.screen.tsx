@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react'
-import { View, Pressable } from 'react-native'
+import { View, Pressable, TouchableWithoutFeedback } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import { NavigationProp, RouteProp } from '@react-navigation/core'
@@ -10,6 +10,7 @@ import useBuyBadge from '../../../hooks/useBuyBadge'
 import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
 import { translate } from '../../../utils/translator'
 import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
+import { useMyBottomSheet } from '../../../utils/useMyBottomSheet'
 import {
   BadgeDetailsDocument,
   useBadgeDetailsQuery,
@@ -23,12 +24,13 @@ import CauseModal from '../components/CauseModal.component'
 import { DonationWidget } from '../components/DonationWidget.component'
 import Error from '../../../components/Error.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
+import { CenterView } from '../../../components/CenterView.component'
+import SupplyList from '../components/SupplyList.component'
 import {
   InfoWrapper,
   MyImage,
   MyImageBackground,
 } from '../components/BadgeDetails.styles'
-import { CenterView } from '../../../components/CenterView.component'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -59,6 +61,8 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   })
 
   const [showCauseModal, setShowCauseModal] = useState(false)
+  const { expand } = useMyBottomSheet()
+
   const handleCloseModal = () => setShowCauseModal(false)
   const handleOpenModal = () => setShowCauseModal(true)
 
@@ -95,6 +99,13 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       })
   }, [navigation])
 
+  function handleShowSupply() {
+    expand({
+      children: <SupplyList badgeId={badgeType.id} navigation={navigation} />,
+      snapPoints: [0, '60%', '80%'],
+    })
+  }
+
   if (loading) {
     return <LoadingIndicator fullScreen />
   }
@@ -129,9 +140,14 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
         )}
         <InfoWrapper>
           <View style={{ flex: 1 }}>
-            <Text variant="body" color="secondary">
-              {makePriceTag(badgeType.price, badgeType.currency)}
-            </Text>
+            <TouchableWithoutFeedback onPress={handleShowSupply}>
+              <Text variant="body" color="secondary">
+                <Text variant="caption" color="secondary">
+                  from{' '}
+                </Text>
+                {makePriceTag(badgeType.price, badgeType.currency)} ...
+              </Text>
+            </TouchableWithoutFeedback>
             <Spacer position="y" size="medium">
               <View flexDirection="row">
                 <Text variant="body" color="secondary">

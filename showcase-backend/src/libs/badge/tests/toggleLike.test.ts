@@ -1,16 +1,23 @@
 import 'reflect-metadata'
 import { ToggleLikeInput } from '../types/toggleLike.type'
-import { createLikeRecord, toggleLike } from '../toggleLike'
+import { toggleLike } from '../toggleLike'
 import { prisma } from '../../../services/prisma'
 import { AuthLib } from '../../auth/authLib'
 import { getRandomNum } from '../../../utils/randoms'
 import { createTestDb } from '../../../database/createDb'
+import { deleteDb } from '../../../database/deleteDb'
 
-beforeAll(async () => {
-  return await createTestDb(prisma)
-})
 
 describe('Toggleing like', () => {
+  beforeAll(async () => {
+    await createTestDb(prisma)
+  })
+  
+  afterAll(async () => {
+    await deleteDb(prisma)
+    await prisma.$disconnect()
+  })
+
   it('should create new LikeBadgeType record if badge viewed in marketplace', async () => {
     const dummyPhone = `3670978${getRandomNum()}`
     const newUser= await AuthLib.createNewUser(dummyPhone, '36')

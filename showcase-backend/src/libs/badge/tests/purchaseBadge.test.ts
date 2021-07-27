@@ -7,12 +7,18 @@ import { AuthLib } from '../../auth/authLib'
 import { getRandomNum } from '../../../utils/randoms'
 import { Cause, UserType } from '@prisma/client'
 import { SHOWCASE_COMMISSION_FEE_MULTIPLIER } from '../../../consts/businessRules'
-
-beforeAll(async () => {
-  return await createTestDb(prisma)
-})
+import { deleteDb } from '../../../database/deleteDb'
 
 describe('Purchasing a badge', () => {
+  beforeAll(async () => {
+    await createTestDb(prisma)
+  })
+  
+  afterAll(async () => {
+    await deleteDb(prisma)
+    await prisma.$disconnect()
+  })
+  
   it('should update badgeType, creator balance, cause and create new badgeItem, receipt on success', async () => {
     const badgeTypes = await prisma.badgeType.findMany({
       include: { cause: true, creator: { include: { balance: true } } },
@@ -191,10 +197,4 @@ describe('Purchasing a badge', () => {
 
     expect(error).toEqual(PurchaseErrorMessages.badgeCreatedByUser)
   })
-
-  // it('should fail if buyer reached its spending limit and badge is sold for money', async () => {
-
-  // })
-
-  // todo: test currency conversion once we add this feature
 })

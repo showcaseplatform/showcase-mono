@@ -1,14 +1,17 @@
 import { PrismaClient } from '@prisma/client'
-import { cleanDb } from './deleteDb'
+import { deleteDb } from './deleteDb'
 import { addCausesFixture } from './fixtures/causes.fixture'
 import { UserSeeder } from './fixtures/users.fixture'
 import { addCurrencyRatesFixture } from './fixtures/currencyRates.fixture'
 
 
+console.log(process.env.NODE_ENV)
+
+
 export const createTestDb = async (prisma: PrismaClient): Promise<void> => {
-    const userSeeder = new UserSeeder(prisma, 5, 3, 5)
-    await cleanDb(prisma)
-    await addCurrencyRatesFixture(prisma)
-    await addCausesFixture(prisma)
-    await userSeeder.addUsersFixture()
-  }
+  const userSeeder = new UserSeeder(prisma, 5, 3, 5)
+  await deleteDb(prisma)
+  await addCurrencyRatesFixture(prisma)
+  await addCausesFixture(prisma)
+  await userSeeder.addUsersFixture()
+}

@@ -3,7 +3,20 @@ import { Currency } from '@prisma/client'
 import prisma from '../../services/prisma'
 import { getRandomNum } from '../../utils/randoms'
 import { AuthLib } from './authLib'
+import { createTestDb } from '../../database/createDb'
+import { deleteDb } from '../../database/deleteDb'
+
+
 describe('AuthLib user test cases', () => {
+  beforeAll(async () => {
+    await createTestDb(prisma)
+  })
+  
+  afterAll(async () => {
+    await deleteDb(prisma)
+    await prisma.$disconnect()
+  })
+
   it.only('createNewUser should add a new user to database with balance and profile', async () => {
     const dummyPhone = `3670978${getRandomNum()}`
 
@@ -15,8 +28,8 @@ describe('AuthLib user test cases', () => {
       },
       include: {
         balance: true,
-        profile: true
-      }
+        profile: true,
+      },
     })
 
     expect(user.phone).toEqual(testUser?.phone)

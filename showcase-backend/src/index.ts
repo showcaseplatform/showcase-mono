@@ -18,7 +18,7 @@ import http from 'http'
 import * as dotenv from 'dotenv'
 import { join } from 'path'
 process.chdir(join(__dirname, '..'))
-const dotenvPath = join(__dirname, '..', '.env')
+const dotenvPath = join(__dirname, '../../..', `.env.${process.env.NODE_ENV}`)
 dotenv.config({ path: dotenvPath })
 
 const port = parseInt(process.env.PORT || '3000', 10)

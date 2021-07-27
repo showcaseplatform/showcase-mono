@@ -9,7 +9,7 @@ interface ProfileImageProps extends Omit<ImageProps, 'source'> {
   loading?: boolean
   source: Maybe<string | undefined>
   small?: boolean
-  onClick?: () => void
+  onPress?: () => void
 }
 
 const StyledProfileImage = styled(Image)<{ small?: boolean }>`
@@ -19,7 +19,7 @@ const StyledProfileImage = styled(Image)<{ small?: boolean }>`
 `
 
 const ProfileImage = (props: ProfileImageProps) => {
-  const { source, small = false, loading = false, onClick, ...rest } = props
+  const { source, small = false, loading = false, onPress, ...rest } = props
 
   if (loading)
     return (
@@ -35,7 +35,7 @@ const ProfileImage = (props: ProfileImageProps) => {
     )
 
   return (
-    <Pressable onPress={onClick}>
+    <Pressable onPress={onPress}>
       <StyledProfileImage
         resizeMode="cover"
         source={getImageSource(source as string | undefined)}

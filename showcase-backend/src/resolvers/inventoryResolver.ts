@@ -13,16 +13,16 @@ import {
   BadgeTypeLike,
   BadgeItemLike,
   User,
-  UserType,
   BadgeTypeView,
   BadgeItemView,
 } from '@prisma/client'
 import { ViewInfo } from '../libs/badge/types/countView.type'
 import { CurrentUser } from '../libs/auth/decorators'
+import { allUserTypes } from '../libs/auth/authLib'
 
 @Resolver()
 export class InventoryResolver {
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => LikeBadgeUnion)
   async toggleLike(
     @Arg('data') countLikeInput: ToggleLikeInput,
@@ -31,7 +31,7 @@ export class InventoryResolver {
     return await toggleLike(countLikeInput, currentUser.id)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => ViewBadgeUnion)
   async countView(
     @Arg('data') countViewInput: CountViewInput,
@@ -40,7 +40,7 @@ export class InventoryResolver {
     return await countView(countViewInput, currentUser.id)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => BadgeItem)
   async listBadgeForSale(
     @Arg('data') listBadgeForSaleInput: ListBadgeForSaleInput,
@@ -49,7 +49,7 @@ export class InventoryResolver {
     return await listBadgeForSale(listBadgeForSaleInput, currentUser.id)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => BadgeItem)
   async unlistBadgeForSale(
     @Arg('data') unListBadgeForSaleInput: UnListBadgeForSaleInput,

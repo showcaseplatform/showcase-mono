@@ -1,0 +1,10 @@
+fragment BuyBadgeCriterias on BadgeType {
+  id
+  title
+  price
+  currency
+  isOwnedByMe
+  isCreatedByMe
+  availableToBuyCount
+  isSoldOut
+}

@@ -3,7 +3,7 @@ import styled from 'styled-components/native'
 
 const MyKeyboardAwareScrollView = styled(KeyboardAwareScrollView).attrs({
   contentContainerStyle: {
-    flex: 1,
+    flexGrow: 1,
     alignItems: 'center',
     paddingHorizontal: 10,
   },

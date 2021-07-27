@@ -10,10 +10,11 @@ import { AddNewChatParticipantInput } from '../libs/chat/types/addNewChatPartici
 import { isChatParticipant } from '../libs/chat/validateChatParticipant'
 import { myPubSub, NEW_CHAT_MESSAGE } from '../services/pubSub'
 import { CurrentUser } from '../libs/auth/decorators'
+import { allUserTypes } from '../libs/auth/authLib'
 
 @Resolver()
 export class ChatResolver {
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => ChatMessage)
   async sendMessage(
     @CurrentUser() currentUser: User,
@@ -29,7 +30,7 @@ export class ChatResolver {
     return message
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => [ChatMessage])
   async readChatMessages(
     @Arg('chatId') chatId: string,
@@ -38,7 +39,7 @@ export class ChatResolver {
     return await readChatMessages(chatId, currentUser)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Mutation(() => ChatParticipant)
   async addNewChatParticipant(
     @Arg('data') input: AddNewChatParticipantInput,
@@ -47,7 +48,7 @@ export class ChatResolver {
     return await addNewChatParticipant(input, currentUser)
   }
 
-  @Authorized(UserType.basic, UserType.creator)
+  @Authorized(...allUserTypes)
   @Subscription({
     topics: NEW_CHAT_MESSAGE,
     filter: async ({ context, payload }: { context: { user: User }; payload: ChatMessage }) => {

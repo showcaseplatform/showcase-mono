@@ -3,7 +3,7 @@ import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/busi
 import { Uid } from '../../types/user'
 import { findUserWithFinancialInfo } from '../../database/user.repo'
 
-export const isUserAllowedToBuy = async (id: Uid): Promise<Boolean> => {
+export const isUserAllowedToBuy = async (id: Uid): Promise<boolean> => {
   try {
     const user = await findUserWithFinancialInfo(id)
     return hasUserPaymentInfo(user)
@@ -12,7 +12,7 @@ export const isUserAllowedToBuy = async (id: Uid): Promise<Boolean> => {
   }
 }
 
-export const hasUserReachedSpendingLimit = (user: User): Boolean => {
+export const hasUserReachedSpendingLimit = (user: User): boolean => {
   if (
     (!user.kycVerified &&
       user.balance &&
@@ -28,7 +28,7 @@ export const hasUserReachedSpendingLimit = (user: User): Boolean => {
 }
 
 // todo: improve this validation once we know what paymentInfo should we use
-export const hasUserPaymentInfo = (user: User): Boolean => {
+export const hasUserPaymentInfo = (user: User): boolean => {
   if (user && user.paymentInfo?.idToken && user.paymentInfo?.lastFourCardDigit) {
     return true
   } else {

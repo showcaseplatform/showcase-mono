@@ -15,7 +15,7 @@ describe('Purchasing a badge', () => {
     const dummyPhone = `3670978${getRandomNum()}`
     const newUser = await AuthLib.createNewUser(dummyPhone, '36')
     const badgeTypes = await prisma.badgeType.findMany()
-    const badgeTypeToPurchase = badgeTypes.filter(b => b.supply > b.sold)[0]
+    const badgeTypeToPurchase = badgeTypes.filter((b) => b.supply > b.sold)[0]
 
     const inputBadgeTypeId: PurchaseBadgeInput = {
       badgeTypeId: badgeTypeToPurchase.id,
@@ -27,22 +27,23 @@ describe('Purchasing a badge', () => {
     try {
       await purchaseBadge(inputBadgeTypeId, inputUserId)
     } catch (e) {
-       error = e.message
+      error = e.message
     }
 
     expect(error).toEqual(PurchaseErrorMessages.paymentInfoMissing)
-
   })
 
   it('should fail if buyer already owned a badgItem from the desired badgeType', async () => {
     const badgeTypes = await prisma.badgeType.findMany()
-    const badgeTypeToPurchase = badgeTypes.filter(b => b.supply > b.sold)[0]
+    const badgeTypeToPurchase = badgeTypes.filter((b) => b.supply > b.sold)[0]
 
-    const testBadgeItemWithTypeAndOwner = await prisma.badgeItem.findFirst({where: {
-      badgeTypeId: {
-        equals: badgeTypeToPurchase.id
-      }
-    }})
+    const testBadgeItemWithTypeAndOwner = await prisma.badgeItem.findFirst({
+      where: {
+        badgeTypeId: {
+          equals: badgeTypeToPurchase.id,
+        },
+      },
+    })
 
     const inputBadgeTypeId: PurchaseBadgeInput = {
       badgeTypeId: testBadgeItemWithTypeAndOwner?.badgeTypeId || '',
@@ -54,7 +55,7 @@ describe('Purchasing a badge', () => {
     try {
       await purchaseBadge(inputBadgeTypeId, inputUserId)
     } catch (e) {
-       error = e.message
+      error = e.message
     }
 
     expect(error).toEqual(PurchaseErrorMessages.badgeAlreadyOwned)
@@ -62,16 +63,18 @@ describe('Purchasing a badge', () => {
 
   it('should fail if badgeType is sold-out', async () => {
     const badgeTypes = await prisma.badgeType.findMany()
-    const soldoutBadgeType = badgeTypes.filter(b => b.supply === b.sold)[0]
-    const testUser = await prisma.user.findFirst({where: {
-      badgeItemsOwned: {
-        none: {
-          badgeTypeId: {
-            equals: soldoutBadgeType.id
-          }
-        }
-      }
-    }})
+    const soldoutBadgeType = badgeTypes.filter((b) => b.supply === b.sold)[0]
+    const testUser = await prisma.user.findFirst({
+      where: {
+        badgeItemsOwned: {
+          none: {
+            badgeTypeId: {
+              equals: soldoutBadgeType.id,
+            },
+          },
+        },
+      },
+    })
 
     const inputBadgeTypeId: PurchaseBadgeInput = {
       badgeTypeId: soldoutBadgeType?.id || '',
@@ -81,20 +84,35 @@ describe('Purchasing a badge', () => {
     try {
       await purchaseBadge(inputBadgeTypeId, testUser?.id || '')
     } catch (e) {
-       error = e.message
+      error = e.message
     }
 
     expect(error).toEqual(PurchaseErrorMessages.outOfStock)
   })
 
+  it('should fail if buyer is the creator of the desired badge', async () => {
+    const badgeTypes = await prisma.badgeType.findMany()
+    const badgeTypeToPurchase = badgeTypes.filter((b) => b.supply > b.sold)[0]
 
-  // it('should fail if buyer reached its spending limit and badge is sold for money', async () => {
     
-  // })
+    const inputBadgeTypeId: PurchaseBadgeInput = {
+      badgeTypeId: badgeTypeToPurchase?.id || '',
+    }
 
-  // it('should fail if buyer is the creator of the desired badge', async () => {
+    let error = ''
+    try {
+      await purchaseBadge(inputBadgeTypeId, badgeTypeToPurchase?.creatorId || '')
+    } catch (e) {
+      error = e.message
+    }
 
-  // })
+    expect(error).toEqual(PurchaseErrorMessages.badgeCreatedByUser)
+
+  })
+
+  it('should fail if buyer reached its spending limit and badge is sold for money', async () => {
+
+  })
 
   // todo: test currency conversion once we add this feature
 })

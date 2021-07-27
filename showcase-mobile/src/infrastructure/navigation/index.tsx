@@ -1,5 +1,8 @@
-import React from 'react'
-import { NavigationContainer } from '@react-navigation/native'
+import React, { createRef } from 'react'
+import {
+  NavigationContainer,
+  NavigationContainerRef,
+} from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 
 import { linking } from './linking.configuration'
@@ -16,12 +19,18 @@ export type ProtectedStackParamList = {
   TabNavigator: undefined
 }
 
+export const navigationRef = createRef<NavigationContainerRef>()
+
+export function navigate(name: string, params: object | undefined) {
+  navigationRef.current?.navigate(name, params)
+}
+
 // todo: extract base navi from here
 const NavigationRoot = () => {
   const token = useToken()
 
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer linking={linking} ref={navigationRef}>
       {token ? (
         <ProtectedStack.Navigator screenOptions={{ headerShown: false }}>
           <ProtectedStack.Screen name="TabNavigator" component={TabNavigator} />

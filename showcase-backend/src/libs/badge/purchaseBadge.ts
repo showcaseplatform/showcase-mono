@@ -129,6 +129,9 @@ const purchaseBadgeTransaction = async ({
                   [`balance${badgeType.currency}`]: {
                     increment: causeFullAmount,
                   },
+                  numberOfContributions: {
+                    increment: 1
+                  }
                 },
               }
             : undefined,
@@ -138,6 +141,7 @@ const purchaseBadgeTransaction = async ({
           where: {
             ownerId: userId,
             tokenId,
+            isSold: false
           },
           orderBy: {
             createdAt: 'desc',
@@ -146,9 +150,10 @@ const purchaseBadgeTransaction = async ({
         },
       },
     }),
+    // todo: updating balance not neccasary, can be calculated later
     prisma.user.update({
       where: {
-        id: userId,
+        id: badgeType.creatorId,
       },
       data: {
         balance: {

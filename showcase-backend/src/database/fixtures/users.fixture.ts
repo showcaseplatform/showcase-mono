@@ -29,11 +29,18 @@ export class UserSeeder {
 
   numberOfCollectors: number
   numberOfCreators: number
+  numberOfEmptyUsers: number
 
-  constructor(prisma: PrismaClient, numberOfCollectors: number, numberOfCreators: number) {
+  constructor(
+    prisma: PrismaClient,
+    numberOfCollectors: number,
+    numberOfCreators: number,
+    numberOfEmptyUsers: number
+  ) {
     this.prisma = prisma
     this.numberOfCollectors = numberOfCollectors
     this.numberOfCreators = numberOfCreators
+    this.numberOfEmptyUsers = numberOfEmptyUsers
   }
 
   initBucketOBjects = async (): Promise<void> => {
@@ -46,11 +53,23 @@ export class UserSeeder {
     if (this.badges.length === 0 || this.avatars.length === 0) {
       await this.initBucketOBjects()
     }
-    this.collectorIds = await this.addEmptyCollectors(this.numberOfCollectors)
+    await this.addCollectors(this.numberOfCollectors)
     await this.addCreatorsWithRelationships(this.numberOfCreators)
+    await this.addEmptyUsers(this.numberOfEmptyUsers)
   }
 
-  addEmptyCollectors = async (amount: number): Promise<string[]> => {
+  addEmptyUsers = async (amount: number): Promise<void> => {
+    const amountArr = [...Array(amount).keys()]
+    await Bluebird.map(amountArr, async (i) => {
+      return await this.prisma.user.create({
+        data: {
+          ...this.generateUserDataWithPaymentInfo(`basic-${i}`, UserType.basic),
+        },
+      })
+    })
+  }
+
+  addCollectors = async (amount: number): Promise<void> => {
     const amountArr = [...Array(amount).keys()]
     const collectors = await Bluebird.map(amountArr, async (i) => {
       return await this.prisma.user.create({
@@ -59,10 +78,10 @@ export class UserSeeder {
         },
       })
     })
-    return collectors.map(({ id }) => id)
+    this.collectorIds = collectors.map(({ id }) => id)
   }
 
-  addCreatorsWithRelationships = async (amount: number): Promise<string[]> => {
+  addCreatorsWithRelationships = async (amount: number): Promise<void> => {
     const amountArr = [...Array(amount).keys()]
     const creators = await Bluebird.map(amountArr, async (i) => {
       return await this.prisma.user.create({
@@ -86,10 +105,11 @@ export class UserSeeder {
         },
       })
     })
-    return creators.map(({ id }) => id)
   }
 
-  generateTestBadgeTypes = async (amount: number): Promise<BadgeTypeCreateWithoutCreatorInput[]> => {
+  generateTestBadgeTypes = async (
+    amount: number
+  ): Promise<BadgeTypeCreateWithoutCreatorInput[]> => {
     let i = 0
     const testBadgeTypes: BadgeTypeCreateWithoutCreatorInput[] = []
     const causesList = (await this.prisma.cause.findMany()).map((cause) => {
@@ -218,9 +238,8 @@ export class UserSeeder {
         create: {
           idToken: generateRandomNumbers(),
           lastFourCardDigit: '1234',
-        }
-      }
-      
+        },
+      },
     }
   }
 }

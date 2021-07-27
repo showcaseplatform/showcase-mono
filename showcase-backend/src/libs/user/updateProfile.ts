@@ -108,11 +108,11 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
 
   const updateData = {} as Partial<Omit<Profile, 'id'>>
 
-  if (bio != undefined) {
+  if (bio !== undefined) {
     updateData.bio = validateBio(bio)
   }
 
-  if (email != undefined) {
+  if (email !== undefined) {
     updateData.email = await validateEmail(email)
   }
 
@@ -124,7 +124,7 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
     updateData.displayName = validateDisplayName(displayName)
   }
 
-  if (birthDate != undefined) {
+  if (birthDate !== undefined) {
     updateData.birthDate = validateBirthdate(new Date(birthDate))
   }
 
@@ -132,7 +132,7 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
     updateData.currency = validateCurrency(currency)
   }
 
-  if (avatarImg != undefined) {
+  if (avatarImg !== undefined) {
     updateData.avatarId = await updateAvatarImg(avatarImg, uid)
   }
 

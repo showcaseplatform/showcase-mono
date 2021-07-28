@@ -10,6 +10,7 @@ import { isEven, reshapeBadges } from '../../../utils/helpers'
 import {
   BadgeType,
   FollowStatus,
+  MeDocument,
   UserType,
   useToggleFollowMutation,
   useUserQuery,
@@ -90,19 +91,20 @@ const ProfileScreen = ({ route, navigation }: ProfileScreenProps) => {
   }, [data?.user?.profile?.displayName, navigation])
 
   const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
-    update(cache, { data: data_ }) {
-      cache.modify({
-        id: cache.identify({
-          id,
-          __typename: 'User',
-        }),
-        fields: {
-          amIFollowing() {
-            return data_?.toggleFollow.status === FollowStatus.Accepted
-          },
-        },
-      })
-    },
+    // update(cache, { data: data_ }) {
+    //   cache.modify({
+    //     id: cache.identify({
+    //       id,
+    //       __typename: 'User',
+    //     }),
+    //     fields: {
+    //       amIFollowing() {
+    //         return data_?.toggleFollow.status === FollowStatus.Accepted
+    //       },
+    //     },
+    //   })
+    // },
+    refetchQueries: [{ query: MeDocument }],
   })
 
   function handleToggleFollow() {

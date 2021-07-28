@@ -20,7 +20,9 @@ const MyCreations = () => {
         keyExtractor={(item) => item.id}
         numColumns={1}
         contentContainerStyle={{ flexGrow: 1 }}
-        ListEmptyComponent={EmptyListComponent}
+        ListEmptyComponent={
+          <EmptyListComponent text={'You have not created a badge yet.'} />
+        }
         renderItem={({ item }) => <CreationItem item={item} />}
       />
     )

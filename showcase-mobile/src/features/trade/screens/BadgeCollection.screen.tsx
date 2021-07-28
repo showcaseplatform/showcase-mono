@@ -20,7 +20,9 @@ const BadgeCollection = () => {
         keyExtractor={(item) => item.id}
         numColumns={1}
         contentContainerStyle={{ flexGrow: 1 }}
-        ListEmptyComponent={EmptyListComponent}
+        ListEmptyComponent={
+          <EmptyListComponent text="You have no badges bought yet" />
+        }
         renderItem={({ item }) => <CollectionItem item={item} />}
       />
     )

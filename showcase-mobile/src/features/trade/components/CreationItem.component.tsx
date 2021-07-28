@@ -43,7 +43,6 @@ const CollectionItem = ({ item }: { item: CollectionItemProps }) => {
     [item?.badgeItems?.length]
   )
 
-
   // todod: temp
   const lastSoldItem = item.badgeItems.reduce(
     (a, b) => (a.createdAt > b.createdAt ? a : b),

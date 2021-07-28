@@ -4,7 +4,7 @@ import { NavigationProp, RouteProp } from '@react-navigation/native'
 import { Button, Divider, IconButton } from 'react-native-paper'
 import { useTheme } from 'styled-components/native'
 
-import { BadgeType, FollowStatus, useMeQuery } from '../../../generated/graphql'
+import { BadgeType, useMeQuery } from '../../../generated/graphql'
 
 import { UserStackParamList } from '../../../infrastructure/navigation/user.navigator'
 import { reshapeBadges } from '../../../utils/helpers'
@@ -33,22 +33,8 @@ const UserProfileScreen = ({ navigation }: UserProfileScreenProps) => {
   const theme = useTheme()
   const [countOfBadges, setCountOfBadges] = useState(0)
 
-  const countOfFriends = useMemo(
-    () =>
-      data?.me.friends.filter((f) => f.status === FollowStatus.Accepted)
-        .length || 0,
-    [data?.me.friends]
-  )
-  const countOfFollowers = useMemo(
-    () =>
-      data?.me.followers.filter((f) => f.status === FollowStatus.Accepted)
-        .length || 0,
-    [data?.me.followers]
-  )
-
-  // ?: does not update UI properly
-  // const friendsLength = data?.me.friendsCount
-  // const followersLength = data?.me.followersCount
+  const countOfFriends = data?.me.friendsCount
+  const countOfFollowers = data?.me.followersCount
 
   // !: temp
   const allReshapedBadges = useMemo(() => {

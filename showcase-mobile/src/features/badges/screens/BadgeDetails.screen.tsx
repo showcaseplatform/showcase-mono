@@ -1,20 +1,35 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react'
-import { Image, ImageBackground, View, Pressable } from 'react-native'
+import { View, Pressable } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
 import { NavigationProp, RouteProp } from '@react-navigation/core'
-import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
 import { Button, Portal, Provider } from 'react-native-paper'
 import { useTheme } from 'styled-components'
+
+import useBuyBadge from '../../../hooks/useBuyBadge'
+import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.navigator'
+import { translate } from '../../../utils/translator'
+import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
+import {
+  BadgeDetailsDocument,
+  useBadgeDetailsQuery,
+  useCountBadgeViewMutation,
+  useToggleLikeMutation,
+} from '../../../generated/graphql'
+
 import { Text } from '../../../components/Text.component'
 import { Spacer } from '../../../components/Spacer.component'
 import CauseModal from '../components/CauseModal.component'
 import { DonationWidget } from '../components/DonationWidget.component'
-import { translate } from '../../../utils/translator'
-import { makePriceTag, makeSupplyTag } from '../../../utils/helpers'
 import Error from '../../../components/Error.component'
-import { useBadgeDetailsQuery } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
-import useBuyBadge from '../../../hooks/useBuyBadge'
+import {
+  InfoWrapper,
+  MyImage,
+  MyImageBackground,
+} from '../components/BadgeDetails.styles'
+import { CenterView } from '../../../components/CenterView.component'
+import { DoublePress } from '../../../components/DoublePress.component'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -30,6 +45,20 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
 
   const { buyItem } = useBuyBadge(badgeType.id)
 
+  const [toggleLike] = useToggleLikeMutation({
+    variables: { isBadgeType: true, badgeId: badgeType.id },
+    refetchQueries: [
+      { query: BadgeDetailsDocument, variables: { id: badgeType.id } },
+    ],
+  })
+
+  const [countView] = useCountBadgeViewMutation({
+    variables: { isBadgeType: true, badgeId: badgeType.id },
+    refetchQueries: [
+      { query: BadgeDetailsDocument, variables: { id: badgeType.id } },
+    ],
+  })
+
   const [showCauseModal, setShowCauseModal] = useState(false)
   const handleCloseModal = () => setShowCauseModal(false)
   const handleOpenModal = () => setShowCauseModal(true)
@@ -44,6 +73,13 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigation])
+
+  useEffect(() => {
+    if (data && !data.badgeType?.isViewedByMe) {
+      countView()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
 
   // hide bottom tab navigator
   // todo: consider to refactor navigation stacks to avoid hide/show glitches
@@ -73,30 +109,20 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       isOwnedByMe,
       isCreatedByMe,
       availableToBuyCount,
+      viewCount,
+      likeCount,
+      isLikedByMe,
     } = data.badgeType
 
     return (
       <>
-        <ImageBackground
-          source={{ uri: publicUrl }}
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#000',
-          }}
-        >
+        <MyImageBackground source={{ uri: publicUrl }}>
           <BlurView tint="dark" intensity={85}>
-            <Image
-              source={{ uri: publicUrl }}
-              style={{
-                width: '100%',
-                height: '100%',
-                backgroundColor: 'transparent',
-              }}
-              resizeMode="contain"
-            />
+            <DoublePress onDoublePress={toggleLike}>
+              <MyImage source={{ uri: publicUrl }} resizeMode="contain" />
+            </DoublePress>
           </BlurView>
-        </ImageBackground>
+        </MyImageBackground>
         {cause && donationAmount && (
           <DonationWidget
             donation={donationAmount}
@@ -104,22 +130,12 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
             openModal={handleOpenModal}
           />
         )}
-        <View // todo: rebuild me as a Portal component & eliminate overlap modal on smaller screens
-          style={{
-            position: 'absolute',
-            bottom: '5%',
-            width: '100%',
-            paddingHorizontal: 10,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <View>
+        <InfoWrapper>
+          <View style={{ flex: 1 }}>
             <Text variant="body" color="secondary">
               {makePriceTag(badgeType.price, badgeType.currency)}
             </Text>
-            <Spacer position="y">
+            <Spacer position="y" size="medium">
               <View flexDirection="row">
                 <Text variant="body" color="secondary">
                   {translate().createdBy}
@@ -143,32 +159,57 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
                 )}
               </View>
             </Spacer>
-            <Text variant="caption" color="secondary">
-              foo bar
+            <View style={{ flexDirection: 'row' }}>
+              <CenterView row>
+                <Ionicons
+                  size={32}
+                  name="eye-outline"
+                  color={theme.colors.text.grey}
+                />
+                <Spacer position="right" />
+                <Text variant="label" color="secondary">
+                  {viewCount}
+                </Text>
+              </CenterView>
+              <Spacer position="x" size="large" />
+              <CenterView row>
+                <Ionicons
+                  size={32}
+                  name={isLikedByMe ? 'heart' : 'heart-outline'}
+                  color={
+                    isLikedByMe
+                      ? theme.colors.text.accent
+                      : theme.colors.text.grey
+                  }
+                  onPress={() => toggleLike()}
+                />
+                <Spacer position="right" />
+                <Text variant="label" color="secondary">
+                  {likeCount}
+                </Text>
+              </CenterView>
+            </View>
+          </View>
+          <Button
+            mode="contained"
+            color={theme.colors.ui.accent}
+            onPress={buyItem}
+            style={{ borderRadius: 30 }}
+            contentStyle={{ paddingHorizontal: 8 }}
+            disabled={availableToBuyCount < 1 || isCreatedByMe || isOwnedByMe}
+            uppercase
+          >
+            <Text color="secondary">
+              {availableToBuyCount < 1
+                ? translate().outOfStock
+                : isCreatedByMe
+                ? translate().yourCreation
+                : isOwnedByMe
+                ? translate().alreadyOwned
+                : translate().purchaseButton}
             </Text>
-          </View>
-          <View>
-            <Button
-              mode="contained"
-              color={theme.colors.ui.accent}
-              onPress={buyItem}
-              style={{ borderRadius: 30 }}
-              contentStyle={{ paddingHorizontal: 8 }}
-              disabled={availableToBuyCount < 1 || isCreatedByMe || isOwnedByMe}
-              uppercase
-            >
-              <Text color="secondary">
-                {availableToBuyCount < 1
-                  ? translate().outOfStock
-                  : isCreatedByMe
-                  ? translate().yourCreation
-                  : isOwnedByMe
-                  ? translate().alreadyOwned
-                  : translate().purchaseButton}
-              </Text>
-            </Button>
-          </View>
-        </View>
+          </Button>
+        </InfoWrapper>
         <Provider>
           <Portal>
             {cause && donationAmount && (

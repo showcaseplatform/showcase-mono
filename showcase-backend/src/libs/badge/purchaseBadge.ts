@@ -13,16 +13,15 @@ import {
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
 import { findUserWithFinancialInfo } from '../../database/user.repo'
 import { findBadgeType } from '../../database/badgeType.repo'
-import { BadgeItem, Currency } from '@prisma/client'
-import { BadgeType, User } from '@generated/type-graphql'
+import { Currency } from '@prisma/client'
+import { BadgeType, User, BadgeItem } from '@generated/type-graphql'
 import { hasUserPaymentInfo, hasUserReachedSpendingLimit } from '../user/permissions'
+import { findBadgeItem } from '../../database/badgeItem.repo'
+import { BadgeItemId, BadgeTypeId } from '../../types/badge'
 
-interface PurchaseTransactionInput {
-  userId: string
-  badgeType: BadgeType
-  newSoldAmount: number
-  tokenId: string
-  causeFullAmount: number
+interface PurchaseBadgeTransactionInput<T> {
+  buyerId: Uid
+  badge: T
   payoutAmount: number
   transactionHash: string
   chargeId: string
@@ -31,6 +30,14 @@ interface PurchaseTransactionInput {
   convertedRate: number
   USDPrice: number
 }
+interface PurchaseBadgeTypeTransactionInput extends PurchaseBadgeTransactionInput<BadgeType> {
+  newSoldAmount: number
+  causeFullAmount: number
+  tokenId: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface PurchaseBadgeItemTransactionInput extends PurchaseBadgeTransactionInput<BadgeItem> {}
 
 export enum PurchaseErrorMessages {
   badgeAlreadyOwned = 'You already purchased this badge',
@@ -39,9 +46,10 @@ export enum PurchaseErrorMessages {
   spendingLimitReached = 'You have reached the maximum spending limit. Please contact team@showcase.to to increase your limits.',
   transactionFailed = 'Purchase transaction failed to execute',
   outOfStock = 'Out of stock',
+  missingBadgeId = 'Badge id musst be provided',
 }
 
-const checkIfUserAllowedToPurchaseBadgeType = async (
+const checkIfUserAllowedToPurchaseBadge = async (
   user: User,
   badgeType: BadgeType
 ): Promise<void> => {
@@ -77,9 +85,62 @@ const constructNewBadgeTokenId = (badge: BadgeType, newSoldAmount: number) => {
   return badge.tokenTypeId.slice(0, -10) + newLastDigits
 }
 
-const purchaseBadgeTransaction = async ({
-  userId,
-  badgeType,
+const purchaseBadgeItemTransaction = async ({
+  badge,
+  buyerId,
+  chargeId,
+  convertedPrice,
+  convertedCurrency,
+  convertedRate,
+  transactionHash,
+}: PurchaseBadgeItemTransactionInput) => {
+  const { id, edition, tokenId, ownerId: sellerId, badgeTypeId } = badge || {}
+  return await prisma.$transaction([
+    prisma.badgeItem.update({
+      where: {
+        id,
+      },
+      data: {
+        isSold: true,
+        sellDate: new Date(),
+      },
+    }),
+
+    prisma.badgeItem.create({
+      data: {
+        owner: {
+          connect: {
+            id: buyerId,
+          },
+        },
+        badgeType: {
+          connect: {
+            id: badgeTypeId,
+          },
+        },
+        tokenId,
+        edition,
+        purchaseDate: new Date(),
+        receipt: {
+          create: {
+            buyerId,
+            sellerId,
+            causeId: null,
+            chargeId,
+            convertedPrice,
+            convertedCurrency,
+            convertedRate,
+            transactionHash,
+          },
+        },
+      },
+    }),
+  ])
+}
+
+const purchaseBadgeTypeTransaction = async ({
+  buyerId,
+  badge,
   newSoldAmount,
   tokenId,
   causeFullAmount,
@@ -90,11 +151,11 @@ const purchaseBadgeTransaction = async ({
   convertedCurrency,
   convertedRate,
   USDPrice,
-}: PurchaseTransactionInput) => {
+}: PurchaseBadgeTypeTransactionInput) => {
   return await prisma.$transaction([
     prisma.badgeType.update({
       where: {
-        id: badgeType.id,
+        id: badge.id,
       },
       data: {
         sold: newSoldAmount,
@@ -103,16 +164,16 @@ const purchaseBadgeTransaction = async ({
             tokenId,
             owner: {
               connect: {
-                id: userId,
+                id: buyerId,
               },
             },
             edition: newSoldAmount,
             purchaseDate: new Date(),
             receipt: {
               create: {
-                buyerId: userId,
-                sellerId: badgeType.creatorId,
-                causeId: badgeType.causeId || null,
+                buyerId,
+                sellerId: badge.creatorId,
+                causeId: badge.causeId || null,
                 chargeId,
                 convertedPrice,
                 convertedCurrency,
@@ -123,15 +184,15 @@ const purchaseBadgeTransaction = async ({
           },
         },
         cause:
-          badgeType.causeId && causeFullAmount
+          badge.causeId && causeFullAmount
             ? {
                 update: {
-                  [`balance${badgeType.currency}`]: {
+                  [`balance${badge.currency}`]: {
                     increment: causeFullAmount,
                   },
                   numberOfContributions: {
-                    increment: 1
-                  }
+                    increment: 1,
+                  },
                 },
               }
             : undefined,
@@ -139,9 +200,9 @@ const purchaseBadgeTransaction = async ({
       include: {
         badgeItems: {
           where: {
-            ownerId: userId,
+            ownerId: buyerId,
             tokenId,
-            isSold: false
+            isSold: false,
           },
           orderBy: {
             createdAt: 'desc',
@@ -153,12 +214,12 @@ const purchaseBadgeTransaction = async ({
     // todo: updating balance not neccasary, can be calculated later
     prisma.user.update({
       where: {
-        id: badgeType.creatorId,
+        id: badge.creatorId,
       },
       data: {
         balance: {
           update: {
-            [badgeType.currency]: {
+            [badge.currency]: {
               increment: payoutAmount || 0,
             },
             totalSpentAmountConvertedUsd: {
@@ -170,20 +231,29 @@ const purchaseBadgeTransaction = async ({
     }),
   ])
 }
-
-export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid): Promise<BadgeItem> => {
-  const { badgeTypeId } = input || {}
-
-  const badgeType = await findBadgeType(badgeTypeId)
-  const user = await findUserWithFinancialInfo(uid)
-
-  await checkIfUserAllowedToPurchaseBadgeType(user, badgeType)
-
+const calculatePayments = async (price: number, currency: Currency, donationAmount?: number) => {
   const currenciesData = await CurrencyRateLib.getLatestExchangeRates()
-
   const userCurrencyRate = 1 // todo: user user's currency rate here:  currenciesData[user.profile.currency]
-  const multiplier = (1 / currenciesData[badgeType.currency]) * userCurrencyRate
-  const calculatedPrice = parseFloat((badgeType.price * multiplier).toFixed(2))
+  const multiplier = (1 / currenciesData[currency]) * userCurrencyRate
+  const calculatedPrice = parseFloat((price * multiplier).toFixed(2))
+
+  let payoutAmount = 0
+  let causeFullAmount = 0
+  let USDPrice = 0
+
+  if (price > 0) {
+    const USDmultiplier = 1 / currenciesData[currency]
+    USDPrice = parseFloat((price * USDmultiplier).toFixed(2))
+    const totalPrice = price
+
+    let feeMultiplier = SHOWCASE_COMMISSION_FEE_MULTIPLIER
+
+    if (donationAmount) {
+      feeMultiplier -= donationAmount
+      causeFullAmount = donationAmount * totalPrice
+    }
+    payoutAmount = totalPrice * feeMultiplier
+  }
 
   // todo:  uncomment this when display badges in user's currency is implemented
   // if (calculatedPrice !== displayedPrice && badgeType.price !== 0) {
@@ -195,54 +265,84 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid): Promis
   //   throw new GraphQLError('Transaction currency conversion rate dont match!')
   // }
 
-  const newSoldAmount = badgeType.sold + 1
-  const newBadgeTokenId = constructNewBadgeTokenId(badgeType, newSoldAmount)
+  return { payoutAmount, causeFullAmount, USDPrice, userCurrencyRate, calculatedPrice }
+}
 
-  // todo: uncomment when stripe integration is tested
-  // const { chargeId } = await stripe.chargeStripeAccount({
-  //   amount: calculatedPrice,
-  //   currency: user.profile.currency,
-  //   title: badgeType.title,
-  //   badgeItemId: newBadgeTokenId,
-  //   creatorProfileId: badgeType.creatorId,
-  //   customerStripeId: user.paymentInfo.tokenId,
-  // })
+const purchaseBadgeItem = async (badgeItemId: BadgeItemId, user: User) => {
+  const badgeItem = await findBadgeItem(badgeItemId, { badgeType: true })
+  if (badgeItem.badgeType) {
+    await checkIfUserAllowedToPurchaseBadge(user, badgeItem.badgeType)
+  } else {
+    throw new GraphQLError('Badge item type was not found')
+  }
+
+  const price = badgeItem.salePrice || 0
+  const currency = badgeItem.saleCurrency || Currency.USD
+
+  const { payoutAmount, calculatedPrice, USDPrice, userCurrencyRate } =
+    await calculatePayments(price, currency, undefined)
+
+  // todo: chargeId should come from payment provider
   const chargeId = getRandomNum().toString()
 
   try {
+    const transactionHash = await mintNewBadgeOnBlockchain(
+      badgeItem.tokenId || '',
+      user?.cryptoWallet?.address
+    )
+
+    const [_, newBadgeItem] = await purchaseBadgeItemTransaction({
+      buyerId: user.id,
+      payoutAmount,
+      badge: badgeItem,
+      chargeId,
+      transactionHash,
+      convertedPrice: calculatedPrice,
+      convertedCurrency: currency, // todo: use user.profile?.currency  for conversion
+      convertedRate: userCurrencyRate,
+      USDPrice,
+    })
+
+    return newBadgeItem
+  } catch (error) {
+    // todo: refund payment charge
+    console.error({ error })
+    throw new GraphQLError(PurchaseErrorMessages.transactionFailed)
+  }
+}
+
+const purchaseBadgeType = async (badgeTypeId: BadgeTypeId, user: User) => {
+  const badgeType = await findBadgeType(badgeTypeId)
+  await checkIfUserAllowedToPurchaseBadge(user, badgeType)
+
+  const price = badgeType.price
+  const currency = badgeType.currency
+
+  const { payoutAmount, calculatedPrice, USDPrice, userCurrencyRate, causeFullAmount } =
+    await calculatePayments(price, currency, badgeType.donationAmount || undefined)
+
+  // todo: chargeId should come from payment provider
+  const chargeId = getRandomNum().toString()
+
+  try {
+    const newSoldAmount = badgeType.sold + 1
+    const newBadgeTokenId = constructNewBadgeTokenId(badgeType, newSoldAmount)
+
     const transactionHash = await mintNewBadgeOnBlockchain(
       newBadgeTokenId,
       user?.cryptoWallet?.address
     )
 
-    let payoutAmount = 0
-    let causeFullAmount = 0
-    let USDPrice = 0
-
-    if (badgeType.price > 0) {
-      const USDmultiplier = 1 / currenciesData[badgeType.currency]
-      USDPrice = parseFloat((badgeType.price * USDmultiplier).toFixed(2))
-      const totalPrice = badgeType.price
-
-      let feeMultiplier = SHOWCASE_COMMISSION_FEE_MULTIPLIER
-
-      if (badgeType.donationAmount) {
-        feeMultiplier -= badgeType.donationAmount
-        causeFullAmount = badgeType.donationAmount * totalPrice
-      }
-      payoutAmount = totalPrice * feeMultiplier
-    }
-
-    const [updatedBadgeType, _] = await purchaseBadgeTransaction({
-      userId: uid,
+    const [updatedBadgeType, _] = await purchaseBadgeTypeTransaction({
+      buyerId: user.id,
       payoutAmount,
       causeFullAmount,
       tokenId: newBadgeTokenId,
-      badgeType,
+      badge: badgeType,
       chargeId,
       transactionHash,
       convertedPrice: calculatedPrice,
-      convertedCurrency: badgeType.currency, // todo: use user.profile?.currency  for conversion
+      convertedCurrency: currency, // todo: use user.profile?.currency  for conversion
       convertedRate: userCurrencyRate,
       USDPrice,
       newSoldAmount,
@@ -250,8 +350,23 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid): Promis
 
     return updatedBadgeType.badgeItems[0]
   } catch (error) {
-    // await stripe.refundPayment(chargeId)
+    // todo: refund payment charge
     console.error({ error })
     throw new GraphQLError(PurchaseErrorMessages.transactionFailed)
+  }
+}
+
+export const purchaseBadge = async (
+  input: PurchaseBadgeInput,
+  buyerId: Uid
+): Promise<BadgeItem> => {
+  const { badgeTypeId, badgeItemId } = input || {}
+  const user = await findUserWithFinancialInfo(buyerId)
+  if (badgeTypeId) {
+    return await purchaseBadgeType(badgeTypeId, user)
+  } else if (badgeItemId) {
+    return await purchaseBadgeItem(badgeItemId, user)
+  } else {
+    throw new GraphQLError(PurchaseErrorMessages.missingBadgeId)
   }
 }

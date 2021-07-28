@@ -1,13 +1,23 @@
-import { BadgeItem } from '@prisma/client'
 import { prisma, Prisma } from '../services/prisma'
-import { BadgeItemOrderByInput } from '@generated/type-graphql'
+import { BadgeItemOrderByInput, BadgeItem } from '@generated/type-graphql'
+import { GraphQLError } from 'graphql'
 
-export const findBadgeItem = async (id: string) => {
-  return await prisma.badgeItem.findUnique({
+export const findBadgeItem = async (
+  id: string,
+  include?: Prisma.BadgeItemInclude
+): Promise<BadgeItem> => {
+  const badgeItem = await prisma.badgeItem.findUnique({
     where: {
       id,
     },
+    include,
   })
+
+  if (!badgeItem) {
+    throw new GraphQLError('Invalid badgeType id')
+  } else {
+    return badgeItem
+  }
 }
 
 export const badgeItemLikeCount = (badgeItemId: string) => {
@@ -45,7 +55,7 @@ export const updateBadgeItem = async (
 }
 
 export const findManyBadgeItems = async (
-  where: Partial<BadgeItem>,
+  where: Prisma.BadgeItemWhereInput,
   orderBy?: BadgeItemOrderByInput
 ) => {
   return await prisma.badgeItem.findMany({

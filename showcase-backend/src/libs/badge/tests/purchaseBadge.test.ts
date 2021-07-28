@@ -180,7 +180,7 @@ describe('Purchasing a badge', () => {
     expect(error).toEqual(PurchaseErrorMessages.outOfStock)
   })
 
-  it('should fail if buyer is the creator of the desired badge', async () => {
+  it('should fail if buyer is the creator of the desired badgeType', async () => {
     const badgeTypes = await prisma.badgeType.findMany()
     const badgeTypeToPurchase = badgeTypes.filter((b) => b.supply > b.sold)[0]
 
@@ -197,4 +197,5 @@ describe('Purchasing a badge', () => {
 
     expect(error).toEqual(PurchaseErrorMessages.badgeCreatedByUser)
   })
+
 })

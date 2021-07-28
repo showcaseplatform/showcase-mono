@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node dist/index.js",
     "start:dev": "dotenv -e .env.development -- ts-node-dev --respawn --rs src/index.ts",
-    "start:db": "yarn postgresql && yarn prisma:generate && yarn prisma:push && yarn prisma:seed",
+    "start:db": "yarn postgresql && dotenv -e .env.development -- yarn prisma:migrate && dotenv -e .env.development -- yarn prisma:seed",
     "build": "npx rimraf dist && npx tsc -p tsconfig.build.json",
     "lint": "eslint --ext ts src",
     "db": "npm run postgresql && npm run reset",

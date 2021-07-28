@@ -141,7 +141,7 @@ model BadgeType {
 model BadgeItem {
   id String @id @default(cuid())
 
-  tokenId String // todo: is this uniqiue? if it changes after re-sell then yes
+  tokenId String
 
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
   badgeTypeId String

@@ -5,6 +5,8 @@ query BadgeDetails($id: String!) {
     isOwnedByMe
     isCreatedByMe
     publicUrl
+    viewCount
+    likeCount
     creator {
       id
       profile {

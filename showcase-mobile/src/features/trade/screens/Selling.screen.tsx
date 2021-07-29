@@ -8,7 +8,7 @@ import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import { useMeQuery } from '../../../generated/graphql'
 import SellingItem from '../components/SellingItem.component'
 
-const BadgeSales = () => {
+const Selling = () => {
   const { data, loading, error } = useMeQuery()
 
   if (loading) {
@@ -31,4 +31,4 @@ const BadgeSales = () => {
   }
 }
 
-export default BadgeSales
+export default Selling

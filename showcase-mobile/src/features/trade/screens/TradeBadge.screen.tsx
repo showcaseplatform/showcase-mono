@@ -12,7 +12,7 @@ import { useTheme } from 'styled-components/native'
 
 import { StyledSafeArea } from '../../badges/screens/Badges.styles'
 import BadgeCollection from './BadgeCollection.screen'
-import BadgeSales from './BadgeSales.screen'
+import Selling from './Selling.screen'
 import MyCreations from './MyCreations.screen'
 // import BadgeHistory from './BadgeHistory.screen'
 
@@ -27,7 +27,7 @@ const initialLayout = { width: Dimensions.get('window').width }
 
 const renderScene = SceneMap({
   collection: BadgeCollection,
-  sales: BadgeSales,
+  sales: Selling,
   myCreations: MyCreations,
   // history: BadgeHistory,
 })

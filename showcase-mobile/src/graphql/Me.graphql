@@ -44,8 +44,9 @@ query Me {
       edition
       salePrice
       saleCurrency
-      sellDate
+      purchaseDate
       forSale
+      updatedAt
       badgeType {
         ...BadgeType_WithBasics
         creator {
@@ -54,6 +55,34 @@ query Me {
             displayName
           }
         }
+      }
+      receipt {
+        id
+        convertedPrice
+        convertedCurrency
+      }
+    }
+    badgeItemsToShow {
+      id
+      edition
+      salePrice
+      saleCurrency
+      purchaseDate
+      forSale
+      updatedAt
+      badgeType {
+        ...BadgeType_WithBasics
+        creator {
+          profile {
+            id
+            displayName
+          }
+        }
+      }
+      receipt {
+        id
+        convertedPrice
+        convertedCurrency
       }
     }
     friends {

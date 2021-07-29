@@ -1,7 +1,8 @@
+import * as yup from 'yup'
 import React, { useRef, useState, ComponentType } from 'react'
 import { View, Image, LayoutAnimation, Alert } from 'react-native'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
-import { Button, Divider, List, Surface } from 'react-native-paper'
+import { Button, Dialog, Divider, List, Surface } from 'react-native-paper'
 import styled, { useTheme } from 'styled-components'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -10,11 +11,23 @@ import { Text } from '../../../components/Text.component'
 import { TradeStackParamList } from '../../../infrastructure/navigation/trade.navigator'
 import { makeDonationTag, makePriceTag } from '../../../utils/helpers'
 import { ScrollView } from 'react-native-gesture-handler'
-import { Currency, useBadgeDetailsQuery } from '../../../generated/graphql'
+import {
+  Currency,
+  ListBadgeForSaleInput,
+  MeDocument,
+  useBadgeDetailsQuery,
+  useListBadgeItemForSaleMutation,
+} from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
 import { format } from 'date-fns'
 import ProfileImage from '../../../components/ProfileImage.component'
+import { useMyDialog } from '../../../utils/useMyDialog'
+import { translate } from '../../../utils/translator'
+import { Controller, useForm } from 'react-hook-form'
+import MyTextFieldComponent from '../../../components/MyTextField.component'
+import MySelectInputComponent from '../../../components/MySelectInput.component'
+import { currencies } from '../../../utils/currencies'
 
 type TradeBadgeDetailsScreenProps = {
   route: RouteProp<TradeStackParamList, 'TradeBadgeDetails'>
@@ -27,22 +40,38 @@ const StyledAccordionItem = styled(List.Item)`
   padding: 0;
 `
 
-// ?: different incoming data types
 const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
-  const { type, item } = route.params
+  const { type, item } = route.params // !!
 
+  // !
   const { data, loading, error } = useBadgeDetailsQuery({
     variables: { id: item?.badgeType.id || type?.id },
   })
 
+  const { formState, handleSubmit, control, getValues } =
+    useForm<ListBadgeForSaleInput>({
+      defaultValues: {
+        sig: 'fakefakefake',
+        message: '',
+        badgeItemId: item?.id,
+        currency: Currency.USD,
+      },
+    })
+
+  let scrollRef = useRef<ComponentType<any> | null>(null)
   const theme = useTheme()
 
   const [expandedAccordion, setExpandedAccordion] =
     useState<AccordionStateProps>(undefined)
 
-  let scrollRef = useRef<ComponentType<any> | null>(null)
+  const [listForSale, { loading: loadingListing }] =
+    useListBadgeItemForSaleMutation({
+      variables: { data: { ...getValues(), currency: Currency.USD } },
+      refetchQueries: [{ query: MeDocument }],
+    })
+  const { openDialog, closeDialog } = useMyDialog()
 
-  const handleOpenAcc = (expandedId: number | string) => {
+  const handleOpenAccordion = (expandedId: number | string) => {
     LayoutAnimation.easeInEaseOut()
     if (expandedId === expandedAccordion) {
       setExpandedAccordion(undefined)
@@ -51,9 +80,85 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
     }
   }
 
+  const onSubmit = async () => {
+    return await listForSale()
+      .then((r) => console.log(r))
+      .catch((err) => console.log('xxxxx', err))
+  }
+
+  const confirmListForSale = React.useCallback(() => {
+    openDialog(
+      <>
+        <Dialog.Title>{translate().listForSaleDialogTitle}</Dialog.Title>
+        <Dialog.Content>
+          <Text>{item?.id} for</Text>
+          <Spacer position="bottom" size="large" />
+          <View flexDirection="row">
+            <View style={{ width: '25%' }}>
+              <Controller
+                name="price"
+                control={control}
+                render={({
+                  field: { onChange, onBlur, value },
+                  fieldState: { error },
+                }) => (
+                  <MyTextFieldComponent
+                    onBlur={onBlur}
+                    onChangeText={(val) => val && onChange(parseInt(val, 10))}
+                    value={value?.toString()}
+                    error={error}
+                    placeholder="Price"
+                    keyboardType="number-pad"
+                    // editable={!getValues('isFree')}
+                  />
+                )}
+              />
+            </View>
+            <Spacer position="left" size="large" />
+            <View style={{ width: '30%' }}>
+              <Controller
+                name="currency"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <MySelectInputComponent
+                    placeholder={translate().balanceCurrencyLabel}
+                    items={currencies}
+                    value={value}
+                    onValueChange={(val) => onChange(val)}
+                  />
+                )}
+              />
+            </View>
+          </View>
+        </Dialog.Content>
+        <Dialog.Actions>
+          <Button
+            onPress={closeDialog}
+            color={theme.colors.ui.accent}
+            contentStyle={{ paddingHorizontal: 8 }}
+            uppercase
+          >
+            cancel
+          </Button>
+          <Button
+            onPress={onSubmit} //listForSale({ variables: { data: {  } } })
+            mode="contained"
+            color={theme.colors.ui.accent}
+            style={{ borderRadius: 20 }}
+            contentStyle={{ paddingHorizontal: 8 }}
+            uppercase
+            disabled={loadingListing}
+          >
+            sell
+          </Button>
+        </Dialog.Actions>
+      </>
+    )
+  }, [item?.id])
+
   if (loading) {
     return <LoadingIndicator />
-  } else if (data && data.badgeType) {
+  } else if (data?.badgeType) {
     const { viewCount, likeCount, donationAmount, isCreatedByMe, description } =
       data.badgeType
 
@@ -80,30 +185,29 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
               {type?.title || item?.badgeType.title}
             </Text>
             <View flexDirection="row">
-              {item?.forSale ||
-                (type && (
-                  <View
-                    flexDirection="row"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Ionicons
-                      size={20}
-                      name="cash-outline"
-                      color={theme.colors.text.grey}
-                    />
-                    <Spacer position="right" />
-                    <Text variant="label" color="grey">
-                      {type
-                        ? makePriceTag(type.price, type.currency)
-                        : makePriceTag(
-                            item?.salePrice as number | undefined,
-                            item?.saleCurrency as Currency | undefined
-                          )}
-                    </Text>
-                    <Spacer position="x" size="medium" />
-                  </View>
-                ))}
+              {(type || item?.forSale) && (
+                <View
+                  flexDirection="row"
+                  justifyContent="center"
+                  alignItems="center"
+                >
+                  <Ionicons
+                    size={20}
+                    name="cash-outline"
+                    color={theme.colors.text.grey}
+                  />
+                  <Spacer position="right" />
+                  <Text variant="label" color="grey">
+                    {type
+                      ? makePriceTag(type.price, type.currency)
+                      : makePriceTag(
+                          item?.salePrice as number | undefined,
+                          item?.saleCurrency as Currency | undefined
+                        )}
+                  </Text>
+                  <Spacer position="x" size="medium" />
+                </View>
+              )}
               <View
                 flexDirection="row"
                 justifyContent="center"
@@ -141,7 +245,7 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
                 <Button
                   mode={item?.forSale ? 'outlined' : 'contained'}
                   color={theme.colors.ui.accent}
-                  onPress={() => Alert.alert(`${item?.id}`)}
+                  onPress={confirmListForSale}
                 >
                   {item?.forSale ? 'Cancel Sale' : 'Sell Badge'}
                 </Button>
@@ -150,7 +254,7 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
           </Surface>
 
           <List.AccordionGroup
-            onAccordionPress={handleOpenAcc}
+            onAccordionPress={handleOpenAccordion}
             expandedId={expandedAccordion}
           >
             <Surface>

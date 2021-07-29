@@ -21,7 +21,13 @@ import {
 // todo: create proper Fragments to avoid this mess
 export type CollectionItemProps = { __typename?: 'BadgeItem' } & Pick<
   BadgeItem,
-  'id' | 'edition' | 'salePrice' | 'saleCurrency' | 'purchaseDate' | 'forSale'
+  | 'id'
+  | 'edition'
+  | 'salePrice'
+  | 'saleCurrency'
+  | 'purchaseDate'
+  | 'forSale'
+  | 'updatedAt'
 > & {
     receipt?: Maybe<
       { __typename?: 'Receipt' } & Pick<

@@ -16,7 +16,7 @@ const BadgeCollection = () => {
   } else if (data) {
     return (
       <FlatList
-        data={data.me.badgeItemsOwned}
+        data={data.me.badgeItemsToShow}
         keyExtractor={(item) => item.id}
         numColumns={1}
         contentContainerStyle={{ flexGrow: 1 }}

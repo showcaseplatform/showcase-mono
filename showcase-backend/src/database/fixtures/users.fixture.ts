@@ -205,6 +205,7 @@ export class UserSeeder {
             id: `collector-${i}`,
           },
         },
+        forSale: i % 2 ? true : false,
         purchaseDate: new Date(),
         edition: i + 1,
         tokenId: faker.datatype.uuid(),

@@ -47,9 +47,10 @@ export enum PurchaseErrorMessages {
   transactionFailed = 'Purchase transaction failed to execute',
   outOfStock = 'Out of stock',
   missingBadgeId = 'Badge id musst be provided',
+  badgeNotAvailableForPurchase = 'This badge is not available for purchase ',
 }
 
-const checkIfUserAllowedToPurchaseBadge = async (
+const checkIfUserAllowedToPurchaseBadgeType = async (
   user: User,
   badgeType: BadgeType
 ): Promise<void> => {
@@ -102,6 +103,7 @@ const purchaseBadgeItemTransaction = async ({
       },
       data: {
         isSold: true,
+        forSale: false,
         sellDate: new Date(),
       },
     }),
@@ -270,10 +272,11 @@ const calculatePayments = async (price: number, currency: Currency, donationAmou
 
 const purchaseBadgeItem = async (badgeItemId: BadgeItemId, user: User) => {
   const badgeItem = await findBadgeItem(badgeItemId, { badgeType: true })
-  if (badgeItem.badgeType) {
-    await checkIfUserAllowedToPurchaseBadge(user, badgeItem.badgeType)
+
+  if (!badgeItem.isSold && badgeItem.forSale && badgeItem.badgeType) {
+    await checkIfUserAllowedToPurchaseBadgeType(user, badgeItem.badgeType)
   } else {
-    throw new GraphQLError('Badge item type was not found')
+    throw new GraphQLError(PurchaseErrorMessages.badgeNotAvailableForPurchase)
   }
 
   const price = badgeItem.salePrice || 0
@@ -286,10 +289,9 @@ const purchaseBadgeItem = async (badgeItemId: BadgeItemId, user: User) => {
   const chargeId = getRandomNum().toString()
 
   try {
-    const transactionHash = await mintNewBadgeOnBlockchain(
-      badgeItem.tokenId || '',
-      user?.cryptoWallet?.address
-    )
+
+    // todo: need new blockchain endpoint for transfering existing tokens
+    const transactionHash = getRandomNum().toString()
 
     const [_, newBadgeItem] = await purchaseBadgeItemTransaction({
       buyerId: user.id,
@@ -313,7 +315,7 @@ const purchaseBadgeItem = async (badgeItemId: BadgeItemId, user: User) => {
 
 const purchaseBadgeType = async (badgeTypeId: BadgeTypeId, user: User) => {
   const badgeType = await findBadgeType(badgeTypeId)
-  await checkIfUserAllowedToPurchaseBadge(user, badgeType)
+  await checkIfUserAllowedToPurchaseBadgeType(user, badgeType)
 
   const price = badgeType.price
   const currency = badgeType.currency

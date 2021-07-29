@@ -1,7 +1,7 @@
 import { PrismaClient } from '.prisma/client'
 
 export const deleteDb = async (prisma: PrismaClient) => {
-  console.log('cleanDB called!!!', process.env.DATABASE_URL)
+  console.log('💥 Delete database: ', process.env.DATABASE_URL)
   // add data models WITHOUT dependecies here
   await prisma.badgeItemLike.deleteMany()
   await prisma.badgeItemView.deleteMany()
@@ -26,8 +26,7 @@ export const deleteDb = async (prisma: PrismaClient) => {
   await prisma.notification.deleteMany()
 
   //add data models WITH dependecies here
-  const { count } = await prisma.cause.deleteMany()
-  console.log('Causes deleted', { count })
+  await prisma.cause.deleteMany()
   await prisma.badgeType.deleteMany()
   await prisma.chat.deleteMany()
   await prisma.user.deleteMany()

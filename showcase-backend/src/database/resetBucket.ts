@@ -1,12 +1,12 @@
 import 'reflect-metadata'
-import { myS3 } from '../src/services/S3/s3'
+import { myS3 } from '../services/S3/s3'
 
 myS3
   .resetS3Bucket()
   .then(() => {
-    process.exit(0)
+    return process.exit(0)
   })
-  .catch((e) => {
+  .catch((e: any) => {
     console.error(e)
     process.exit(1)
   })

@@ -19,9 +19,9 @@ import {
 } from '../../../generated/graphql'
 
 // todo: create proper Fragments to avoid this mess
-type CollectionItemProps = { __typename?: 'BadgeItem' } & Pick<
+export type CollectionItemProps = { __typename?: 'BadgeItem' } & Pick<
   BadgeItem,
-  'id' | 'edition' | 'salePrice' | 'saleCurrency' | 'purchaseDate'
+  'id' | 'edition' | 'salePrice' | 'saleCurrency' | 'purchaseDate' | 'forSale'
 > & {
     receipt?: Maybe<
       { __typename?: 'Receipt' } & Pick<
@@ -42,9 +42,7 @@ const CollectionItem = ({ item }: { item: CollectionItemProps }) => {
   const navigation = useNavigation<NavigationProp<TradeStackParamList>>()
   return (
     <TouchableOpacity
-      onPress={() =>
-        navigation.navigate('TradeBadgeDetails', { item: item.badgeType })
-      }
+      onPress={() => navigation.navigate('TradeBadgeDetails', { item })}
     >
       <Surface>
         <View

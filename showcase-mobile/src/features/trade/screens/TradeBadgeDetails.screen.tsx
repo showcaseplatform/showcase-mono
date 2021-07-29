@@ -1,7 +1,7 @@
 import React, { useRef, useState, ComponentType } from 'react'
 import { View, Image, LayoutAnimation, Alert } from 'react-native'
 import { RouteProp, NavigationProp } from '@react-navigation/native'
-import { Button, List, Surface } from 'react-native-paper'
+import { Button, Divider, List, Surface } from 'react-native-paper'
 import styled, { useTheme } from 'styled-components'
 import { Ionicons } from '@expo/vector-icons'
 
@@ -10,9 +10,11 @@ import { Text } from '../../../components/Text.component'
 import { TradeStackParamList } from '../../../infrastructure/navigation/trade.navigator'
 import { makeDonationTag, makePriceTag } from '../../../utils/helpers'
 import { ScrollView } from 'react-native-gesture-handler'
-import { useBadgeDetailsQuery } from '../../../generated/graphql'
+import { Currency, useBadgeDetailsQuery } from '../../../generated/graphql'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 import Error from '../../../components/Error.component'
+import { format } from 'date-fns'
+import ProfileImage from '../../../components/ProfileImage.component'
 
 type TradeBadgeDetailsScreenProps = {
   route: RouteProp<TradeStackParamList, 'TradeBadgeDetails'>
@@ -21,25 +23,24 @@ type TradeBadgeDetailsScreenProps = {
 type AccordionStateProps = string | number | undefined
 
 const StyledAccordionItem = styled(List.Item)`
-  /* padding-vertical: 0; */
+  background-color: ${({ theme }) => theme.colors.bg.primary};
+  padding: 0;
 `
 
-// todo: temp on sale / in inventory cuz dataset does not identify obviously
+// ?: different incoming data types
 const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
-  const { item } = route.params
+  const { type, item } = route.params
 
   const { data, loading, error } = useBadgeDetailsQuery({
-    variables: { id: route.params.item.id },
+    variables: { id: item?.badgeType.id || type?.id },
   })
-
-  const { price, currency, supply = 11, sold = 4 } = item
 
   const theme = useTheme()
 
   const [expandedAccordion, setExpandedAccordion] =
     useState<AccordionStateProps>(undefined)
 
-  let scrollRef = useRef<ComponentType<any> | null>(null) // todo: TS FIX ME
+  let scrollRef = useRef<ComponentType<any> | null>(null)
 
   const handleOpenAcc = (expandedId: number | string) => {
     LayoutAnimation.easeInEaseOut()
@@ -53,8 +54,8 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
   if (loading) {
     return <LoadingIndicator />
   } else if (data && data.badgeType) {
-    const { viewCount, likeCount, donationAmount } = data.badgeType
-    const { profile } = data.badgeType.creator
+    const { viewCount, likeCount, donationAmount, isCreatedByMe, description } =
+      data.badgeType
 
     return (
       <View style={{ flex: 1 }}>
@@ -75,24 +76,34 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
             />
           </View>
           <Surface style={{ padding: 10 }}>
-            <Text variant="heading">{item.title}</Text>
+            <Text variant="heading">
+              {type?.title || item?.badgeType.title}
+            </Text>
             <View flexDirection="row">
-              <View
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-              >
-                <Ionicons
-                  size={20}
-                  name="cash-outline"
-                  color={theme.colors.text.grey}
-                />
-                <Spacer position="right" />
-                <Text variant="label" color="grey">
-                  {makePriceTag(price, currency)}
-                </Text>
-              </View>
-              <Spacer position="x" size="medium" />
+              {item?.forSale ||
+                (type && (
+                  <View
+                    flexDirection="row"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Ionicons
+                      size={20}
+                      name="cash-outline"
+                      color={theme.colors.text.grey}
+                    />
+                    <Spacer position="right" />
+                    <Text variant="label" color="grey">
+                      {type
+                        ? makePriceTag(type.price, type.currency)
+                        : makePriceTag(
+                            item?.salePrice as number | undefined,
+                            item?.saleCurrency as Currency | undefined
+                          )}
+                    </Text>
+                    <Spacer position="x" size="medium" />
+                  </View>
+                ))}
               <View
                 flexDirection="row"
                 justifyContent="center"
@@ -125,15 +136,17 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
                 </Text>
               </View>
             </View>
-            <Spacer position="top" size="medium">
-              <Button
-                mode={price ? 'outlined' : 'contained'}
-                color={theme.colors.ui.accent}
-                onPress={() => Alert.alert(`${item.id}`)}
-              >
-                {price ? 'Cancel Sale' : 'Sell Badge'}
-              </Button>
-            </Spacer>
+            {!isCreatedByMe && (
+              <Spacer position="top" size="medium">
+                <Button
+                  mode={item?.forSale ? 'outlined' : 'contained'}
+                  color={theme.colors.ui.accent}
+                  onPress={() => Alert.alert(`${item?.id}`)}
+                >
+                  {item?.forSale ? 'Cancel Sale' : 'Sell Badge'}
+                </Button>
+              </Spacer>
+            )}
           </Surface>
 
           <List.AccordionGroup
@@ -144,69 +157,114 @@ const TradeBadgeDetailsScreen = ({ route }: TradeBadgeDetailsScreenProps) => {
               <List.Accordion
                 title="Details"
                 id={1}
-                style={{ padding: 5 }}
+                style={{ padding: 5, backgroundColor: theme.colors.bg.primary }}
                 theme={{ colors: { primary: theme.colors.text.grey } }}
               >
                 <StyledAccordionItem
-                  title={<Text>{`Created by: ${profile.displayName}`}</Text>}
+                  title={`Created by: ${
+                    type ? 'You' : item?.badgeType.creator.profile?.displayName
+                  }`}
                 />
                 <StyledAccordionItem
-                  title={`Released: ${supply} pcs`}
-                  description="total count of created badges"
+                  title={`Created at: ${format(
+                    new Date(item?.badgeType.createdAt || type?.createdAt),
+                    'MM/dd/yyyy'
+                  )}`}
                 />
                 <StyledAccordionItem
-                  title={`Remaining: ${supply - sold} pcs`}
-                  description="number of available badges"
+                  title="Description:"
+                  description={description}
+                  descriptionNumberOfLines={10}
+                  style={{ display: description ? undefined : 'none' }}
                 />
               </List.Accordion>
             </Surface>
+
             <Surface>
               <List.Accordion
-                title={`Donation (${makeDonationTag(donationAmount)}) `}
-                id={2}
-                style={{ padding: 5 }}
+                title={`Supply ${
+                  type
+                    ? `(${type.supply}/${type.supply - type.sold})`
+                    : `(${item?.badgeType.supply}/${item?.badgeType.availableToBuyCount})`
+                }`}
+                id={3}
+                style={{ padding: 5, backgroundColor: theme.colors.bg.primary }}
                 theme={{ colors: { primary: theme.colors.text.grey } }}
               >
                 <StyledAccordionItem
-                  title={
-                    <Text>{`Cause: ${data?.badgeType?.cause?.name}`}</Text>
-                  }
-                  description={
-                    'Lorem ipsum dolor sit amet consectetur adipisicing elit. Sunt reiciendis vel earum ducimus provident quidem, debitis deleniti nostrum quos vero labore doloremque quae modi accusantium.'
-                  }
+                  title={`Remaining: ${
+                    (type && type.supply - type.sold) ||
+                    (item && item?.badgeType.supply - item?.badgeType.sold)
+                  }`}
+                  description="available number of badges from original supply"
                 />
-                {data?.badgeType?.cause?.site && (
-                  <StyledAccordionItem
-                    title={
-                      <Text variant="link">{data.badgeType.cause.site}</Text>
-                    }
-                  />
-                )}
+                <StyledAccordionItem
+                  title={`Released: ${type?.supply || item?.badgeType.supply}`}
+                  description="original supply"
+                />
+                <Divider />
+                <Spacer position="bottom" />
+                {data.badgeType.badgeItems.map((fetchedItem) => {
+                  if (!fetchedItem.isSold && !fetchedItem.isOwnedByMe) {
+                    return (
+                      <StyledAccordionItem
+                        title={fetchedItem.owner.profile?.displayName}
+                        description={
+                          fetchedItem.forSale
+                            ? `Selling for ${makePriceTag(
+                                fetchedItem.salePrice as number | undefined,
+                                fetchedItem.saleCurrency as Currency | undefined
+                              )}`
+                            : 'in collection'
+                        }
+                        left={() => (
+                          <ProfileImage
+                            source={fetchedItem.owner.profile?.avatarUrl}
+                            small
+                          />
+                        )}
+                        style={{ marginHorizontal: 5, marginBottom: 5 }}
+                        key={fetchedItem.id}
+                      />
+                    )
+                  }
+                })}
               </List.Accordion>
             </Surface>
+
+            <Surface>
+              <List.Accordion
+                title={`Donation (${makeDonationTag(
+                  donationAmount as number | undefined
+                )}) `}
+                id={2}
+                style={{ padding: 5, backgroundColor: theme.colors.bg.primary }}
+                theme={{ colors: { primary: theme.colors.text.grey } }}
+              >
+                <StyledAccordionItem
+                  title={`Cause: ${data?.badgeType?.cause?.name}`}
+                  left={() => (
+                    <ProfileImage
+                      source={data.badgeType?.cause?.imageUrl}
+                      small
+                    />
+                  )}
+                  description={data?.badgeType?.cause?.site}
+                />
+              </List.Accordion>
+            </Surface>
+
             <Surface>
               <List.Accordion
                 title="Trademark"
-                id={3}
-                style={{ padding: 5 }}
+                id={4}
+                style={{ padding: 5, backgroundColor: theme.colors.bg.primary }}
                 theme={{ colors: { primary: theme.colors.text.grey } }}
               >
                 <StyledAccordionItem
-                  title=""
-                  titleNumberOfLines={0}
-                  titleStyle={{ display: 'none' }}
-                  descriptionNumberOfLines={99}
-                  description={
-                    <Text>
-                      it is really up to you. A tattoo on your forehead would be
-                      the best place for it. Please dont't forget to post a
-                      properfly over-effected insta pic as well to share this
-                      perfect idea... {'\n'}
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                      Consectetur accusamus hic eveniet labore, deserunt
-                      adipisci corporis id eius nesciunt repudiandae.
-                    </Text>
-                  }
+                  title="placeholder"
+                  descriptionNumberOfLines={10}
+                  description={data.badgeType.description}
                 />
               </List.Accordion>
             </Surface>

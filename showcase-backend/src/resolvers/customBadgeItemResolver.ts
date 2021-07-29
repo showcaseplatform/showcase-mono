@@ -4,6 +4,7 @@ import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
 import { badgeItemLikeCount, badgeItemViewCount } from '../libs/database/badgeItem.repo'
+import { isBadgeTypeOwnedByUser } from '../libs/badge/validateBadgePurchase'
 
 @Resolver((_of) => BadgeItem)
 export class CustomBadgeItemResolver {
@@ -23,6 +24,15 @@ export class CustomBadgeItemResolver {
       return false
     }
     return await checkIfBadgeAlreadyLiked({ marketplace: false, badgeId: badgeItem.id }, uid)
+  }
+
+  @FieldResolver((_) => Boolean)
+  async isOwnedByMe(@Root() badgeItem: BadgeItem, @CurrentUser() currentUser: User) {
+    const uid = currentUser?.id
+    if (!uid) {
+      return false
+    }
+    return await isBadgeTypeOwnedByUser(uid, badgeItem.id)
   }
 
   @FieldResolver((_) => Int)

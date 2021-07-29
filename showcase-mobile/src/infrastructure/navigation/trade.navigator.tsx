@@ -3,14 +3,16 @@ import { createStackNavigator } from '@react-navigation/stack'
 
 import TradeBadgeScreen from '../../features/trade/screens/TradeBadge.screen'
 import TradeBadgeDetailsScreen from '../../features/trade/screens/TradeBadgeDetails.screen'
-import { MyBadgeType } from '../../features/badges/components/BadgeItem.component'
+import { CollectionItemProps } from '../../features/trade/components/CollectionItem.component'
+import { CreationItemProps } from '../../features/trade/components/CreationItem.component'
 
 const TradeStack = createStackNavigator<TradeStackParamList>()
 
 export type TradeStackParamList = {
   TradeBadge: undefined
   TradeBadgeDetails: {
-    item: MyBadgeType
+    item?: CollectionItemProps
+    type?: CreationItemProps
   }
 }
 
@@ -30,7 +32,8 @@ const TradeNavigator = () => {
         component={TradeBadgeDetailsScreen}
         options={({ route }) => ({
           headerBackTitleVisible: false,
-          headerTitle: route.params?.item.title,
+          headerTitle:
+            route.params.type?.title || route.params.item?.badgeType.title,
         })}
       />
     </TradeStack.Navigator>

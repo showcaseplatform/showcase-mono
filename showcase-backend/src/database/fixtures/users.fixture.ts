@@ -83,7 +83,7 @@ export class UserSeeder {
 
   addCreatorsWithRelationships = async (amount: number): Promise<void> => {
     const amountArr = [...Array(amount).keys()]
-    const creators = await Bluebird.map(amountArr, async (i) => {
+    await Bluebird.map(amountArr, async (i) => {
       return await this.prisma.user.create({
         data: {
           ...this.generateUserDataWithPaymentInfo(`creator-${i}`, UserType.creator),
@@ -198,15 +198,18 @@ export class UserSeeder {
     let i = 0
     const testBadgeItems: BadgeItemCreateWithoutBadgeTypeInput[] = []
     while (i < amount) {
+      const ownerId =  pickRandomItemFromList<string>(this.collectorIds)
       testBadgeItems.push({
         id: faker.datatype.uuid(),
         owner: {
           connect: {
-            id: `collector-${i}`,
+            id: ownerId,
           },
         },
         forSale: i % 2 ? true : false,
-        purchaseDate: new Date(),
+        forSaleDate: i % 2 ? new Date(): undefined,
+        salePrice: i % 2 ? 1 : undefined,
+        saleCurrency:  i % 2 ? 'USD' : undefined,
         edition: i + 1,
         tokenId: faker.datatype.uuid(),
       })

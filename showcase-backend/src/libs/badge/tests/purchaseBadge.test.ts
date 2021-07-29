@@ -8,7 +8,6 @@ import { getRandomNum } from '../../../utils/randoms'
 import { Cause, UserType } from '@prisma/client'
 import { SHOWCASE_COMMISSION_FEE_MULTIPLIER } from '../../../consts/businessRules'
 import { deleteDb } from '../../../database/deleteDb'
-import { findBadgeItem } from '../../../database/badgeItem.repo'
 
 describe('Purchasing a badge', () => {
   beforeAll(async () => {
@@ -102,11 +101,19 @@ describe('Purchasing a badge', () => {
       },
     })
 
-    const receipt = await prisma.receipt.findUnique({
-      where: {
-        badgeItemId: purchasedBadgeItem.id,
-      },
-    })
+    const receipt = (
+      await prisma.receipt.findMany({
+        where: {
+          badgeItemId: purchasedBadgeItem.id,
+          buyerId: testUser?.id,
+          sellerId: badgeTypeToPurchase.creatorId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 1,
+      })
+    )[0]
 
     const creatorAfterPurchase = await prisma.user.findUnique({
       where: {
@@ -135,8 +142,8 @@ describe('Purchasing a badge', () => {
     expect(purchasedBadgeItem?.edition).toEqual(badgeTypeToPurchase.sold + 1)
     expect(purchasedBadgeItem.ownerId).toEqual(testUser?.id)
     expect(badgeTypeAfterPurchase?.sold).toEqual(badgeTypeToPurchase.sold + 1)
-    expect(receipt?.buyerId).toEqual(testUser?.id)
-    expect(receipt?.sellerId).toEqual(badgeTypeToPurchase.creatorId)
+    expect(receipt).toBeTruthy()
+    expect(receipt?.price).toEqual(badgeTypeToPurchase.price)
     expect(balanceAfterPurchase).toEqual(
       balanceBeforePurchase + badgeTypeToPurchase.price * feeMultiplier
     )
@@ -149,10 +156,13 @@ describe('Purchasing a badge', () => {
     )
   })
 
-  it('should update sold badgeItem, create new badgeItem and receipt when badgeItemId was provided', async () => {
+  it('should update sold badgeItem and create receipt when badgeItemId was provided', async () => {
     const badgeItemToPurchase = await prisma.badgeItem.findFirst({
       where: {
         forSale: true,
+      },
+      include: {
+        receipts: true,
       },
     })
 
@@ -179,26 +189,32 @@ describe('Purchasing a badge', () => {
       badgeItemId: badgeItemToPurchase?.id,
     }
 
-    const newBadgeItem = await purchaseBadge(input, testUser?.id || '')
+    const updatedBadgeItem = await purchaseBadge(input, testUser?.id || '')
 
-    const badgeItemAfterPurchase = await findBadgeItem(badgeItemToPurchase?.id || '')
+    const receipts = (
+      await prisma.receipt.findMany({
+        where: {
+          badgeItemId: badgeItemToPurchase?.id,
+          buyerId: testUser?.id,
+          sellerId: badgeItemToPurchase?.ownerId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        }
+      })
+    )
 
-    const receipt = await prisma.receipt.findUnique({
-      where: {
-        badgeItemId: newBadgeItem.id,
-      },
-    })
-
-    expect(badgeItemToPurchase?.edition).toEqual(newBadgeItem.edition)
-    expect(badgeItemToPurchase?.tokenId).toEqual(newBadgeItem.tokenId)
-    expect(badgeItemToPurchase?.isSold).toBeFalsy()
-    expect(badgeItemAfterPurchase.isSold).toBeTruthy()
     expect(badgeItemToPurchase?.forSale).toBeTruthy()
-    expect(badgeItemAfterPurchase.forSale).toBeFalsy()
-    expect(newBadgeItem.badgeTypeId).toEqual(badgeItemToPurchase?.badgeTypeId)
-    expect(newBadgeItem.ownerId).toEqual(testUser?.id)
-    expect(receipt?.buyerId).toEqual(testUser?.id)
-    expect(receipt?.sellerId).toEqual(badgeItemToPurchase?.ownerId)
+    expect(badgeItemToPurchase?.edition).toEqual(updatedBadgeItem.edition)
+    expect(badgeItemToPurchase?.tokenId).toEqual(updatedBadgeItem.tokenId)
+    expect(updatedBadgeItem.forSale).toBeFalsy()
+    expect(updatedBadgeItem.saleCurrency).toBeFalsy()
+    expect(updatedBadgeItem.salePrice).toBeFalsy()
+    expect(updatedBadgeItem.badgeTypeId).toEqual(badgeItemToPurchase?.badgeTypeId)
+    expect(updatedBadgeItem.ownerId).toEqual(testUser?.id)
+    expect(receipts.length).toBeGreaterThan(badgeItemToPurchase?.receipts.length || 0)
+    expect(receipts[0].price).toEqual(badgeItemToPurchase?.salePrice)
+    expect(receipts[0].currency).toEqual(badgeItemToPurchase?.saleCurrency)
   })
 
   it('should fail if buyer doesnt have neccesary payment information', async () => {
@@ -301,43 +317,14 @@ describe('Purchasing a badge', () => {
     ).rejects.toThrowError(PurchaseErrorMessages.badgeCreatedByUser)
   })
 
-  it('should fail if desired badgeItem is not on sale or already sold', async () => {
-    let badgeItemToPurchase = await prisma.badgeItem.findFirst({
+  it('should fail if desired badgeItem is not on sale', async () => {
+    const badgeItemToPurchase = await prisma.badgeItem.findFirst({
       where: {
         forSale: false,
       },
     })
 
-    let testUser = await prisma.user.findFirst({
-      where: {
-        badgeItemsOwned: {
-          none: {
-            badgeTypeId: {
-              equals: badgeItemToPurchase?.badgeTypeId,
-            },
-          },
-        },
-        badgeTypesCreated: {
-          none: {
-            id: {
-              equals: badgeItemToPurchase?.badgeTypeId,
-            },
-          },
-        },
-      },
-    })
-
-    expect(
-      async () => await purchaseBadge({ badgeItemId: badgeItemToPurchase?.id }, testUser?.id || '')
-    ).rejects.toThrowError(PurchaseErrorMessages.badgeNotAvailableForPurchase)
-
-    badgeItemToPurchase = await prisma.badgeItem.findFirst({
-      where: {
-        isSold: true,
-      },
-    })
-
-    testUser = await prisma.user.findFirst({
+    const testUser = await prisma.user.findFirst({
       where: {
         badgeItemsOwned: {
           none: {

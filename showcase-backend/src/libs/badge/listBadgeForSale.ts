@@ -36,6 +36,7 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
     // todo: what is  "uri: 'https://showcase.to/badge/' + badgeItemId" used for? should we add a new one to the badgeItem or does this refer only the the badgeType?
     return await updateBadgeItem(badgeItemId, {
       forSale: true,
+      forSaleDate: new Date(),
       salePrice: price,
       saleCurrency: currency || profile.currency,
     })

@@ -149,17 +149,14 @@ model BadgeItem {
   owner   User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id])
   ownerId String
 
-  receipt Receipt?
+  receipts Receipt[]
 
-  edition      Int
-  purchaseDate DateTime
+  edition Int
 
   forSale      Boolean   @default(false)
-  // todo: forSaleDate
+  forSaleDate  DateTime?
   salePrice    Float?
   saleCurrency Currency?
-  isSold       Boolean   @default(false)
-  sellDate     DateTime?
 
   shares Int @default(0)
 
@@ -236,12 +233,12 @@ model Receipt {
   sellerId String
 
   badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
-  badgeItemId String    @unique
+  badgeItemId String    
 
   chargeId String
 
-  // todo: add price
-  // todo: add  currency
+  price             Float
+  currency          Currency
   convertedPrice    Float
   convertedRate     Float
   convertedCurrency Currency

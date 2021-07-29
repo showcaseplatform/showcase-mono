@@ -95,49 +95,45 @@ const purchaseBadgeItemTransaction = async ({
   convertedRate,
   transactionHash,
 }: PurchaseBadgeItemTransactionInput) => {
-  const { id, edition, tokenId, ownerId: sellerId, badgeTypeId } = badge || {}
-  return await prisma.$transaction([
-    prisma.badgeItem.update({
-      where: {
-        id,
-      },
-      data: {
-        isSold: true,
-        forSale: false,
-        sellDate: new Date(),
-      },
-    }),
+  const { id, ownerId: sellerId, salePrice, saleCurrency } = badge
 
-    prisma.badgeItem.create({
-      data: {
-        owner: {
-          connect: {
-            id: buyerId,
-          },
-        },
-        badgeType: {
-          connect: {
-            id: badgeTypeId,
-          },
-        },
-        tokenId,
-        edition,
-        purchaseDate: new Date(),
-        receipt: {
-          create: {
-            buyerId,
-            sellerId,
-            causeId: null,
-            chargeId,
-            convertedPrice,
-            convertedCurrency,
-            convertedRate,
-            transactionHash,
-          },
+  return await prisma.badgeItem.update({
+    where: {
+      id,
+    },
+    data: {
+      owner: {
+        connect: {
+          id: buyerId,
         },
       },
-    }),
-  ])
+      forSale: false,
+      salePrice: null,
+      forSaleDate: null,
+      saleCurrency: null,
+      receipts: {
+        create: {
+          buyer: {
+            connect: {
+              id: buyerId,
+            },
+          },
+          seller: {
+            connect: {
+              id: sellerId,
+            },
+          },
+          chargeId,
+          price: salePrice || convertedPrice,
+          currency: saleCurrency || convertedCurrency,
+          convertedPrice,
+          convertedCurrency,
+          convertedRate,
+          transactionHash,
+        },
+      },
+    },
+  })
 }
 
 const purchaseBadgeTypeTransaction = async ({
@@ -154,6 +150,7 @@ const purchaseBadgeTypeTransaction = async ({
   convertedRate,
   USDPrice,
 }: PurchaseBadgeTypeTransactionInput) => {
+  const { creatorId: sellerId, causeId = null, price, currency } = badge
   return await prisma.$transaction([
     prisma.badgeType.update({
       where: {
@@ -170,13 +167,28 @@ const purchaseBadgeTypeTransaction = async ({
               },
             },
             edition: newSoldAmount,
-            purchaseDate: new Date(),
-            receipt: {
+            receipts: {
               create: {
-                buyerId,
-                sellerId: badge.creatorId,
-                causeId: badge.causeId || null,
+                buyer: {
+                  connect: {
+                    id: buyerId,
+                  },
+                },
+                seller: {
+                  connect: {
+                    id: sellerId,
+                  },
+                },
+                cause: causeId
+                  ? {
+                      connect: {
+                        id: causeId,
+                      },
+                    }
+                  : undefined,
                 chargeId,
+                price,
+                currency,
                 convertedPrice,
                 convertedCurrency,
                 convertedRate,
@@ -204,7 +216,6 @@ const purchaseBadgeTypeTransaction = async ({
           where: {
             ownerId: buyerId,
             tokenId,
-            isSold: false,
           },
           orderBy: {
             createdAt: 'desc',
@@ -235,9 +246,10 @@ const purchaseBadgeTypeTransaction = async ({
 }
 const calculatePayments = async (price: number, currency: Currency, donationAmount?: number) => {
   const currenciesData = await CurrencyRateLib.getLatestExchangeRates()
-  const userCurrencyRate = 1 // todo: user user's currency rate here:  currenciesData[user.profile.currency]
-  const multiplier = (1 / currenciesData[currency]) * userCurrencyRate
-  const calculatedPrice = parseFloat((price * multiplier).toFixed(2))
+  const convertedCurrency = currency // todo: use user's currency rate here: user.profile.currency
+  const convertedRate = currenciesData[convertedCurrency]
+  const multiplier = (1 / currenciesData[currency]) * convertedRate
+  const convertedPrice = parseFloat((price * multiplier).toFixed(2))
 
   let payoutAmount = 0
   let causeFullAmount = 0
@@ -267,13 +279,26 @@ const calculatePayments = async (price: number, currency: Currency, donationAmou
   //   throw new GraphQLError('Transaction currency conversion rate dont match!')
   // }
 
-  return { payoutAmount, causeFullAmount, USDPrice, userCurrencyRate, calculatedPrice }
+  return {
+    payoutAmount,
+    causeFullAmount,
+    USDPrice,
+    convertedRate,
+    convertedPrice,
+    convertedCurrency,
+  }
 }
 
 const purchaseBadgeItem = async (badgeItemId: BadgeItemId, user: User) => {
   const badgeItem = await findBadgeItem(badgeItemId, { badgeType: true })
 
-  if (!badgeItem.isSold && badgeItem.forSale && badgeItem.badgeType) {
+  if (
+    badgeItem.forSale &&
+    !badgeItem.removedFromShowcase &&
+    badgeItem.badgeType &&
+    !!badgeItem.salePrice &&
+    badgeItem.saleCurrency
+  ) {
     await checkIfUserAllowedToPurchaseBadgeType(user, badgeItem.badgeType)
   } else {
     throw new GraphQLError(PurchaseErrorMessages.badgeNotAvailableForPurchase)
@@ -282,30 +307,29 @@ const purchaseBadgeItem = async (badgeItemId: BadgeItemId, user: User) => {
   const price = badgeItem.salePrice || 0
   const currency = badgeItem.saleCurrency || Currency.USD
 
-  const { payoutAmount, calculatedPrice, USDPrice, userCurrencyRate } =
+  const { payoutAmount, convertedPrice, USDPrice, convertedRate, convertedCurrency } =
     await calculatePayments(price, currency, undefined)
 
   // todo: chargeId should come from payment provider
   const chargeId = getRandomNum().toString()
 
   try {
-
     // todo: need new blockchain endpoint for transfering existing tokens
     const transactionHash = getRandomNum().toString()
 
-    const [_, newBadgeItem] = await purchaseBadgeItemTransaction({
+    const updatedBadgeItem = await purchaseBadgeItemTransaction({
       buyerId: user.id,
       payoutAmount,
       badge: badgeItem,
       chargeId,
       transactionHash,
-      convertedPrice: calculatedPrice,
-      convertedCurrency: currency, // todo: use user.profile?.currency  for conversion
-      convertedRate: userCurrencyRate,
+      convertedPrice,
+      convertedCurrency,
+      convertedRate,
       USDPrice,
     })
 
-    return newBadgeItem
+    return updatedBadgeItem
   } catch (error) {
     // todo: refund payment charge
     console.error({ error })
@@ -320,8 +344,14 @@ const purchaseBadgeType = async (badgeTypeId: BadgeTypeId, user: User) => {
   const price = badgeType.price
   const currency = badgeType.currency
 
-  const { payoutAmount, calculatedPrice, USDPrice, userCurrencyRate, causeFullAmount } =
-    await calculatePayments(price, currency, badgeType.donationAmount || undefined)
+  const {
+    payoutAmount,
+    convertedPrice,
+    USDPrice,
+    convertedRate,
+    causeFullAmount,
+    convertedCurrency,
+  } = await calculatePayments(price, currency, badgeType.donationAmount || undefined)
 
   // todo: chargeId should come from payment provider
   const chargeId = getRandomNum().toString()
@@ -343,9 +373,9 @@ const purchaseBadgeType = async (badgeTypeId: BadgeTypeId, user: User) => {
       badge: badgeType,
       chargeId,
       transactionHash,
-      convertedPrice: calculatedPrice,
-      convertedCurrency: currency, // todo: use user.profile?.currency  for conversion
-      convertedRate: userCurrencyRate,
+      convertedPrice,
+      convertedCurrency,
+      convertedRate,
       USDPrice,
       newSoldAmount,
     })

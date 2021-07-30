@@ -6,6 +6,12 @@ import { GraphQLError } from 'graphql'
 import { removeBadgeFromEscrow } from '../../services/blockchain'
 import { BadgeItem } from '@generated/type-graphql'
 
+export enum UnlistBadgeForSaleErrorMessages {
+  notOnSale = 'Badge already removed from sale',
+  userNotOwner = 'User doesnt match badge owner'
+
+}
+
 export const unlistBadgeForSale = async (
   input: UnListBadgeForSaleInput,
   uid: Uid
@@ -15,9 +21,9 @@ export const unlistBadgeForSale = async (
   const badgeItem = await findBadgeItem(badgeItemId)
 
   if (!badgeItem || badgeItem.ownerId !== uid) {
-    throw new GraphQLError('User doesnt match badge owner')
+    throw new GraphQLError(UnlistBadgeForSaleErrorMessages.userNotOwner)
   } else if (!badgeItem.forSale) {
-    throw new GraphQLError('Badge already on sale!')
+    throw new GraphQLError(UnlistBadgeForSaleErrorMessages.notOnSale)
   }
 
   // todo: remove blockchain.enabled once server is ready

@@ -1,6 +1,7 @@
 query BadgeDetails($id: String!) {
   badgeType(where: { id: $id }) {
     id
+    createdAt
     description
     donationAmount
     isOwnedByMe
@@ -10,6 +11,8 @@ query BadgeDetails($id: String!) {
     isViewedByMe
     likeCount
     viewCount
+    supply
+    sold
     badgeItems {
       id
       salePrice

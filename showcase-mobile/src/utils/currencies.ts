@@ -2,16 +2,16 @@ import { Currency } from '../generated/graphql'
 
 export const currencies = [
   {
-    value: Currency.USD,
-    label: Currency.USD,
+    value: Currency.Usd,
+    label: Currency.Usd,
   },
   {
     value: Currency.Eur,
     label: Currency.Eur,
   },
   {
-    value: Currency.GBP,
-    label: Currency.GBP,
+    value: Currency.Gbp,
+    label: Currency.Gbp,
   },
 ]
 

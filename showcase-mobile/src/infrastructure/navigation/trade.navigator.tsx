@@ -1,18 +1,20 @@
 import React from 'react'
 import { createStackNavigator } from '@react-navigation/stack'
 
-import TradeBadgeScreen from '../../features/trade/screens/TradeBadge.screen'
-import TradeBadgeDetailsScreen from '../../features/trade/screens/TradeBadgeDetails.screen'
-import { CollectionItemProps } from '../../features/trade/components/CollectionItem.component'
-import { CreationItemProps } from '../../features/trade/components/CreationItem.component'
+import Trading from '../../features/trade/screens/Trade.screen'
+import TradeItemDetails from '../../features/trade/screens/TradeItemDetails.screen'
+import TradeTypeDetails from '../../features/trade/screens/TradeTypeDetails.screen'
 
 const TradeStack = createStackNavigator<TradeStackParamList>()
 
 export type TradeStackParamList = {
-  TradeBadge: undefined
-  TradeBadgeDetails: {
-    item?: CollectionItemProps
-    type?: CreationItemProps
+  Trade: undefined
+  TradeItemDetails: {
+    id: string
+    itemId: string
+  }
+  TradeTypeDetails: {
+    id: string
   }
 }
 
@@ -20,22 +22,15 @@ const TradeNavigator = () => {
   return (
     <TradeStack.Navigator
       headerMode="screen"
-      screenOptions={{ headerTintColor: '#000' }}
+      screenOptions={{ headerTintColor: '#000', headerBackTitleVisible: false }}
     >
       <TradeStack.Screen
-        name="TradeBadge"
+        name="Trade"
         options={{ headerShown: false }}
-        component={TradeBadgeScreen}
+        component={Trading}
       />
-      <TradeStack.Screen
-        name="TradeBadgeDetails"
-        component={TradeBadgeDetailsScreen}
-        options={({ route }) => ({
-          headerBackTitleVisible: false,
-          headerTitle:
-            route.params.type?.title || route.params.item?.badgeType.title,
-        })}
-      />
+      <TradeStack.Screen name="TradeItemDetails" component={TradeItemDetails} />
+      <TradeStack.Screen name="TradeTypeDetails" component={TradeTypeDetails} />
     </TradeStack.Navigator>
   )
 }

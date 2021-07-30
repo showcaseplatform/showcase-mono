@@ -11,10 +11,9 @@ import {
 import { useTheme } from 'styled-components/native'
 
 import { StyledSafeArea } from '../../badges/screens/Badges.styles'
-import BadgeCollection from './BadgeCollection.screen'
+import Collection from './Collection.screen'
 import Selling from './Selling.screen'
-import MyCreations from './MyCreations.screen'
-// import BadgeHistory from './BadgeHistory.screen'
+import Creations from './Creations.screen'
 
 type TabRenderProps = SceneRendererProps & {
   navigationState: NavigationState<{
@@ -26,20 +25,18 @@ type TabRenderProps = SceneRendererProps & {
 const initialLayout = { width: Dimensions.get('window').width }
 
 const renderScene = SceneMap({
-  collection: BadgeCollection,
+  collection: Collection,
   sales: Selling,
-  myCreations: MyCreations,
-  // history: BadgeHistory,
+  myCreations: Creations,
 })
 
-const TradeBadgeScreen = () => {
+const Trading = () => {
   const theme = useTheme()
   const [index, setIndex] = React.useState(0)
   const [routes] = React.useState([
     { key: 'collection', title: 'Collection' },
     { key: 'sales', title: 'Selling' },
     { key: 'myCreations', title: 'My Creations' },
-    // { key: 'history', title: 'History' },
   ])
 
   const renderTabBar = (props: TabRenderProps) => (
@@ -70,4 +67,4 @@ const TradeBadgeScreen = () => {
   )
 }
 
-export default TradeBadgeScreen
+export default Trading

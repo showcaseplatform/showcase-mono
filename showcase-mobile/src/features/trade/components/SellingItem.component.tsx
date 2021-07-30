@@ -17,7 +17,12 @@ const SellingItem = ({ item }: { item: CollectionItemProps }) => {
   const navigation = useNavigation<NavigationProp<TradeStackParamList>>()
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('TradeBadgeDetails', { item })}
+      onPress={() =>
+        navigation.navigate('TradeItemDetails', {
+          id: item.badgeType.id,
+          itemId: item.id,
+        })
+      }
     >
       <Surface>
         <View

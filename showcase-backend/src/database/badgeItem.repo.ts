@@ -20,7 +20,7 @@ export const findBadgeItem = async (
   }
 }
 
-export const badgeItemLikeCount = (badgeItemId: string) => {
+export const badgeItemLikeCount = (badgeItemId: string):  Promise<number> => {
   return prisma.badgeItemLike.count({
     where: {
       badgeItemId,
@@ -28,7 +28,7 @@ export const badgeItemLikeCount = (badgeItemId: string) => {
   })
 }
 
-export const badgeItemViewCount = (badgeItemId: string) => {
+export const badgeItemViewCount = (badgeItemId: string):  Promise<number> => {
   return prisma.badgeItemView.count({
     where: {
       badgeItemId,
@@ -36,28 +36,19 @@ export const badgeItemViewCount = (badgeItemId: string) => {
   })
 }
 
-export const updateBadgeItem = async (
-  id: string,
-  updateData:
-    | (Prisma.Without<Prisma.BadgeItemUpdateInput, Prisma.BadgeItemUncheckedUpdateInput> &
-        Prisma.BadgeItemUncheckedUpdateInput)
-    | (Prisma.Without<Prisma.BadgeItemUncheckedUpdateInput, Prisma.BadgeItemUpdateInput> &
-        Prisma.BadgeItemUpdateInput)
-) => {
+export const updateBadgeItem = async (id: string, data: Prisma.BadgeItemUpdateInput):  Promise<BadgeItem> => {
   return await prisma.badgeItem.update({
     where: {
       id,
     },
-    data: {
-      ...updateData,
-    },
+    data,
   })
 }
 
 export const findManyBadgeItems = async (
   where: Prisma.BadgeItemWhereInput,
   orderBy?: BadgeItemOrderByInput
-) => {
+):  Promise<BadgeItem[]> => {
   return await prisma.badgeItem.findMany({
     where,
     orderBy: orderBy || { createdAt: 'desc' },

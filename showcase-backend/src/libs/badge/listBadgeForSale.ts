@@ -6,10 +6,11 @@ import { findProfile } from '../../database/profile.repo'
 import { findBadgeItem, updateBadgeItem } from '../../database/badgeItem.repo'
 import { GraphQLError } from 'graphql'
 import { addNonFungibleToEscrowWithSignatureRelay } from '../../services/blockchain'
+import { BadgeItem } from '@generated/type-graphql'
 
 
 
-export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) => {
+export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid): Promise<BadgeItem> => {
   const { badgeItemId, price, currency, sig, message } = input
 
   // todo: price validation should be done with gql class-validators
@@ -33,7 +34,6 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
         uid
       ))
 
-    // todo: what is  "uri: 'https://showcase.to/badge/' + badgeItemId" used for? should we add a new one to the badgeItem or does this refer only the the badgeType?
     return await updateBadgeItem(badgeItemId, {
       forSale: true,
       forSaleDate: new Date(),

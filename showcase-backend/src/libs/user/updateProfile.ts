@@ -1,6 +1,5 @@
 import validator from 'validator'
 import { Uid } from '../../types/user'
-import Boom from 'boom'
 import { CURRENCIES } from '../../consts/currencies'
 import moment from 'moment'
 import {
@@ -22,7 +21,7 @@ const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {
     return bio
   } else {
-    throw Boom.badData('Invalid bio')
+    throw new GraphQLError('Invalid bio')
   }
 }
 
@@ -43,7 +42,7 @@ const validateEmail = async (email: string) => {
   ) {
     return email
   } else {
-    throw Boom.badData('Invalid email')
+    throw new GraphQLError('Invalid email')
   }
 }
 
@@ -65,7 +64,7 @@ const validateUsername = async (username: string, uid: Uid) => {
   ) {
     return username
   } else {
-    throw Boom.badData('Invalid username')
+    throw new GraphQLError('Invalid username')
   }
 }
 
@@ -74,7 +73,7 @@ const validateDisplayName = (displayName: string) => {
   if (displayName.length <= PROFILE_MAX_DISPLAY_NAME_LENGTH) {
     return displayName
   } else {
-    throw Boom.badData('Invalid display name')
+    throw new GraphQLError('Invalid display name')
   }
 }
 
@@ -82,14 +81,14 @@ const validateBirthdate = (birthDate: Date) => {
   if (birthDate < moment().add(-PROFILE_MIN_USER_AGE, 'years').toDate()) {
     return birthDate
   } else {
-    throw Boom.badData('Invalid birth date')
+    throw new GraphQLError('Invalid birth date')
   }
 }
 const validateCurrency = (currency: Currency) => {
   if (CURRENCIES.indexOf(currency) > -1) {
     return currency
   } else {
-    throw Boom.badData('Invalid currency')
+    throw new GraphQLError('Invalid currency')
   }
 }
 
@@ -105,6 +104,8 @@ const updateAvatarImg = async (avatarImg: FileUpload, uid: Uid) => {
 
 export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUpload, uid: Uid) => {
   const { bio, email, username, displayName, birthDate, currency } = input || {}
+
+  
 
   const updateData = {} as Partial<Omit<Profile, 'id'>>
 

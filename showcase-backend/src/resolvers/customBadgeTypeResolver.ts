@@ -55,22 +55,22 @@ export class CustomBadgeTypeResolver {
   }
 
   @FieldResolver((_) => Boolean)
-  async removedFromShowcase(@Root() badgeType: BadgeType) {
+  async removedFromShowcase(@Root() badgeType: BadgeType): Promise<boolean> {
     return await isBadgeTypeRemovedFromShowcase(badgeType.id)
   }
 
   @FieldResolver((_) => Boolean)
-  async isSoldOut(@Root() badgeType: BadgeType) {
+  async isSoldOut(@Root() badgeType: BadgeType): Promise<boolean> {
     return await isBadgeTypeSoldOut(badgeType)
   }
 
   @FieldResolver((_) => Int, { description: 'currently available stock' })
-  async availableToBuyCount(@Root() badgeType: BadgeType) {
+  async availableToBuyCount(@Root() badgeType: BadgeType): Promise<number> {
     return await getAvailableToBuyCount(badgeType)
   }
 
   @FieldResolver((_) => Boolean)
-  isCreatedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
+  isCreatedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User): boolean {
     const uid = currentUser?.id
     if (!uid) {
       return false
@@ -79,7 +79,7 @@ export class CustomBadgeTypeResolver {
   }
 
   @FieldResolver((_) => Boolean)
-  async isOwnedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User) {
+  async isOwnedByMe(@Root() badgeType: BadgeType, @CurrentUser() currentUser: User): Promise<boolean> {
     const uid = currentUser?.id
     if (!uid) {
       return false

@@ -4,13 +4,16 @@ import { UnListBadgeForSaleInput } from './types/unlistBadgeForSale.type'
 import { findBadgeItem, updateBadgeItem } from '../../database/badgeItem.repo'
 import { GraphQLError } from 'graphql'
 import { removeBadgeFromEscrow } from '../../services/blockchain'
+import { BadgeItem } from '@generated/type-graphql'
 
-export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Uid) => {
+export const unlistBadgeForSale = async (
+  input: UnListBadgeForSaleInput,
+  uid: Uid
+): Promise<BadgeItem> => {
   const { badgeItemId } = input
 
   const badgeItem = await findBadgeItem(badgeItemId)
 
-  // here we need to make sure user currently owns the badge because the removebadge is called from escrow
   if (!badgeItem || badgeItem.ownerId !== uid) {
     throw new GraphQLError('User doesnt match badge owner')
   } else if (!badgeItem.forSale) {
@@ -25,6 +28,7 @@ export const unlistBadgeForSale = async (input: UnListBadgeForSaleInput, uid: Ui
   if (response && response.data && response.data.success) {
     return await updateBadgeItem(badgeItemId, {
       forSale: false,
+      forSaleDate: null,
       salePrice: null,
       saleCurrency: null,
     })

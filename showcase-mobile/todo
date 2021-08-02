@@ -7,15 +7,15 @@
   ☐ BottomSheet bottom inset does not set, slighly open on init render
 ☐ Profile Screen - (horizontal) flatlist height does not calc properply. Maybe on other screens either
 ☐ Bottom and / or top instets are not setup properly
-☐ at first render: category icons are slower then the layout
 ☐ BadgeDetails: currency exchanger: eg. USD -> $
 ☐ After badge has been edited -> next -> forwardRef data warning pops
 ☐ BUY CTA should be on Portal instead of position absolute (if cause modal open overlaps)
 ☐ Android cause widget round styling issue
-☐ FollowButton component ui stuck in loading (disabled) state after first onPress
-☐ AWS S3 does not receive file Type properly (empty)
 ☐ Edit user profile: keyboard overlaps input fields (KeyboardAware view)
 ☐ Memory leak in badgesScreen - search useEffect
+✔ AWS S3 does not receive file Type properly (empty) @done(21-08-02 11:42)
+✔ FollowButton component ui stuck in loading (disabled) state after first onPress @done(21-08-02 11:41)
+✔ at first render: category icons are slower then the layout @done(21-08-02 11:41)
 ✔ CreateBadgeButton can be "overclicked" (badge in the background is activated on click upper bart of the button) @done(21-06-21 07:56)
 ✔ Follow - Unfollow button loading state is over before the data has been changed (ui glitch) @done(21-06-17 10:21)
 ✘ badges screen - if search input exists then category selected -> results flashing once @cancelled(21-05-06 11:39)
@@ -24,23 +24,23 @@
 *** IMPROVEMENTS ***
 ☐ prevent "direct" navigation between screens if not authenticated
 ☐ navigation should be typed properly (stacks and routes)
-☐ maybe: Auth Modal is slow at first opening
 ☐ Optional: BottomSheetHeader - ModalHeader are similar, try to homogenise them?
 ☐ add focus on next form input on submit editing
 ☐ path aliases to 'components', 'utils', etc.
 ☐ RN-styledcomps vs RN-paper theming vs unthemed space/sizing should use the same theme file / format (spacing with and without 'px' )
 ☐ detailed camera / image gallery permission implementation
 ☐ Lift Editor's state into a separate Context (choosen category, imagePath, maybe filter settings as well)
-☐ BadgeDetails screen loading states handling
-  ☐ load cause image
-  ☐ load main image
-  ☐ load image background
-  ☐ header data must be there when images loaded
+☐ load cause image
+☐ load main image
+☐ load image background
+☐ header data must be there when images loaded
 ☐ Profile screen should handle longer (~infinite) bio text
 ☐ MyFriend screen items may navigate to user's profile
 ☐ Edit User Profile cache handling into client
 ☐ Badge list footer could be look nicer or offer some functionality eg.: follow more creators
+✔ maybe: Auth Modal is slow at first opening @done(21-08-02 11:42)
 ✔ create a reuseable fetch client @done(21-05-10 18:04)
+✔ BadgeDetails screen loading states handling @done(21-08-02 11:42)
 ✔ build a screen comp with basic settings eg.: bg @done(21-05-06 11:28)
 ✔ enter phone and enter auth screens are built with Stylesheet, replace it with styled comps @done(21-05-06 11:26)
 ✔ Text component: sort out styled / rn / paper types @done(21-04-28 06:34)
@@ -72,7 +72,7 @@
 ☐ Profile screen -> open badge -> onBack: where to?
 ☐ edit user profile image -> upload on 'Save' or asap as picked?
 ☐ If logged in user is Verified Creator -> Trade Stack is active -> how will bottomsheet will behave (curr: custom asset colored Create button)
-☐ trading
+✔ trading @done(21-08-02 11:43)
   - own 1 badge only?
   - creator inventory control? more items, sell only few from them
   - after selling state badge -> modify sell details

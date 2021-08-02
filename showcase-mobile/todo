@@ -38,6 +38,7 @@
 ☐ MyFriend screen items may navigate to user's profile
 ☐ Edit User Profile cache handling into client
 ☐ Badge list footer could be look nicer or offer some functionality eg.: follow more creators
+☐ create a hook / ctx for dimensions
 ✔ maybe: Auth Modal is slow at first opening @done(21-08-02 11:42)
 ✔ create a reuseable fetch client @done(21-05-10 18:04)
 ✔ BadgeDetails screen loading states handling @done(21-08-02 11:42)

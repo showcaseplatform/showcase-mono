@@ -1,5 +1,4 @@
 import axios from 'axios'
-import Boom from 'boom'
 import { prisma } from '../../services/prisma'
 import { openExchange } from '../../config'
 
@@ -14,7 +13,7 @@ export class CurrencyRateLib {
     if (currencyRates) {
       return currencyRates
     } else {
-      throw Boom.notFound('Empty currencies')
+      throw new Error('Empty currencies')
     }
   }
 
@@ -32,7 +31,7 @@ export class CurrencyRateLib {
       })
       console.log('Currency rates updated: ', { EUR }, { GBP }, { USD })
     } else {
-      throw Boom.notFound('Error cannot get currency rates: ', { response })
+      throw new Error('Failed to download currency rates')
     }
   }
 }

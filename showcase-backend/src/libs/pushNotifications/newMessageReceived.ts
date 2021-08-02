@@ -1,7 +1,7 @@
 import { NotificationType } from '@prisma/client'
 import Bluebird from 'bluebird'
 import { SendNotificationProps } from '../../types/notificaton'
-import { findFollow } from '../database/follow.repo'
+import { findFollow } from '../../database/follow.repo'
 import { notificationSender } from '../notification/notificationSenderLib'
 
 interface NewMessageReceivedInput extends Omit<SendNotificationProps, 'title' | 'type'> {

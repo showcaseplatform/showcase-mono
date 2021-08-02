@@ -1,15 +1,13 @@
 import { stripe as stripeConfig } from '../config'
-import Stripe from 'stripe'
-import Boom from 'boom'
 import { Currency } from '@prisma/client'
+import Stripe from 'stripe'
+import { GraphQLError } from 'graphql'
 
 
 
 // todo: convert this class to selected payment provider
 class MyStripe {
   stripe = new Stripe(stripeConfig, { apiVersion: '2020-08-27' })
-
-  constructor() {}
 
   async refundPayment(id: string) {
     await this.stripe.refunds.create({ charge: id })
@@ -47,7 +45,7 @@ class MyStripe {
     })
   
     if (!charge || !charge.id || !charge.paid) {
-      throw Boom.internal('Unable to create charge')
+      throw new GraphQLError('Unable to create charge')
     }
   
     return { chargeId: charge.id }

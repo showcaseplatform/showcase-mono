@@ -1,6 +1,6 @@
 import { GraphQLError } from 'graphql'
-import prisma from '../../services/prisma'
-import { Uid } from '../../types/user'
+import prisma from '../services/prisma'
+import { Uid } from '../types/user'
 
 export const findUserByPhone = async (phone: string) => {
   return await prisma.user.findUnique({

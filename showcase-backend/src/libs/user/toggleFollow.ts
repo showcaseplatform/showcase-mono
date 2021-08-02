@@ -2,8 +2,8 @@ import { FollowStatus, Follow } from '.prisma/client'
 import { GraphQLError } from 'graphql'
 import prisma from '../../services/prisma'
 import { Uid } from '../../types/user'
-import { unFollow, upsertNewFollow } from '../database/follow.repo'
-import { findProfile } from '../database/profile.repo'
+import { unFollow, upsertNewFollow } from '../../database/follow.repo'
+import { findProfile } from '../../database/profile.repo'
 
 interface FollowInput {
   uid: Uid

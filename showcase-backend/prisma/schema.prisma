@@ -8,6 +8,7 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["referentialActions"]
 }
 
 generator typegraphql {
@@ -71,7 +72,7 @@ model User {
 
 model Profile {
   id   String @id
-  user User   @relation(fields: [id], references: [id])
+  user User   @relation(fields: [id], references: [id], onDelete: Cascade)
 
   displayName String
   username    String  @unique
@@ -104,7 +105,7 @@ enum Category {
 model BadgeType {
   id String @id @default(uuid())
 
-  creator   User   @relation(name: "badgeTypesCreated", fields: [creatorId], references: [id])
+  creator   User   @relation(name: "badgeTypesCreated", fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
 
   tokenTypeId String @unique
@@ -141,24 +142,22 @@ model BadgeType {
 model BadgeItem {
   id String @id @default(cuid())
 
-  tokenId String // todo: is this uniqiue? if it changes after re-sell then yes
+  tokenId String
 
-  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id], onDelete: Cascade)
   badgeTypeId String
 
-  owner   User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id])
+  owner   User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId String
 
-  receipt Receipt?
+  receipts Receipt[]
 
-  edition      Int
-  purchaseDate DateTime
+  edition Int
 
   forSale      Boolean   @default(false)
+  forSaleDate  DateTime?
   salePrice    Float?
   saleCurrency Currency?
-  isSold       Boolean   @default(false)
-  sellDate     DateTime?
 
   shares Int @default(0)
 
@@ -190,7 +189,7 @@ model Cause {
 model Crypto {
   id                  String @id @default(cuid())
   userId              String @unique
-  owner               User   @relation(fields: [userId], references: [id])
+  owner               User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   address             String
   encryptedMnemonic   String
   encryptedPrivateKey String
@@ -200,12 +199,11 @@ model Crypto {
   publicKey           String
 }
 
-// todo: only create balance for creators!
 // todo: use this table once requesting info from receipts cost too much resources
 model Balance {
   id     String @id @default(cuid())
   userId String @unique
-  owner  User   @relation(fields: [userId], references: [id])
+  owner  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   EUR                          Float @default(0)
   GBP                          Float @default(0)
@@ -229,22 +227,24 @@ model CurrencyRate {
 model Receipt {
   id String @id @default(cuid())
 
-  buyer   User   @relation(name: "buyReceipts", fields: [buyerId], references: [id])
+  buyer   User   @relation(name: "buyReceipts", fields: [buyerId], references: [id], onDelete: Cascade)
   buyerId String
 
-  seller   User   @relation(name: "sellReceipts", fields: [sellerId], references: [id])
+  seller   User   @relation(name: "sellReceipts", fields: [sellerId], references: [id], onDelete: Cascade)
   sellerId String
 
-  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id], onDelete: Cascade)
   badgeItemId String
 
   chargeId String
 
+  price             Float
+  currency          Currency
   convertedPrice    Float
   convertedRate     Float
   convertedCurrency Currency
 
-  cause   Cause? @relation(fields: [causeId], references: [id])
+  cause   Cause? @relation(fields: [causeId], references: [id], onDelete: SetNull)
   causeId Int?
 
   transactionHash String @unique
@@ -256,7 +256,7 @@ model Receipt {
 model PaymentInfo {
   id     String @id @default(cuid())
   userId String @unique
-  owner  User   @relation(fields: [userId], references: [id])
+  owner  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   idToken           String @unique
   lastFourCardDigit String
@@ -268,7 +268,7 @@ model PaymentInfo {
 model Transferwise {
   id     String @id @default(cuid())
   userId String @unique
-  owner  User   @relation(fields: [userId], references: [id])
+  owner  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   idUSD            String?
   accountNumberUSD String?
@@ -284,7 +284,7 @@ model Transferwise {
 model Withdrawal {
   id                    String    @id @default(cuid())
   ownerId               String
-  owner                 User      @relation(fields: [ownerId], references: [id])
+  owner                 User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   customerTransactionId String
   transactionId         String?
   quote                 String
@@ -299,9 +299,9 @@ model Withdrawal {
 
 model BadgeItemLike {
   userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   badgeItemId String
-  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -310,9 +310,9 @@ model BadgeItemLike {
 
 model BadgeTypeLike {
   userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   badgeTypeId String
-  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -321,9 +321,9 @@ model BadgeTypeLike {
 
 model BadgeItemView {
   userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   badgeItemId String
-  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id])
+  badgeItem   BadgeItem @relation(fields: [badgeItemId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -332,9 +332,9 @@ model BadgeItemView {
 
 model BadgeTypeView {
   userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   badgeTypeId String
-  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id])
+  badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -348,9 +348,9 @@ enum FollowStatus {
 
 model Follow {
   userId     String
-  user       User         @relation(name: "followers", fields: [userId], references: [id])
+  user       User         @relation(name: "followers", fields: [userId], references: [id], onDelete: Cascade)
   followerId String
-  follower   User         @relation(name: "friends", fields: [followerId], references: [id])
+  follower   User         @relation(name: "friends", fields: [followerId], references: [id], onDelete: Cascade)
   status     FollowStatus @default(Accepted)
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @default(now()) @updatedAt
@@ -370,7 +370,7 @@ enum NotificationType {
 model Notification {
   id          String           @id @default(cuid())
   recipientId String
-  recicpient  User             @relation(fields: [recipientId], references: [id])
+  recicpient  User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
   type        NotificationType
   title       String
   message     String
@@ -382,7 +382,7 @@ model NotificationSettings {
   id String @default(cuid())
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   type NotificationType
 
@@ -430,10 +430,10 @@ model Chat {
 // todo: should we add a chatname attr?
 model ChatParticipant {
   chatId String
-  chat   Chat   @relation(fields: [chatId], references: [id])
+  chat   Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   userId String
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -443,9 +443,9 @@ model ChatParticipant {
 model ChatMessage {
   id         String @id @default(cuid())
   fromUserId String
-  fromUser   User   @relation(name: "sentMessages", fields: [fromUserId], references: [id])
+  fromUser   User   @relation(name: "sentMessages", fields: [fromUserId], references: [id], onDelete: Cascade)
   chatId     String
-  chat       Chat   @relation(fields: [chatId], references: [id])
+  chat       Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
   message    String
 
   reads ChatMessageRead[]
@@ -458,10 +458,10 @@ model ChatMessageRead {
   id String @id @default(cuid())
 
   messageId String
-  message   ChatMessage @relation(fields: [messageId], references: [id])
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   readById String
-  readBy   User   @relation(fields: [readById], references: [id])
+  readBy   User   @relation(fields: [readById], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }

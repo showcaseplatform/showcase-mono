@@ -1,6 +1,6 @@
 import { NotificationType } from '.prisma/client'
-import prisma from '../../services/prisma'
-import { Uid } from '../../types/user'
+import prisma from '../services/prisma'
+import { Uid } from '../types/user'
 import { NotificationCreateManyInput } from '@generated/type-graphql'
 
 export const findUserNotificationsFromTypeInPeriod = async (

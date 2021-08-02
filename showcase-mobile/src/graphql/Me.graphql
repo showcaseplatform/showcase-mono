@@ -8,12 +8,50 @@ query Me {
     }
     badgeTypesCreated {
       ...BadgeType_WithBasics
+        isSoldOut
+        badgeItems {
+          id
+          createdAt
+          receipt {
+        	  createdAt
+          }
+      }
     }
     badgeItemsOwned {
       id
       edition
+      salePrice
+      saleCurrency
+      purchaseDate
       badgeType {
         ...BadgeType_WithBasics
+        creator {
+          profile {
+            id
+            displayName
+          }
+        }
+      }
+      receipt {
+        id
+        convertedPrice
+        convertedCurrency
+      }
+    }
+    badgeItemsForSale {
+      id
+      edition
+      salePrice
+      saleCurrency
+      sellDate
+      badgeType {
+        ...BadgeType_WithBasics
+        creator {
+          profile {
+            id
+            displayName
+          }
+        }
       }
     }
     friends {

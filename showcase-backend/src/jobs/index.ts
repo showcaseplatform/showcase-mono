@@ -1,4 +1,3 @@
-import Boom from 'boom'
 import { UpdateExchangeRatesCronJobRegister } from './updateExchangeRates'
 
 export class ShowcaseCron {
@@ -8,12 +7,12 @@ export class ShowcaseCron {
     this.updateExchangeRatesCronJobRegister = new UpdateExchangeRatesCronJobRegister()
   }
 
-  init() {
+  init(): void {
     try {
       this.updateExchangeRatesCronJobRegister.init()
       console.log('🚀 Daily exchange rate update cron job register started')
     } catch (error) {
-      throw Boom.internal('ShowcaseCron cron init failed', { error })
+      throw new Error('ShowcaseCron init failed')
     }
   }
 }

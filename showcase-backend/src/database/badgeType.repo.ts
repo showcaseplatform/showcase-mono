@@ -26,7 +26,7 @@ export const findBadgeType = async (id: BadgeTypeId) => {
   })
 
   if (!badgeType) {
-    throw new GraphQLError('Invalid badge id')
+    throw new GraphQLError('Invalid badgeType id')
   } else {
     return badgeType
   }

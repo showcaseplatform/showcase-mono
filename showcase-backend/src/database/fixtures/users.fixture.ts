@@ -83,10 +83,11 @@ export class UserSeeder {
 
   addCreatorsWithRelationships = async (amount: number): Promise<void> => {
     const amountArr = [...Array(amount).keys()]
-    const creators = await Bluebird.map(amountArr, async (i) => {
+    await Bluebird.map(amountArr, async (i) => {
+      const creatorId = `creator-${i}`
       return await this.prisma.user.create({
         data: {
-          ...this.generateUserDataWithPaymentInfo(`creator-${i}`, UserType.creator),
+          ...this.generateUserDataWithPaymentInfo(creatorId, UserType.creator),
           followers: {
             createMany: {
               data: [
@@ -98,8 +99,8 @@ export class UserSeeder {
           },
           badgeTypesCreated: {
             create: [
-              ...(await this.generateTestBadgeTypes(10)),
-              await this.generateTestSoldOutBadgeType(),
+              ...(await this.generateTestBadgeTypes(10, creatorId)),
+              await this.generateTestSoldOutBadgeType(creatorId),
             ],
           },
         },
@@ -108,7 +109,8 @@ export class UserSeeder {
   }
 
   generateTestBadgeTypes = async (
-    amount: number
+    amount: number,
+    sellerId: string
   ): Promise<BadgeTypeCreateWithoutCreatorInput[]> => {
     let i = 0
     const testBadgeTypes: BadgeTypeCreateWithoutCreatorInput[] = []
@@ -117,12 +119,15 @@ export class UserSeeder {
     })
 
     while (i < amount) {
+      const price = 1
+      const currency = pickRandomItemFromList<Currency>(currencyList)
+
       testBadgeTypes.push({
         id: faker.datatype.uuid(),
         title: `BadgeType Title`,
         description: `BadgeType description`,
         category: pickRandomItemFromList<Category>(categoryList),
-        currency: pickRandomItemFromList<Currency>(currencyList),
+        currency,
         shares: 0,
         tokenTypeId: faker.datatype.uuid(),
         imageId: pickRandomItemFromList<string>(this.badges),
@@ -134,11 +139,11 @@ export class UserSeeder {
           },
         },
         donationAmount: 0.1,
-        price: 1,
+        price,
         supply: this.numberOfCollectors + 5,
         sold: this.numberOfCollectors,
         badgeItems: {
-          create: [...this.generateTestBadgeItems(this.numberOfCollectors)],
+          create: [...this.generateTestBadgeItems(this.numberOfCollectors, sellerId, price, currency)],
         },
         likes: {
           createMany: {
@@ -163,17 +168,20 @@ export class UserSeeder {
     }
     return testBadgeTypes
   }
-  generateTestSoldOutBadgeType = async (): Promise<BadgeTypeCreateWithoutCreatorInput> => {
+  generateTestSoldOutBadgeType = async (sellerId: string): Promise<BadgeTypeCreateWithoutCreatorInput> => {
     const causesList = (await this.prisma.cause.findMany()).map((cause) => {
       return cause.id
     })
+
+    const price = 1
+    const currency = pickRandomItemFromList<Currency>(currencyList)
 
     return {
       id: faker.datatype.uuid(),
       title: `Soldout BadgeType Title`,
       description: `Soldout badgeType description`,
       category: pickRandomItemFromList<Category>(categoryList),
-      currency: pickRandomItemFromList<Currency>(currencyList),
+      currency,
       shares: 0,
       tokenTypeId: faker.datatype.uuid(),
       imageId: pickRandomItemFromList<string>(this.badges),
@@ -185,29 +193,59 @@ export class UserSeeder {
         },
       },
       donationAmount: 0.1,
-      price: 1,
+      price,
       supply: 1,
       sold: 1,
       badgeItems: {
-        create: [...this.generateTestBadgeItems(1)],
+        create: [...this.generateTestBadgeItems(1, sellerId, price, currency)],
       },
     }
   }
 
-  generateTestBadgeItems = (amount: number): BadgeItemCreateWithoutBadgeTypeInput[] => {
+  generateTestBadgeItems = (
+    amount: number,
+    sellerId: string,
+    price: number,
+    currency: Currency
+  ): BadgeItemCreateWithoutBadgeTypeInput[] => {
     let i = 0
     const testBadgeItems: BadgeItemCreateWithoutBadgeTypeInput[] = []
     while (i < amount) {
+      const ownerId = pickRandomItemFromList<string>(this.collectorIds)
       testBadgeItems.push({
         id: faker.datatype.uuid(),
         owner: {
           connect: {
-            id: `collector-${i}`,
+            id: ownerId,
           },
         },
-        purchaseDate: new Date(),
+        forSale: i % 2 ? true : false,
+        forSaleDate: i % 2 ? new Date() : undefined,
+        salePrice: i % 2 ? 1 : undefined,
+        saleCurrency: i % 2 ? 'USD' : undefined,
         edition: i + 1,
         tokenId: faker.datatype.uuid(),
+        receipts: {
+          create: [{
+            buyer: {
+              connect: {
+                id: ownerId
+              }
+            },
+            seller: {
+              connect: {
+                id: sellerId
+              }
+            },
+            chargeId: faker.datatype.uuid(),
+            transactionHash:  faker.datatype.uuid(),
+            price,
+            currency,
+            convertedPrice: price,
+            convertedCurrency: currency,
+            convertedRate: 1
+          }]
+        }
       })
       i++
     }

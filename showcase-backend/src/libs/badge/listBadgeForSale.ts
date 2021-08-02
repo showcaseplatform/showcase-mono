@@ -6,10 +6,16 @@ import { findProfile } from '../../database/profile.repo'
 import { findBadgeItem, updateBadgeItem } from '../../database/badgeItem.repo'
 import { GraphQLError } from 'graphql'
 import { addNonFungibleToEscrowWithSignatureRelay } from '../../services/blockchain'
+import { BadgeItem } from '@generated/type-graphql'
 
 
+export enum ListBadgeForSaleErrorMessages {
+  invalidPrice = 'Invalid Price',
+  userNotOwner = 'User doesnt match badge owner',
+  onSale = 'Badge already on sale'
+}
 
-export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) => {
+export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid): Promise<BadgeItem> => {
   const { badgeItemId, price, currency, sig, message } = input
 
   // todo: price validation should be done with gql class-validators
@@ -19,11 +25,15 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
     isNaN(price) ||
     typeof price !== 'number'
   ) {
-    throw new GraphQLError('Invalid Price')
+    throw new GraphQLError(ListBadgeForSaleErrorMessages.invalidPrice)
   }
 
   const profile = await findProfile(uid)
   const badge = await findBadgeItem(badgeItemId)
+
+  if(badge.forSale) {
+    throw new GraphQLError(ListBadgeForSaleErrorMessages.onSale)
+  }
 
   if (profile && badge && badge.ownerId === uid && badge.tokenId) {
     // todo: remove blockchain.enabled once server is ready
@@ -33,13 +43,13 @@ export const listBadgeForSale = async (input: ListBadgeForSaleInput, uid: Uid) =
         uid
       ))
 
-    // todo: what is  "uri: 'https://showcase.to/badge/' + badgeItemId" used for? should we add a new one to the badgeItem or does this refer only the the badgeType?
     return await updateBadgeItem(badgeItemId, {
       forSale: true,
+      forSaleDate: new Date(),
       salePrice: price,
       saleCurrency: currency || profile.currency,
     })
   } else {
-    throw new GraphQLError('User doesnt own the provided badge')
+    throw new GraphQLError(ListBadgeForSaleErrorMessages.userNotOwner)
   }
 }

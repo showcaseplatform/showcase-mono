@@ -1,16 +1,26 @@
-import { BadgeItem } from '@prisma/client'
 import { prisma, Prisma } from '../services/prisma'
-import { BadgeItemOrderByInput } from '@generated/type-graphql'
+import { BadgeItemOrderByInput, BadgeItem } from '@generated/type-graphql'
+import { GraphQLError } from 'graphql'
 
-export const findBadgeItem = async (id: string) => {
-  return await prisma.badgeItem.findUnique({
+export const findBadgeItem = async (
+  id: string,
+  include?: Prisma.BadgeItemInclude
+): Promise<BadgeItem> => {
+  const badgeItem = await prisma.badgeItem.findUnique({
     where: {
       id,
     },
+    include,
   })
+
+  if (!badgeItem) {
+    throw new GraphQLError('Invalid badgeType id')
+  } else {
+    return badgeItem
+  }
 }
 
-export const badgeItemLikeCount = (badgeItemId: string) => {
+export const badgeItemLikeCount = (badgeItemId: string):  Promise<number> => {
   return prisma.badgeItemLike.count({
     where: {
       badgeItemId,
@@ -18,7 +28,7 @@ export const badgeItemLikeCount = (badgeItemId: string) => {
   })
 }
 
-export const badgeItemViewCount = (badgeItemId: string) => {
+export const badgeItemViewCount = (badgeItemId: string):  Promise<number> => {
   return prisma.badgeItemView.count({
     where: {
       badgeItemId,
@@ -26,28 +36,19 @@ export const badgeItemViewCount = (badgeItemId: string) => {
   })
 }
 
-export const updateBadgeItem = async (
-  id: string,
-  updateData:
-    | (Prisma.Without<Prisma.BadgeItemUpdateInput, Prisma.BadgeItemUncheckedUpdateInput> &
-        Prisma.BadgeItemUncheckedUpdateInput)
-    | (Prisma.Without<Prisma.BadgeItemUncheckedUpdateInput, Prisma.BadgeItemUpdateInput> &
-        Prisma.BadgeItemUpdateInput)
-) => {
+export const updateBadgeItem = async (id: string, data: Prisma.BadgeItemUpdateInput):  Promise<BadgeItem> => {
   return await prisma.badgeItem.update({
     where: {
       id,
     },
-    data: {
-      ...updateData,
-    },
+    data,
   })
 }
 
 export const findManyBadgeItems = async (
-  where: Partial<BadgeItem>,
+  where: Prisma.BadgeItemWhereInput,
   orderBy?: BadgeItemOrderByInput
-) => {
+):  Promise<BadgeItem[]> => {
   return await prisma.badgeItem.findMany({
     where,
     orderBy: orderBy || { createdAt: 'desc' },

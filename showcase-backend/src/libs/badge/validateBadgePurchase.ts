@@ -21,7 +21,7 @@ export const isBadgeTypeCreatedByUser = (id: Uid, creatorId: Uid) => {
 }
 
 export const isBadgeTypeOwnedByUser = async (id: Uid, badgeTypeId: BadgeTypeId) => {
-  const userWithBadgeItems = await findManyBadgeItems({ ownerId: id, badgeTypeId, isSold: false })
+  const userWithBadgeItems = await findManyBadgeItems({ ownerId: id, badgeTypeId })
   return userWithBadgeItems.length > 0
 }
 
@@ -32,7 +32,7 @@ export const isBadgeTypeRemovedFromShowcase = async (id: BadgeTypeId) => {
     return false
   } else {
     const validBadgeItems = badgeItems?.filter((badge) => {
-      return badge.isSold === false && badge.removedFromShowcase === false
+      return badge.removedFromShowcase === false
     })
     return validBadgeItems.length === 0
   }

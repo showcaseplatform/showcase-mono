@@ -8,13 +8,13 @@ query Me {
     }
     badgeTypesCreated {
       ...BadgeType_WithBasics
-        isSoldOut
-        badgeItems {
-          id
+      isSoldOut
+      badgeItems {
+        id
+        createdAt
+        receipt {
           createdAt
-          receipt {
-        	  createdAt
-          }
+        }
       }
     }
     badgeItemsOwned {
@@ -23,6 +23,7 @@ query Me {
       salePrice
       saleCurrency
       purchaseDate
+      forSale
       badgeType {
         ...BadgeType_WithBasics
         creator {
@@ -44,6 +45,7 @@ query Me {
       salePrice
       saleCurrency
       sellDate
+      forSale
       badgeType {
         ...BadgeType_WithBasics
         creator {

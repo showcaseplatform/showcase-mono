@@ -3,6 +3,7 @@ import { BadgeItem, User } from '@generated/type-graphql'
 import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
+import { isBadgeTypeOwnedByUser } from '../libs/badge/validateBadgePurchase'
 import { badgeItemLikeCount, badgeItemViewCount } from '../database/badgeItem.repo'
 import { getBadgeItemPurchaseDate } from '../libs/badge/calculatedBadgeFields'
 
@@ -30,6 +31,15 @@ export class CustomBadgeItemResolver {
       return false
     }
     return await checkIfBadgeAlreadyLiked({ marketplace: false, badgeId: badgeItem.id }, uid)
+  }
+
+  @FieldResolver((_) => Boolean)
+  async isOwnedByMe(@Root() badgeItem: BadgeItem, @CurrentUser() currentUser: User) {
+    const uid = currentUser?.id
+    if (!uid) {
+      return false
+    }
+    return await isBadgeTypeOwnedByUser(uid, badgeItem.id)
   }
 
   @FieldResolver((_) => Int)

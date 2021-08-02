@@ -14,7 +14,7 @@ import { Text } from '../../../components/Text.component'
 import { BadgeItem, BadgeType, Receipt } from '../../../generated/graphql'
 
 // todo: create proper Fragments to avoid this mess
-interface CollectionItemProps
+export interface CreationItemProps
   extends Pick<
     BadgeType,
     | 'id'
@@ -35,7 +35,7 @@ interface CollectionItemProps
   >
 }
 
-const CollectionItem = ({ item }: { item: CollectionItemProps }) => {
+const CreationItem = ({ item }: { item: CreationItemProps }) => {
   const navigation = useNavigation<NavigationProp<TradeStackParamList>>()
 
   const hasSold = useMemo(
@@ -51,7 +51,7 @@ const CollectionItem = ({ item }: { item: CollectionItemProps }) => {
 
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('TradeBadgeDetails', { item })}
+      onPress={() => navigation.navigate('TradeBadgeDetails', { type: item })}
     >
       <Surface>
         <View
@@ -103,4 +103,4 @@ const CollectionItem = ({ item }: { item: CollectionItemProps }) => {
   )
 }
 
-export default CollectionItem
+export default CreationItem

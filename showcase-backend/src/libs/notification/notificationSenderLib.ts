@@ -15,9 +15,9 @@ import { GraphQLError } from 'graphql'
 import {
   createManyNotifications,
   findUserNotificationsFromTypeInPeriod,
-} from '../database/notification.repo'
+} from '../../database/notification.repo'
 import { notificationSettingsLib } from '../notificationSettings/notificationSettingsLib'
-import { findUserById } from '../database/user.repo'
+import { findUserById } from '../../database/user.repo'
 import { myPubSub, NEW_NOTIFCATION } from '../../services/pubSub'
 import { NotificationSubscriptionPayload } from './types/notificationSubscriptionPayload.type'
 import { MAX_PUSH_SEND_NUMBER, MAX_PUSH_SEND_PERIOD_DAY } from '../notificationSettings/default'

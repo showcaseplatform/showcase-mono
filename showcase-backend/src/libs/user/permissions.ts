@@ -1,7 +1,7 @@
 import { User } from '@generated/type-graphql'
 import { SPEND_LIMIT_DEFAULT, SPEND_LIMIT_KYC_VERIFIED } from '../../consts/businessRules'
 import { Uid } from '../../types/user'
-import { findUserWithFinancialInfo } from '../database/user.repo'
+import { findUserWithFinancialInfo } from '../../database/user.repo'
 
 export const isUserAllowedToBuy = async (id: Uid): Promise<boolean> => {
   try {

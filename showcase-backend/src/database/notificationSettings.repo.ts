@@ -1,6 +1,6 @@
 import { NotificationType } from '.prisma/client'
 import { NotificationSettings } from '@prisma/client'
-import prisma from '../../services/prisma'
+import prisma from '../services/prisma'
 
 export const findUserNotificationSettings = async (id: string) => {
   return await prisma.notificationSettings.findMany({

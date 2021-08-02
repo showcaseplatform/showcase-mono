@@ -1,6 +1,6 @@
 import { FollowStatus } from '@prisma/client'
-import prisma from '../../services/prisma'
-import { Uid } from '../../types/user'
+import prisma from '../services/prisma'
+import { Uid } from '../types/user'
 
 export const upsertNewFollow = async (userId: Uid, followerId: Uid) => {
   return await prisma.follow.upsert({

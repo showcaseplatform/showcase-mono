@@ -2,7 +2,13 @@
 *** BUGS ***
 
 *** IMPROVEMENTS ***
+ ☐ add forSaleDate to BadgeItem
+ ☐ add price to Receipt
+ ☐ add currency to Receipt
+ ☐ updating balance not neccasary, can be calculated later
+
 
 *** FEATURES ***
+
 
 *** QUESTIONS ***

@@ -1,11 +1,16 @@
 import { InputType, Field, Int } from 'type-graphql'
 import { Min, Max, MaxLength } from 'class-validator'
 import { BADGE_TYPE_MAX_SALE_PRICE, BADGE_TYPE_MAX_TITLE_LENGTH, BADGE_TYPE_MIN_SALE_PRICE } from '../../../consts/businessRules'
+import { BadgeItemId, BadgeTypeId } from '../../../types/badge'
 
 @InputType({ description: 'Data for purchasing a badge' })
 export class PurchaseBadgeInput {
-  @Field()
-  badgeTypeId: string
+  @Field({nullable: true})
+  badgeTypeId?: BadgeTypeId
+
+
+  @Field({nullable: true})
+  badgeItemId?: BadgeItemId
 
 
   // todo: add back the inputs when displaye badges in user's currency is implemented

@@ -1,4 +1,4 @@
-import { prisma } from '../../services/prisma'
+import { prisma } from '../services/prisma'
 
 export const findProfile = async (id: string) => {
   return await prisma.profile.findUnique({

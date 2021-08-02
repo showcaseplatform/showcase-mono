@@ -76,7 +76,6 @@ applyModelsEnhanceMap({
 applyRelationResolversEnhanceMap({
   User: {
     balance: [
-      // UseMiddleware(isOwnedByCurrentUser),
       IsCurrentUser(null) as PropertyDecorator,
     ],
     cryptoWallet: [IsCurrentUser(null) as PropertyDecorator],
@@ -94,18 +93,9 @@ applyRelationResolversEnhanceMap({
     followers: [IsCurrentUser([]) as PropertyDecorator],
   },
   BadgeItem: {
-    receipt: [IsBadgeItemOwnedOrCreatedByCurrentUser(null) as PropertyDecorator],
+    receipts: [IsBadgeItemOwnedOrCreatedByCurrentUser(null) as PropertyDecorator],
   },
 })
-
-// todo: make it work :)
-// applyInputTypesEnhanceMap({
-//   UserWhereUniqueInput: {
-//     fields: {
-//       id: [FallbackToCurrentUser() as PropertyDecorator],
-//     },
-//   },
-// });
 
 const userResolvers = [
   FindUniqueUserResolver,

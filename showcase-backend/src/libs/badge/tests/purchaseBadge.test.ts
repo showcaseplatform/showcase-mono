@@ -7,16 +7,10 @@ import { AuthLib } from '../../auth/authLib'
 import { getRandomNum } from '../../../utils/randoms'
 import { Cause, UserType } from '@prisma/client'
 import { SHOWCASE_COMMISSION_FEE_MULTIPLIER } from '../../../consts/businessRules'
-import { deleteDb } from '../../../database/deleteDb'
 
 describe('Purchasing a badge', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await createTestDb(prisma)
-  })
-  
-  afterAll(async () => {
-    await deleteDb(prisma)
-    await prisma.$disconnect()
   })
   
   it('should update badgeType, creator balance, cause and create new badgeItem, receipt on success', async () => {

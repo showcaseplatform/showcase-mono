@@ -13,7 +13,7 @@ export const DialogContext = createContext<DialogContextValues | undefined>(
 export const useMyDialog = () => {
   const ctx = useContext(DialogContext)
   if (ctx === undefined) {
-    throw new Error('useMyialog must be used within DialogProvider')
+    throw new Error('useMyDialog must be used within DialogProvider')
   }
   return ctx
 }

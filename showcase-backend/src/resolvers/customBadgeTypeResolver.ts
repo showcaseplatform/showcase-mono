@@ -1,6 +1,6 @@
 import { FieldResolver, Int, Resolver, Root } from 'type-graphql'
 import { BadgeType, User } from '@generated/type-graphql'
-import { badgeTypeLikeCount, badgeTypeViewCount } from '../libs/database/badgeType.repo'
+import { badgeTypeLikeCount, badgeTypeViewCount } from '../database/badgeType.repo'
 import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'

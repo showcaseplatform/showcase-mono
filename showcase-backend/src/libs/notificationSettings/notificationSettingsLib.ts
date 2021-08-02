@@ -4,7 +4,7 @@ import {
   findUniqueNotificationSettings,
   findUserNotificationSettings,
   upsertNotifcationSettings,
-} from '../database/notificationSettings.repo'
+} from '../../database/notificationSettings.repo'
 import { notificationSettingDefaults } from './default'
 import { NotificationSettingsInput } from './types/notificationSettings.type'
 

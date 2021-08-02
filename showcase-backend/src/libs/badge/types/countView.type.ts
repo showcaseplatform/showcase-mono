@@ -10,7 +10,6 @@ export class CountViewInput {
   @Field()
   badgeId: BadgeItemId | BadgeTypeId
 }
-
 @ObjectType()
 export class ViewInfo {
   @Field()

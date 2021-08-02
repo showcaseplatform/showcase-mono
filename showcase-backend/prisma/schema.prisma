@@ -156,6 +156,7 @@ model BadgeItem {
   purchaseDate DateTime
 
   forSale      Boolean   @default(false)
+  // todo: forSaleDate
   salePrice    Float?
   saleCurrency Currency?
   isSold       Boolean   @default(false)
@@ -201,7 +202,6 @@ model Crypto {
   publicKey           String
 }
 
-// todo: only create balance for creators!
 // todo: use this table once requesting info from receipts cost too much resources
 model Balance {
   id     String @id @default(cuid())
@@ -241,6 +241,8 @@ model Receipt {
 
   chargeId String
 
+  // todo: add price
+  // todo: add  currency
   convertedPrice    Float
   convertedRate     Float
   convertedCurrency Currency

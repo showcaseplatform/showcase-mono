@@ -15,7 +15,7 @@ import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { GraphQLError } from 'graphql'
 import { Profile } from '@prisma/client'
 import { uploadFile } from '../../utils/fileUpload'
-import { findProfile } from '../database/profile.repo'
+import { findProfile } from '../../database/profile.repo'
 
 const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {

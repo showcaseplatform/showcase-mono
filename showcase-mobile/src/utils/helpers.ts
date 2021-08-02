@@ -1,6 +1,11 @@
 import { Ionicons } from '@expo/vector-icons'
-import { isThisMonth, isThisWeek, isThisYear, isToday } from 'date-fns'
-import formatDistanceStrict from 'date-fns/formatDistanceStrict'
+import {
+  formatDistanceToNow,
+  isThisMonth,
+  isThisWeek,
+  isThisYear,
+  isToday,
+} from 'date-fns'
 
 import { ImageURISource } from 'react-native'
 import { MyBadgeCategory } from '../../types'
@@ -44,7 +49,7 @@ export const delay = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
 export function makePriceTag(price?: number, currency?: Currency) {
-  if (typeof price !== 'number' || !currency) {
+  if (typeof price !== 'number' || !currency || price === 0) {
     return 'free'
   }
 
@@ -76,7 +81,7 @@ export function makeDateDistanceTag(date: Date | number) {
   if (typeof date === 'number') {
     myDate = new Date(date)
   }
-  return formatDistanceStrict(myDate, today, { addSuffix: true })
+  return formatDistanceToNow(myDate, { addSuffix: true })
 }
 
 export function groupBadgesByDateDistance(badges: MyBadgeType[]) {

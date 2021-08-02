@@ -1,7 +1,7 @@
 import { blockchain } from '../../config'
 import { Uid } from '../../types/user'
 import { UnListBadgeForSaleInput } from './types/unlistBadgeForSale.type'
-import { findBadgeItem, updateBadgeItem } from '../database/badgeItem.repo'
+import { findBadgeItem, updateBadgeItem } from '../../database/badgeItem.repo'
 import { GraphQLError } from 'graphql'
 import { removeBadgeFromEscrow } from '../../services/blockchain'
 

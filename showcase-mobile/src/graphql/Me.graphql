@@ -102,6 +102,16 @@ query Me {
     followers {
       userId
       status
+      user {
+        id
+        amIFollowing
+        profile {
+          id
+          avatarUrl
+          displayName
+          username
+        }
+      }
     }
     paymentInfo {
       id

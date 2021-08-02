@@ -11,6 +11,7 @@ import useLogout from '../../../hooks/api/useLogout'
 
 import { Text } from '../../../components/Text.component'
 import { Spacer } from '../../../components/Spacer.component'
+import { useApolloClient } from '@apollo/client'
 
 type UserSettingsOptionsScreenProps = {
   route: RouteProp<UserSettingsStackParamList, 'UserSettingsOptions'>
@@ -58,8 +59,10 @@ const UserSettingsOptionsScreen = ({
   navigation,
 }: UserSettingsOptionsScreenProps) => {
   const onLogout = useLogout() // ?: logout fn is TBD
+  const { cache } = useApolloClient()
 
   const handleLogout = () => {
+    cache.reset()
     onLogout()
   }
 

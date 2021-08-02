@@ -229,6 +229,7 @@ const AddBadgeDetails: React.FC<AddBadgeDetailsProps> = ({
               placeholder="Description (optional)"
               numberOfLines={4}
               multiline
+              maxLength={240}
             />
           )}
         />

@@ -18,7 +18,7 @@ import {
   Receipt,
 } from '../../../generated/graphql'
 
-// todo: create proper Fragments to avoid this mess
+// todo: proper fragments?
 type CollectionItemProps = { __typename?: 'BadgeItem' } & Pick<
   BadgeItem,
   'id' | 'edition' | 'salePrice' | 'saleCurrency' | 'purchaseDate'

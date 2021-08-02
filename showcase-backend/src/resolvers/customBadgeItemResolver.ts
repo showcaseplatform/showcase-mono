@@ -3,7 +3,7 @@ import { BadgeItem, User } from '@generated/type-graphql'
 import { checkIfBadgeAlreadyLiked } from '../libs/badge/toggleLike'
 import { CurrentUser } from '../libs/auth/decorators'
 import { checkIfBadgeAlreadyViewed } from '../libs/badge/countBadgeView'
-import { badgeItemLikeCount, badgeItemViewCount } from '../libs/database/badgeItem.repo'
+import { badgeItemLikeCount, badgeItemViewCount } from '../database/badgeItem.repo'
 
 @Resolver((_of) => BadgeItem)
 export class CustomBadgeItemResolver {

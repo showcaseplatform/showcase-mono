@@ -4,7 +4,7 @@ import { NavigationProp, RouteProp } from '@react-navigation/native'
 import { Button, Divider, IconButton } from 'react-native-paper'
 import { useTheme } from 'styled-components/native'
 
-import { BadgeType, FollowStatus, useMeQuery } from '../../../generated/graphql'
+import { BadgeType, useMeQuery } from '../../../generated/graphql'
 
 import { UserStackParamList } from '../../../infrastructure/navigation/user.navigator'
 import { reshapeBadges } from '../../../utils/helpers'

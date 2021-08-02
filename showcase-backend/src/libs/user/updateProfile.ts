@@ -16,7 +16,7 @@ import { FileType, FileUpload } from '../../utils/types/fileUpload.type'
 import { GraphQLError } from 'graphql'
 import { Profile } from '@prisma/client'
 import { uploadFile } from '../../utils/fileUpload'
-import { findProfile } from '../database/profile.repo'
+import { findProfile } from '../../database/profile.repo'
 
 const validateBio = (bio: string) => {
   if (bio.length <= PROFILE_MAX_BIO_LENGTH) {
@@ -26,7 +26,7 @@ const validateBio = (bio: string) => {
   }
 }
 
-const validateEmail = async (email: string, uid: Uid) => {
+const validateEmail = async (email: string) => {
   // todo: is it neccesary to do this check this in db? or enough to add unique constrain
   const profileWithSameEmail = await prisma.profile.findMany({
     where: {
@@ -108,12 +108,12 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
 
   const updateData = {} as Partial<Omit<Profile, 'id'>>
 
-  if (bio) {
+  if (bio !== undefined) {
     updateData.bio = validateBio(bio)
   }
 
-  if (email) {
-    updateData.email = await validateEmail(email, uid)
+  if (email !== undefined) {
+    updateData.email = await validateEmail(email)
   }
 
   if (username) {
@@ -124,7 +124,7 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
     updateData.displayName = validateDisplayName(displayName)
   }
 
-  if (birthDate) {
+  if (birthDate !== undefined) {
     updateData.birthDate = validateBirthdate(new Date(birthDate))
   }
 
@@ -132,7 +132,7 @@ export const updateProfile = async (input: UpdateProfileInput, avatarImg: FileUp
     updateData.currency = validateCurrency(currency)
   }
 
-  if (avatarImg) {
+  if (avatarImg !== undefined) {
     updateData.avatarId = await updateAvatarImg(avatarImg, uid)
   }
 

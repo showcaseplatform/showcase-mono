@@ -7,7 +7,7 @@ import { createTransferwiseAccount } from '../libs/payment/createTransferwiseAcc
 import { EURAccount, GBPAccount, USDAccount } from '../libs/payment/types/payoutAccount.type'
 import { withdrawFromTransferwise } from '../libs/payment/withdrawFromTransferwise'
 import { WithdrawFromTransferwiseInput } from '../libs/payment/types/withdrawFromTransferwise.type'
-import { User, UserType } from '@generated/type-graphql'
+import { User } from '@generated/type-graphql'
 import { GraphQLError } from 'graphql'
 import { CurrentUser } from '../libs/auth/decorators'
 import { allUserTypes } from '../libs/auth/authLib'

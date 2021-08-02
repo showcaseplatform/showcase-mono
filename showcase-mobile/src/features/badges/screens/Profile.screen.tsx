@@ -9,6 +9,7 @@ import { BadgeStackParamList } from '../../../infrastructure/navigation/badges.n
 import { isEven, reshapeBadges } from '../../../utils/helpers'
 import {
   BadgeType,
+  // FollowStatus,
   MeDocument,
   UserType,
   useToggleFollowMutation,

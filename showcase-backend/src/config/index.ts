@@ -1,5 +1,11 @@
 import convict from 'convict'
 
+import * as dotenv from 'dotenv'
+import { join } from 'path'
+process.chdir(join(__dirname, '../..'))
+const dotenvPath = join(__dirname, '../..', `.env.${process.env.NODE_ENV}`)
+dotenv.config({ path: dotenvPath })
+
 // Add new format
 // convict.addFormat(require('convict-format-with-validator').ipaddress)
 

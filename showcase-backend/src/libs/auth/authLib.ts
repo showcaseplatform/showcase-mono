@@ -3,7 +3,7 @@ import { EUROPEAN_COUNTRY_CODES } from '../../consts/countryCodes'
 import prisma from '../../services/prisma'
 import { createRandomNames } from '../../utils/randoms'
 import { jwtClient } from '../../services/jsonWebToken'
-import { findUserById } from '../database/user.repo'
+import { findUserById } from '../../database/user.repo'
 
 export enum AuthError {
   isOwnUser = "Not user's profile",

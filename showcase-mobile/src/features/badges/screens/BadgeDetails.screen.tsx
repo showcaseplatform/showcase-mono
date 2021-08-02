@@ -31,6 +31,8 @@ import {
   MyImage,
   MyImageBackground,
 } from '../components/BadgeDetails.styles'
+import { CenterView } from '../../../components/CenterView.component'
+import { DoublePress } from '../../../components/DoublePress.component'
 
 type BadgeDetailsScreenProps = {
   route: RouteProp<BadgeStackParamList, 'BadgeDetails'>
@@ -128,7 +130,9 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
       <>
         <MyImageBackground source={{ uri: publicUrl }}>
           <BlurView tint="dark" intensity={85}>
-            <MyImage source={{ uri: publicUrl }} resizeMode="contain" />
+            <DoublePress onDoublePress={toggleLike}>
+              <MyImage source={{ uri: publicUrl }} resizeMode="contain" />
+            </DoublePress>
           </BlurView>
         </MyImageBackground>
         {cause && donationAmount && (
@@ -188,7 +192,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
               <CenterView row>
                 <Ionicons
                   size={32}
-                  name="thumbs-up"
+                  name={isLikedByMe ? 'heart' : 'heart-outline'}
                   color={
                     isLikedByMe
                       ? theme.colors.text.accent

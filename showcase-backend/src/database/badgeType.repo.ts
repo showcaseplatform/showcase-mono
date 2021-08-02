@@ -1,6 +1,6 @@
 import { GraphQLError } from 'graphql'
-import prisma from '../../services/prisma'
-import { BadgeTypeId } from '../../types/badge'
+import prisma from '../services/prisma'
+import { BadgeTypeId } from '../types/badge'
 
 export const badgeTypeLikeCount = async (badgeTypeId: string) => {
   return await prisma.badgeTypeLike.count({

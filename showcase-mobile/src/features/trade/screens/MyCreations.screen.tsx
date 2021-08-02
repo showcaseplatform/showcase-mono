@@ -17,7 +17,7 @@ const MyCreations = () => {
     return (
       <FlatList
         data={data.me.badgeTypesCreated}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(type) => type.id}
         numColumns={1}
         contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={

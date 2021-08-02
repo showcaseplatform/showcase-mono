@@ -8,4 +8,5 @@ fragment BadgeType_WithBasics on BadgeType {
   createdAt
   price
   currency
+  availableToBuyCount
 }

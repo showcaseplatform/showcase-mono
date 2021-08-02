@@ -38,7 +38,7 @@ describe('Listing a badge for sale', () => {
       badgeItemId: testBadgeItem?.id || '',
     }
 
-    expect(
+    await expect(
       async () => await listBadgeForSale(input, testBadgeItem?.ownerId || '')
     ).rejects.toThrowError(ListBadgeForSaleErrorMessages.onSale)
   })
@@ -63,7 +63,7 @@ describe('Listing a badge for sale', () => {
       },
     })
 
-    expect(
+    await expect(
       async () => await listBadgeForSale(input, testUser?.id || '')
     ).rejects.toThrowError(ListBadgeForSaleErrorMessages.userNotOwner)
   })

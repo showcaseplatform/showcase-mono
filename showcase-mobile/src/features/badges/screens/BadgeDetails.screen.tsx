@@ -31,7 +31,6 @@ import {
   MyImage,
   MyImageBackground,
 } from '../components/BadgeDetails.styles'
-import { CenterView } from '../../../components/CenterView.component'
 import { DoublePress } from '../../../components/DoublePress.component'
 
 type BadgeDetailsScreenProps = {

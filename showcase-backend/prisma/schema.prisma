@@ -142,7 +142,7 @@ model BadgeType {
 model BadgeItem {
   id String @id @default(cuid())
 
-  tokenId String // todo: is this uniqiue? if it changes after re-sell then yes
+  tokenId String
 
   badgeType   BadgeType @relation(fields: [badgeTypeId], references: [id], onDelete: Cascade)
   badgeTypeId String
@@ -150,17 +150,14 @@ model BadgeItem {
   owner   User   @relation(name: "badgeCurrentlyOwned", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId String
 
-  receipt Receipt?
+  receipts Receipt[]
 
-  edition      Int
-  purchaseDate DateTime
+  edition Int
 
   forSale      Boolean   @default(false)
-  // todo: forSaleDate
+  forSaleDate  DateTime?
   salePrice    Float?
   saleCurrency Currency?
-  isSold       Boolean   @default(false)
-  sellDate     DateTime?
 
   shares Int @default(0)
 
@@ -241,8 +238,8 @@ model Receipt {
 
   chargeId String
 
-  // todo: add price
-  // todo: add  currency
+  price             Float
+  currency          Currency
   convertedPrice    Float
   convertedRate     Float
   convertedCurrency Currency

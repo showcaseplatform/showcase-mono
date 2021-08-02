@@ -11,9 +11,9 @@ import {
   isBadgeTypeSoldOut,
 } from './validateBadgePurchase'
 import { mintNewBadgeOnBlockchain } from '../../services/blockchain'
-import { findUserWithFinancialInfo } from '../database/user.repo'
-import { findBadgeType } from '../database/badgeType.repo'
-import { Currency } from '@prisma/client'
+import { findUserWithFinancialInfo } from '../../database/user.repo'
+import { findBadgeType } from '../../database/badgeType.repo'
+import { BadgeItem, Currency } from '@prisma/client'
 import { BadgeType, User } from '@generated/type-graphql'
 import { hasUserPaymentInfo, hasUserReachedSpendingLimit } from '../user/permissions'
 
@@ -32,7 +32,7 @@ interface PurchaseTransactionInput {
   USDPrice: number
 }
 
-enum ErrorMessages {
+export enum PurchaseErrorMessages {
   badgeAlreadyOwned = 'You already purchased this badge',
   badgeCreatedByUser = 'Creators cannot buy from own badges',
   paymentInfoMissing = 'Payment information missing',
@@ -46,23 +46,23 @@ const checkIfUserAllowedToPurchaseBadgeType = async (
   badgeType: BadgeType
 ): Promise<void> => {
   if (isBadgeTypeCreatedByUser(user.id, badgeType.creatorId)) {
-    throw new GraphQLError(ErrorMessages.badgeCreatedByUser)
+    throw new GraphQLError(PurchaseErrorMessages.badgeCreatedByUser)
   }
 
   if (await isBadgeTypeSoldOut(badgeType)) {
-    throw new GraphQLError(ErrorMessages.outOfStock)
+    throw new GraphQLError(PurchaseErrorMessages.outOfStock)
   }
 
   if (await isBadgeTypeOwnedByUser(user.id, badgeType.id)) {
-    throw new GraphQLError(ErrorMessages.badgeAlreadyOwned)
+    throw new GraphQLError(PurchaseErrorMessages.badgeAlreadyOwned)
   }
 
   if (!hasUserPaymentInfo(user)) {
-    throw new GraphQLError(ErrorMessages.paymentInfoMissing)
+    throw new GraphQLError(PurchaseErrorMessages.paymentInfoMissing)
   }
 
   if (badgeType.price > 0 && hasUserReachedSpendingLimit(user)) {
-    throw new GraphQLError(ErrorMessages.spendingLimitReached)
+    throw new GraphQLError(PurchaseErrorMessages.spendingLimitReached)
   }
 }
 
@@ -129,6 +129,9 @@ const purchaseBadgeTransaction = async ({
                   [`balance${badgeType.currency}`]: {
                     increment: causeFullAmount,
                   },
+                  numberOfContributions: {
+                    increment: 1
+                  }
                 },
               }
             : undefined,
@@ -138,6 +141,7 @@ const purchaseBadgeTransaction = async ({
           where: {
             ownerId: userId,
             tokenId,
+            isSold: false
           },
           orderBy: {
             createdAt: 'desc',
@@ -146,9 +150,10 @@ const purchaseBadgeTransaction = async ({
         },
       },
     }),
+    // todo: updating balance not neccasary, can be calculated later
     prisma.user.update({
       where: {
-        id: userId,
+        id: badgeType.creatorId,
       },
       data: {
         balance: {
@@ -166,7 +171,7 @@ const purchaseBadgeTransaction = async ({
   ])
 }
 
-export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
+export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid): Promise<BadgeItem> => {
   const { badgeTypeId } = input || {}
 
   const badgeType = await findBadgeType(badgeTypeId)
@@ -247,6 +252,6 @@ export const purchaseBadge = async (input: PurchaseBadgeInput, uid: Uid) => {
   } catch (error) {
     // await stripe.refundPayment(chargeId)
     console.error({ error })
-    throw new GraphQLError(ErrorMessages.transactionFailed)
+    throw new GraphQLError(PurchaseErrorMessages.transactionFailed)
   }
 }

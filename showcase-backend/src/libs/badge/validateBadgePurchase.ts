@@ -1,6 +1,6 @@
 import { BadgeType } from '@generated/type-graphql'
 import { BadgeTypeId } from '../../types/badge'
-import { findManyBadgeItems } from '../database/badgeItem.repo'
+import { findManyBadgeItems } from '../../database/badgeItem.repo'
 import { Uid } from '../../types/user'
 
 export const getAvailableToBuyCount = async (badgeType: BadgeType) => {

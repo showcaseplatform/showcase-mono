@@ -29,7 +29,7 @@ class MyS3 {
 
   constructor() {
     // todo: remove this line if not neccesary to check bucket exists on every server start
-    this.findOrCreateS3Bucket()
+    // this.findOrCreateS3Bucket()
   }
 
   createS3Bucket = async () => {

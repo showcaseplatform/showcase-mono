@@ -4,6 +4,12 @@ import prisma from '../../services/prisma'
 import { CountViewInput, ViewInfo } from './types/countView.type'
 import { BadgeItemId } from '../../types/badge'
 import { checkBadgeOwnedOnBlockchain } from '../../services/blockchain'
+import { GraphQLError } from 'graphql'
+
+export enum CountBadgeViewErrorMessages {
+  missingInput = 'Missing input',
+  alreadyViewed = 'Already viewed',
+}
 
 export const checkIfBadgeAlreadyViewed = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
@@ -92,6 +98,9 @@ const randomBadgeInspection = (marketplace: boolean): boolean => {
 export const countView = async (input: CountViewInput, uid: Uid) => {
   const { badgeId, marketplace } = input
 
+  if (!badgeId || !uid) {
+    throw new GraphQLError(CountBadgeViewErrorMessages.missingInput)
+  }
   // todo: remove blockchain.enabled once server is ready
   if (blockchain.enabled && randomBadgeInspection(marketplace)) {
     console.log('👁️‍🗨️ Random badge inspection triggered 👁️‍🗨️')
@@ -103,7 +112,7 @@ export const countView = async (input: CountViewInput, uid: Uid) => {
   if (!isAlreadyViewed) {
     return await createViewRecord(input, uid)
   } else {
-    return { info: 'Already viewed' } as ViewInfo
+    return { info: CountBadgeViewErrorMessages.alreadyViewed } as ViewInfo
   }
 }
 

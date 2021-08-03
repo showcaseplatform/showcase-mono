@@ -13,10 +13,7 @@ import { makePriceTag } from '../../../utils/helpers'
 import { translate } from '../../../utils/translator'
 
 type SupplyItemProps = {
-  badge: Pick<
-    BadgeItem,
-    'id' | 'salePrice' | 'saleCurrency' | 'isSold' | 'forSale'
-  > & {
+  badge: Pick<BadgeItem, 'id' | 'salePrice' | 'saleCurrency' | 'forSale'> & {
     owner: Pick<User, 'id' | 'userType'> & {
       profile: Pick<Profile, 'displayName' | 'avatarUrl'>
     }

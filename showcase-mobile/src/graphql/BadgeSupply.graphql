@@ -19,7 +19,6 @@ query BadgeSupply($id: String!) {
       id
       salePrice
       saleCurrency
-      isSold
       forSale
       owner {
         id

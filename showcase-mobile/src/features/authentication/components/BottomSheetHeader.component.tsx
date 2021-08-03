@@ -7,7 +7,7 @@ import { translate } from '../../../utils/translator'
 import { useMyBottomSheet } from '../../../utils/useMyBottomSheet'
 
 type BottomSheetHeaderProps = {
-  title: string
+  title?: string
   subtitle?: string
   onBack?: () => void
 }
@@ -23,7 +23,7 @@ const BottomSheetHeader = ({
     <ScreenWrapper>
       <View flexDirection="row" paddingVertical={10}>
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{translate()[title]}</Text>
+          <Text style={styles.title}>{translate()[title] || title}</Text>
         </View>
         <TouchableOpacity onPress={onBack ?? collapse}>
           <Ionicons
@@ -36,7 +36,9 @@ const BottomSheetHeader = ({
 
       {subtitle && (
         <View style={styles.subtitleWrapper}>
-          <Text style={styles.bodyText}>{translate()[subtitle]}</Text>
+          <Text style={styles.bodyText}>
+            {translate()[subtitle] || subtitle}
+          </Text>
         </View>
       )}
     </ScreenWrapper>

@@ -1,0 +1,33 @@
+query BadgeSupply($id: String!) {
+  badgeType(where: { id: $id }) {
+    id
+    creatorId
+    isSoldOut
+    supply
+    sold
+    price
+    currency
+    creator {
+      id
+      userType
+      profile {
+        displayName
+        avatarUrl
+      }
+    }
+    badgeItems {
+      id
+      salePrice
+      saleCurrency
+      forSale
+      owner {
+        id
+        userType
+        profile {
+          displayName
+          avatarUrl
+        }
+      }
+    }
+  }
+}

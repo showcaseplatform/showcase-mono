@@ -1,0 +1,5 @@
+mutation UnlistBadgeItemFromSale($badgeItemId: String!) {
+  unlistBadgeForSale(data: { badgeItemId: $badgeItemId }) {
+    id
+  }
+}

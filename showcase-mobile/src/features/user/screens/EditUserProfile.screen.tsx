@@ -47,7 +47,7 @@ const schema = yup.object().shape({
     .string()
     .required('Please provide your user name')
     .max(28, 'Maximum 28 characters allowed')
-    .matches(/^[a-zA-Z0-9_]+$/g),
+    .matches(/^[a-zA-Z0-9_]/g),
   email: yup.string().email().required('Please provide your email'),
   currency: yup.string().required('Please provide your choosen currency'),
   birthDate: yup

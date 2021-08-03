@@ -60,6 +60,7 @@ const MyDatePickerInput = (props: MyDatePickerInput) => {
         maximumDate={maximumDate || new Date()}
         customCancelButtonIOS={() => null}
         headerTextIOS={placeholder ?? placeholder}
+        isDarkModeEnabled={false}
       />
     </InputWrapper>
   )

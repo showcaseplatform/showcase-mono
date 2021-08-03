@@ -1,0 +1,5 @@
+mutation ListBadgeItemForSale($data: ListBadgeForSaleInput!) {
+  listBadgeForSale(data: $data) {
+    id
+  }
+}

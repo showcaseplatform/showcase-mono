@@ -13,17 +13,18 @@ type DonationWidgetProps = {
 const DonationInfoButton = styled(TouchableOpacity)`
   position: absolute;
   top: 13%;
-  right: 10px;
   width: 25%;
+  min-width: 96px;
   align-items: flex-end;
   justify-content: center;
+  right: ${({ theme }) => theme.space[2]};
 `
 const DonationNumberWrapper = styled.View<{ donation: number }>`
   position: absolute;
   left: ${(props) => `${props.donation > 9 ? 0 : 5}px`};
   padding: 8px;
   background-color: ${(props) => props.theme.colors.ui.success};
-  width: 80%;
+  width: 70%;
   border-radius: 30px;
 `
 
@@ -44,7 +45,9 @@ const DonationWidget = ({
       <DonationNumberWrapper donation={donationPercent}>
         <Text color="secondary">{donationPercent}%</Text>
       </DonationNumberWrapper>
-      <DonationMiniImage source={{ uri: image }} resizeMode="contain" />
+      {image && (
+        <DonationMiniImage source={{ uri: image }} resizeMode="contain" />
+      )}
     </DonationInfoButton>
   )
 }

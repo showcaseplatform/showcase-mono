@@ -1,0 +1,6 @@
+fragment Receipt_WithBasics on Receipt {
+  id
+  convertedPrice
+  convertedCurrency
+  createdAt
+}

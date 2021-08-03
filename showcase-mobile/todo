@@ -13,6 +13,7 @@
 ☐ Android cause widget round styling issue
 ☐ Edit user profile: keyboard overlaps input fields (KeyboardAware view)
 ☐ Memory leak in badgesScreen - search useEffect
+☐ Collection item does not handle last receipt's price (always free atm because it's missing)
 ✔ AWS S3 does not receive file Type properly (empty) @done(21-08-02 11:42)
 ✔ FollowButton component ui stuck in loading (disabled) state after first onPress @done(21-08-02 11:41)
 ✔ at first render: category icons are slower then the layout @done(21-08-02 11:41)

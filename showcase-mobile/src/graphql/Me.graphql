@@ -12,8 +12,8 @@ query Me {
       badgeItems {
         id
         createdAt
-        receipt {
-          createdAt
+        receipts {
+          ...Receipt_WithBasics
         }
       }
     }
@@ -33,10 +33,8 @@ query Me {
           }
         }
       }
-      receipt {
-        id
-        convertedPrice
-        convertedCurrency
+      receipts {
+        ...Receipt_WithBasics
       }
     }
     badgeItemsForSale {
@@ -56,10 +54,8 @@ query Me {
           }
         }
       }
-      receipt {
-        id
-        convertedPrice
-        convertedCurrency
+      receipts {
+        ...Receipt_WithBasics
       }
     }
     badgeItemsToShow {
@@ -79,10 +75,8 @@ query Me {
           }
         }
       }
-      receipt {
-        id
-        convertedPrice
-        convertedCurrency
+      receipts {
+        ...Receipt_WithBasics
       }
     }
     friends {

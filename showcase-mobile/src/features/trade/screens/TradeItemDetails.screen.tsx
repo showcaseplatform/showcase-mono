@@ -219,7 +219,7 @@ const TradeItemDetails = ({ route }: TradeItemDetailsScreenProps) => {
                 <Divider />
                 <Spacer position="bottom" />
                 {badgeItems.map((badgeItem) => {
-                  if (!badgeItem.isSold && !badgeItem.isOwnedByMe) {
+                  if (!badgeItem.isOwnedByMe) {
                     return (
                       <StyledAccordionItem
                         title={badgeItem.owner.profile?.displayName}

@@ -15,15 +15,14 @@ import {
   BadgeItem,
   BadgeType,
   BadgeType_WithBasicsFragment,
-  Maybe,
-  Receipt,
+  Receipt_WithBasicsFragment,
 } from '../../../generated/graphql'
 
 // todo: create proper Fragments to avoid this mess
 export type CreationItemProps = Pick<BadgeType, 'isSoldOut'> & {
   badgeItems: Array<
     Pick<BadgeItem, 'id' | 'createdAt'> & {
-      receipt?: Maybe<{ __typename?: 'Receipt' } & Pick<Receipt, 'createdAt'>>
+      receipts: Array<Receipt_WithBasicsFragment>
     }
   >
 } & BadgeType_WithBasicsFragment

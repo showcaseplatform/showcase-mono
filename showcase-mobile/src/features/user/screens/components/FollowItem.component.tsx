@@ -17,11 +17,12 @@ import { Spacer } from '../../../../components/Spacer.component'
 type FollowItemProps = {
   user: User
   onPress: () => void
+  hasAction?: boolean
 }
 
-const FollowItem = ({ user, onPress }: FollowItemProps) => {
+const FollowItem = ({ user, onPress, hasAction = true }: FollowItemProps) => {
   const { amIFollowing } = user
-  const { avatarUrl, username, displayName } = user.profile
+  const { avatarUrl, username, displayName } = user?.profile
   const [toggleFollow, { loading: loadingToggle }] = useToggleFollowMutation({
     refetchQueries: [{ query: MeDocument }],
   })
@@ -43,13 +44,15 @@ const FollowItem = ({ user, onPress }: FollowItemProps) => {
           <Text>{displayName}</Text>
           <Text variant="caption" color="grey">{`@${username}`}</Text>
         </View>
-        <CenterView>
-          <FollowButton
-            isFollowed={amIFollowing}
-            onPress={() => toggleFollow({ variables: { userId: user.id } })}
-            disabled={loadingToggle}
-          />
-        </CenterView>
+        {hasAction && (
+          <CenterView>
+            <FollowButton
+              isFollowed={amIFollowing}
+              onPress={() => toggleFollow({ variables: { userId: user.id } })}
+              disabled={loadingToggle}
+            />
+          </CenterView>
+        )}
       </Surface>
     </TouchableOpacity>
   )

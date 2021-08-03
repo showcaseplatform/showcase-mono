@@ -7,17 +7,10 @@ import { AuthLib } from '../../auth/authLib'
 import { getRandomNum } from '../../../utils/randoms'
 import { Cause, UserType } from '@prisma/client'
 import { SHOWCASE_COMMISSION_FEE_MULTIPLIER } from '../../../consts/businessRules'
-import { deleteDb } from '../../../database/deleteDb'
 
 describe('Purchasing a badge', () => {
-  beforeAll(async () => {
-    await prisma.$connect()
+  beforeEach(async () => {
     await createTestDb(prisma)
-  })
-
-  afterAll(async () => {
-    await deleteDb(prisma)
-    await prisma.$disconnect()
   })
 
   it('should throw error if invalid input is provided', async () => {
@@ -43,13 +36,13 @@ describe('Purchasing a badge', () => {
       badgeTypeId: badgeTypeToPurchase.id,
       badgeItemId: undefined,
     }
-    expect(async () => await purchaseBadge(inputWithValidBadgeTypeId, 'fakeId')).rejects.toThrow()
+    await expect(async () => await purchaseBadge(inputWithValidBadgeTypeId, 'fakeId')).rejects.toThrow()
 
     const inputWithFakeBadgeTypeId: PurchaseBadgeInput = {
       badgeTypeId: 'fakeId',
       badgeItemId: undefined,
     }
-    expect(
+    await expect(
       async () => await purchaseBadge(inputWithFakeBadgeTypeId, testUser?.id || '')
     ).rejects.toThrow()
 
@@ -57,7 +50,7 @@ describe('Purchasing a badge', () => {
       badgeTypeId: undefined,
       badgeItemId: 'fakeId',
     }
-    expect(
+    await expect(
       async () => await purchaseBadge(inputWithFakeBadgeItemId, testUser?.id || '')
     ).rejects.toThrow()
   })
@@ -195,8 +188,6 @@ describe('Purchasing a badge', () => {
       await prisma.receipt.findMany({
         where: {
           badgeItemId: badgeItemToPurchase?.id,
-          buyerId: testUser?.id,
-          sellerId: badgeItemToPurchase?.ownerId,
         },
         orderBy: {
           createdAt: 'desc',
@@ -215,6 +206,8 @@ describe('Purchasing a badge', () => {
     expect(receipts.length).toBeGreaterThan(badgeItemToPurchase?.receipts.length || 0)
     expect(receipts[0].price).toEqual(badgeItemToPurchase?.salePrice)
     expect(receipts[0].currency).toEqual(badgeItemToPurchase?.saleCurrency)
+    expect(receipts[0].buyerId).toEqual(testUser?.id)
+    expect(receipts[0].sellerId).toEqual(badgeItemToPurchase?.ownerId)
   })
 
   it('should fail if buyer doesnt have neccesary payment information', async () => {
@@ -229,7 +222,7 @@ describe('Purchasing a badge', () => {
       badgeTypeId: badgeTypeToPurchase.id,
     }
 
-    expect(async () => await purchaseBadge(inputWithBadgeTypeId, inputUserId)).rejects.toThrowError(
+    await expect(async () => await purchaseBadge(inputWithBadgeTypeId, inputUserId)).rejects.toThrowError(
       PurchaseErrorMessages.paymentInfoMissing
     )
 
@@ -243,7 +236,7 @@ describe('Purchasing a badge', () => {
       badgeItemId: badgeItemToPurchase?.id || '',
     }
 
-    expect(async () => await purchaseBadge(inputWithBadgeItemId, inputUserId)).rejects.toThrowError(
+    await expect(async () => await purchaseBadge(inputWithBadgeItemId, inputUserId)).rejects.toThrowError(
       PurchaseErrorMessages.paymentInfoMissing
     )
   })
@@ -275,7 +268,7 @@ describe('Purchasing a badge', () => {
       badgeItemId: testBadgeItemWithTypeAndOwner?.id || '',
     }
 
-    expect(async () => await purchaseBadge(inputWithBadgeItemId, inputUserId)).rejects.toThrowError(
+    await expect(async () => await purchaseBadge(inputWithBadgeItemId, inputUserId)).rejects.toThrowError(
       PurchaseErrorMessages.badgeAlreadyOwned
     )
   })
@@ -299,7 +292,7 @@ describe('Purchasing a badge', () => {
       badgeTypeId: soldoutBadgeType?.id || '',
     }
 
-    expect(
+    await expect(
       async () => await purchaseBadge(inputBadgeTypeId, testUser?.id || '')
     ).rejects.toThrowError(PurchaseErrorMessages.outOfStock)
   })
@@ -312,7 +305,7 @@ describe('Purchasing a badge', () => {
       badgeTypeId: badgeTypeToPurchase?.id || '',
     }
 
-    expect(
+    await expect(
       async () => await purchaseBadge(inputBadgeTypeId, badgeTypeToPurchase?.creatorId || '')
     ).rejects.toThrowError(PurchaseErrorMessages.badgeCreatedByUser)
   })
@@ -343,7 +336,7 @@ describe('Purchasing a badge', () => {
       },
     })
 
-    expect(
+    await expect(
       async () => await purchaseBadge({ badgeItemId: badgeItemToPurchase?.id }, testUser?.id || '')
     ).rejects.toThrowError(PurchaseErrorMessages.badgeNotAvailableForPurchase)
   })

@@ -28,7 +28,7 @@ describe('Unlisting a badge for sale', () => {
       badgeItemId: testBadgeItem?.id || '',
     }
 
-    expect(
+    await expect(
       async () => await unlistBadgeForSale(input, testBadgeItem?.ownerId || '')
     ).rejects.toThrowError(UnlistBadgeForSaleErrorMessages.notOnSale)
   })
@@ -49,7 +49,7 @@ describe('Unlisting a badge for sale', () => {
       },
     })
 
-    expect(async () => await unlistBadgeForSale(input, testUser?.id || '')).rejects.toThrowError(
+    await expect(async () => await unlistBadgeForSale(input, testUser?.id || '')).rejects.toThrowError(
       UnlistBadgeForSaleErrorMessages.userNotOwner
     )
   })

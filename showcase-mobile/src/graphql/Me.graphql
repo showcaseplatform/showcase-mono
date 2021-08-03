@@ -12,8 +12,8 @@ query Me {
       badgeItems {
         id
         createdAt
-        receipt {
-          createdAt
+        receipts {
+          ...Receipt_WithBasics
         }
       }
     }
@@ -33,10 +33,8 @@ query Me {
           }
         }
       }
-      receipt {
-        id
-        convertedPrice
-        convertedCurrency
+      receipts {
+        ...Receipt_WithBasics
       }
     }
     badgeItemsForSale {
@@ -44,8 +42,9 @@ query Me {
       edition
       salePrice
       saleCurrency
-      sellDate
+      purchaseDate
       forSale
+      updatedAt
       badgeType {
         ...BadgeType_WithBasics
         creator {
@@ -54,6 +53,30 @@ query Me {
             displayName
           }
         }
+      }
+      receipts {
+        ...Receipt_WithBasics
+      }
+    }
+    badgeItemsToShow {
+      id
+      edition
+      salePrice
+      saleCurrency
+      purchaseDate
+      forSale
+      updatedAt
+      badgeType {
+        ...BadgeType_WithBasics
+        creator {
+          profile {
+            id
+            displayName
+          }
+        }
+      }
+      receipts {
+        ...Receipt_WithBasics
       }
     }
     friends {
@@ -73,6 +96,16 @@ query Me {
     followers {
       userId
       status
+      user {
+        id
+        amIFollowing
+        profile {
+          id
+          avatarUrl
+          displayName
+          username
+        }
+      }
     }
     paymentInfo {
       id

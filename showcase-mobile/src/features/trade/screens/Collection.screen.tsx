@@ -6,9 +6,9 @@ import Error from '../../../components/Error.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 
 import { useMeQuery } from '../../../generated/graphql'
-import CreationItem from '../components/CreationItem.component'
+import CollectionItem from '../components/CollectionItem.component'
 
-const MyCreations = () => {
+const Collection = () => {
   const { data, loading, error } = useMeQuery()
 
   if (loading) {
@@ -16,14 +16,14 @@ const MyCreations = () => {
   } else if (data) {
     return (
       <FlatList
-        data={data.me.badgeTypesCreated}
-        keyExtractor={(type) => type.id}
+        data={data.me.badgeItemsToShow}
+        keyExtractor={(item) => item.id}
         numColumns={1}
         contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={
-          <EmptyListComponent text={'You have not created a badge yet.'} />
+          <EmptyListComponent text="You have no badges bought yet" />
         }
-        renderItem={({ item }) => <CreationItem item={item} />}
+        renderItem={({ item }) => <CollectionItem item={item} />}
       />
     )
   } else {
@@ -31,4 +31,4 @@ const MyCreations = () => {
   }
 }
 
-export default MyCreations
+export default Collection

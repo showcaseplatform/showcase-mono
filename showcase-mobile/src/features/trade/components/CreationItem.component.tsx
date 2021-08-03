@@ -11,29 +11,21 @@ import ProfileImage from '../../../components/ProfileImage.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
 
-import { BadgeItem, BadgeType, Receipt } from '../../../generated/graphql'
+import {
+  BadgeItem,
+  BadgeType,
+  BadgeType_WithBasicsFragment,
+  Receipt_WithBasicsFragment,
+} from '../../../generated/graphql'
 
 // todo: create proper Fragments to avoid this mess
-export interface CreationItemProps
-  extends Pick<
-    BadgeType,
-    | 'id'
-    | 'createdAt'
-    | 'category'
-    | 'title'
-    | 'publicUrl'
-    | 'supply'
-    | 'sold'
-    | 'price'
-    | 'currency'
-    | 'isSoldOut'
-  > {
+export type CreationItemProps = Pick<BadgeType, 'isSoldOut'> & {
   badgeItems: Array<
     Pick<BadgeItem, 'id' | 'createdAt'> & {
-      receipt?: Pick<Receipt, 'createdAt'>
+      receipts: Array<Receipt_WithBasicsFragment>
     }
   >
-}
+} & BadgeType_WithBasicsFragment
 
 const CreationItem = ({ item }: { item: CreationItemProps }) => {
   const navigation = useNavigation<NavigationProp<TradeStackParamList>>()
@@ -51,7 +43,7 @@ const CreationItem = ({ item }: { item: CreationItemProps }) => {
 
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate('TradeBadgeDetails', { type: item })}
+      onPress={() => navigation.navigate('TradeTypeDetails', { id: item.id })}
     >
       <Surface>
         <View

@@ -6,9 +6,9 @@ import Error from '../../../components/Error.component'
 import LoadingIndicator from '../../../components/LoadingIndicator.component'
 
 import { useMeQuery } from '../../../generated/graphql'
-import CollectionItem from '../components/CollectionItem.component'
+import SellingItem from '../components/SellingItem.component'
 
-const BadgeCollection = () => {
+const Selling = () => {
   const { data, loading, error } = useMeQuery()
 
   if (loading) {
@@ -16,14 +16,14 @@ const BadgeCollection = () => {
   } else if (data) {
     return (
       <FlatList
-        data={data.me.badgeItemsOwned}
+        data={data.me.badgeItemsForSale}
         keyExtractor={(item) => item.id}
         numColumns={1}
         contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={
-          <EmptyListComponent text="You have no badges bought yet" />
+          <EmptyListComponent text="You have no badges selling at the moment." />
         }
-        renderItem={({ item }) => <CollectionItem item={item} />}
+        renderItem={({ item }) => <SellingItem item={item} />}
       />
     )
   } else {
@@ -31,4 +31,4 @@ const BadgeCollection = () => {
   }
 }
 
-export default BadgeCollection
+export default Selling

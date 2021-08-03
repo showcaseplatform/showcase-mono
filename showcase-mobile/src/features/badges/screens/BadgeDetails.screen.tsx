@@ -15,6 +15,7 @@ import {
   BadgeDetailsDocument,
   useBadgeDetailsQuery,
   useCountBadgeViewMutation,
+  useMeQuery,
   useToggleLikeMutation,
 } from '../../../generated/graphql'
 
@@ -41,6 +42,7 @@ type BadgeDetailsScreenProps = {
 const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   const theme = useTheme()
   const { badgeType } = route.params
+  const { data: dataMe } = useMeQuery()
   const { data, loading, error } = useBadgeDetailsQuery({
     variables: { id: route.params.badgeType.id },
   })
@@ -79,7 +81,7 @@ const BadgeDetailsScreen = ({ route, navigation }: BadgeDetailsScreenProps) => {
   }, [navigation])
 
   useEffect(() => {
-    if (data && !data.badgeType?.isViewedByMe) {
+    if (data && !data.badgeType?.isViewedByMe && dataMe?.me.id) {
       countView()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

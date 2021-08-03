@@ -305,6 +305,8 @@ const englishTranslations = {
   itemAlreadyForSale: 'This Badge is already for sale!',
   errorGeneratingSignature: 'Error generating signature for sale',
   errorSendingSignature: 'Error sending signature for sale',
+  listForSaleDialogTitle: 'List for sell',
+  listForSaleDialogDescription: 'List for sell',
 }
 
 const russianTranslations = {}

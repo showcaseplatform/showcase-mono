@@ -10,33 +10,18 @@ import { TradeStackParamList } from '../../../infrastructure/navigation/trade.na
 import ProfileImage from '../../../components/ProfileImage.component'
 import { Spacer } from '../../../components/Spacer.component'
 import { Text } from '../../../components/Text.component'
-import {
-  BadgeItem,
-  BadgeType_WithBasicsFragment,
-  Maybe,
-  Profile,
-} from '../../../generated/graphql'
+import { Currency } from '../../../generated/graphql'
+import { CollectionItemProps } from './CollectionItem.component'
 
-// todo: create proper Fragments to avoid this mess
-type SellingItemProps = { __typename?: 'BadgeItem' } & Pick<
-  BadgeItem,
-  'id' | 'edition' | 'salePrice' | 'saleCurrency' | 'sellDate'
-> & {
-    badgeType: { __typename?: 'BadgeType' } & {
-      creator: { __typename?: 'User' } & {
-        profile?: Maybe<
-          { __typename?: 'Profile' } & Pick<Profile, 'id' | 'displayName'>
-        >
-      }
-    } & BadgeType_WithBasicsFragment
-  }
-
-const SellingItem = ({ item }: { item: SellingItemProps }) => {
+const SellingItem = ({ item }: { item: CollectionItemProps }) => {
   const navigation = useNavigation<NavigationProp<TradeStackParamList>>()
   return (
     <TouchableOpacity
       onPress={() =>
-        navigation.navigate('TradeBadgeDetails', { item: item.badgeType })
+        navigation.navigate('TradeItemDetails', {
+          id: item.badgeType.id,
+          itemId: item.id,
+        })
       }
     >
       <Surface>
@@ -53,13 +38,16 @@ const SellingItem = ({ item }: { item: SellingItemProps }) => {
           <View justifyContent="space-evenly" style={{ flexGrow: 1 }}>
             <Text>{item.badgeType.title}</Text>
             <Text variant="caption" color="grey">
-              On marketplace{' '}
+              Listed for sale{' '}
               <Text variant="caption">
-                {makeDateDistanceTag(new Date(item.sellDate))}
+                {makeDateDistanceTag(new Date(item.updatedAt))}
               </Text>{' '}
               for{' '}
               <Text variant="caption">
-                {makePriceTag(item.salePrice, item.saleCurrency)}
+                {makePriceTag(
+                  item.salePrice as number | undefined,
+                  item.saleCurrency as Currency | undefined
+                )}
               </Text>
             </Text>
             <Text variant="caption" color="grey">

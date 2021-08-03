@@ -1,0 +1,11 @@
+query MyItem($id: String!) {
+  me {
+    id
+    badgeItemsOwned(where: { id: { equals: $id } }) {
+      id
+      salePrice
+      saleCurrency
+      forSale
+    }
+  }
+}
